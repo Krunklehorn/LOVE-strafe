@@ -10,7 +10,10 @@ playState = {
 function playState:init()
 	self.camera = stalker(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
 
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, nil, nil, { 1, 1, 1, 0.2 }))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(32), vec2(1.25), { 0.8, 1, 0.8, 0.2 }))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(4), nil, { 0.8, 1, 0.8, 0.1 }))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(2), nil, { 0.8, 1, 0.8, 0.1 }))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_screen.png"), nil, vec2(2), vec2(0.25), { 0.8, 1, 0.8, 0.2 }))
 
 	Stache.players[1].agent = self:spawnAgent("strafer")
 end
@@ -48,10 +51,13 @@ function playState:draw()
 	Stache.drawList(self.agents)
 
 	self.camera:detach()
+	lg.push("all")
 
 	lg.scale(40 * FONT_SHRINK)
+	lg.setColor(0.8, 1, 0.8, 0.8)
 	lg.printf(self.agents[1].physmode, 120 - 900, 0, 1800, "center")
 
+	lg.pop()
 	self.camera:draw()
 end
 
@@ -66,7 +72,7 @@ function playState:keypressed(key)
 		Stache.timescale = Stache.timescale * 2
 	elseif key == "kp-" then
 		Stache.timescale = Stache.timescale / 2
-	elseif key == "kpenter" then
+	elseif key == "v" then
 		self.agents[1]:togglePhysMode()
 	end
 end

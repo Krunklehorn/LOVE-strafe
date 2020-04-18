@@ -205,6 +205,7 @@ function Agent:draw()
 		lg.push("all")
 
 		lg.setLineWidth(0.5)
+		lg.setColor(0.8, 1, 0.8, 0.8)
 		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 		lg.line(0, 0, DEBUGNORM1.x, DEBUGNORM1.y)
 
@@ -215,6 +216,7 @@ function Agent:draw()
 		lg.push("all")
 
 		lg.setLineWidth(0.5)
+		lg.setColor(0.8, 1, 0.8, 0.8)
 		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 		lg.line(0, 0, DEBUGNORM2.x, DEBUGNORM2.y)
 
@@ -224,6 +226,7 @@ function Agent:draw()
 	if DEBUGVAR then
 		lg.push("all")
 
+		lg.setColor(0.8, 1, 0.8, 0.8)
 		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 		lg.rotate(self.angRad)
 		lg.scale(40 * FONT_SHRINK)
