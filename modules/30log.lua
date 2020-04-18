@@ -29,11 +29,11 @@ local function deep_copy(t, dest, aType)
 	local r = dest or {}
 	for k,v in pairs(t) do
 		if aType ~= nil and type(v) == aType then
-			r[k] = (type(v) == 'table')
+			r[k] = (type(v) == 'table' and v.__index ~= vec2.__index) -- Krunk: Override to check for brinevector tables
 							and ((_classes[v] or _instances[v]) and v or deep_copy(v))
 							or v
 		elseif aType == nil then
-			r[k] = (type(v) == 'table')
+			r[k] = (type(v) == 'table' and v.__index ~= vec2.__index) -- Krunk: Override to check for brinevector tables
 			        and k~= '__index' and ((_classes[v] or _instances[v]) and v or deep_copy(v))
 							or v
 		end

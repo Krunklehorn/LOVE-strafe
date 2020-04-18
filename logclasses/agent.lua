@@ -60,7 +60,7 @@ Agent = Entity:extend("Agent", {
 	pushSin = nil,
 })
 
-function Agent:__index(key, value)
+function Agent:__index(key)
 	local slf = rawget(self, "members")
 
 	if key == "grndAngRad" then
@@ -85,8 +85,8 @@ end
 
 function Agent:init(data)
 	Entity.init(self, data)
-	self:setPhysMode("VQ3")
 	self:changeState("idle")
+	self:setPhysMode("VQ3")
 end
 
 function Agent:update(dt)
