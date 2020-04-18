@@ -20,8 +20,8 @@ function Player:mousemoved(x, y, dx, dy, istouch)
 	self.agent.aim.y = self.agent.aim.y + dy
 end
 
-function Player:input(dt)
-	self.boipy.synced_time = dt
+function Player:input(tt)
+	self.boipy.synced_time = tt
 
 	if self.agent then
 		local right = self.boipy:down("right") and 1 or 0

@@ -85,7 +85,7 @@ function love.run()
 		while accumulator >= Stache.ticklength do
 			if love.update then
 				for p = 1, #Stache.players do
-					Stache.players[p]:input(Stache.ticklength * Stache.timescale) end
+					Stache.players[p]:input(total_ticks) end
 
 				love.update(Stache.ticklength * Stache.timescale, Stache.ticklength, total_ticks)
 
