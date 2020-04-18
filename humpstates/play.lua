@@ -10,10 +10,10 @@ playState = {
 function playState:init()
 	self.camera = stalker(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
 
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(32), vec2(1.25), { 0.8, 1, 0.8, 0.2 }))
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(4), nil, { 0.8, 1, 0.8, 0.1 }))
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(2), nil, { 0.8, 1, 0.8, 0.1 }))
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_screen.png"), nil, vec2(2), vec2(0.25), { 0.8, 1, 0.8, 0.2 }))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(32), vec2(1.25), Stache.colors.magenta, 0.2))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(4), nil, Stache.colors.magenta, 0.2))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(2), nil, Stache.colors.magenta, 0.2))
+	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_screen.png"), nil, vec2(2), vec2(0.25), Stache.colors.magenta, 0.2))
 
 	Stache.players[1].agent = self:spawnAgent("strafer")
 end
@@ -54,7 +54,7 @@ function playState:draw()
 	lg.push("all")
 
 	lg.scale(40 * FONT_SHRINK)
-	lg.setColor(0.8, 1, 0.8, 0.8)
+	lg.setColor(1, 0, 1, 0.8)
 	lg.printf(self.agents[1].physmode, 120 - 900, 0, 1800, "center")
 
 	lg.pop()
@@ -90,10 +90,9 @@ function playState:spawnParticle(name, anchor, params)
 	data.anchor = anchor
 	data.params = params
 
-	local particle = Particle(data)
-	table.insert(self.particles, particle)
+	table.insert(self.particles, Particle(data))
 
-	return particle
+	return last(self.particles)
 end
 
 function playState:spawnProp(name, params)
@@ -112,10 +111,9 @@ function playState:spawnProp(name, params)
 		for k, v in pairs(params) do
 			data[k] = params[k] end end
 
-	local prop = Prop(data)
-	table.insert(self.props, prop)
+	table.insert(self.props, Prop(prop))
 
-	return prop
+	return last(self.props)
 end
 
 function playState:spawnAgent(name, params)
@@ -135,10 +133,9 @@ function playState:spawnAgent(name, params)
 		for k, v in pairs(params) do
 			data[k] = params[k] end end
 
-	local agent = Agent(data)
-	table.insert(self.agents, agent)
+	table.insert(self.agents, Agent(data))
 
-	return agent
+	return last(self.agents)
 end
 
 function playState:removeEntity(ref)

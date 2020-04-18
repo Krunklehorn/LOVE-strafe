@@ -4,6 +4,8 @@ lk = love.keyboard
 lm = love.mouse
 la = love.audio
 
+FLOAT_EPSILON = 0.00000000001
+
 WINDOW_WIDTH = 720
 WINDOW_HEIGHT = 480
 WINDOW_WIDTH_HALF = WINDOW_WIDTH / 2

@@ -357,7 +357,7 @@ function Agent:updateCollider()
 end
 
 function Agent:drawCollider(scale)
-	self.collider:draw(scale, self:isGrounded() and { 1, 0, 0 } or { 0, 1, 0 })
+	self.collider:draw(scale, self:isGrounded() and "red" or "green")
 end
 
 function Agent:isGrounded()

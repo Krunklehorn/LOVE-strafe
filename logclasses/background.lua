@@ -3,24 +3,27 @@ Background = class("Background", {
 	offset = vec2(),
 	scale = vec2(1),
 	scroll = vec2(1),
-	color = {1, 1, 1, 1},
+	color = Stache.colors.white,
+	alpha = 1,
 	dimensions = vec2(),
 	sd = vec2(),
 	origin = vec2(),
 	quad = nil
 })
 
-function Background:init(image, offset, scale, scroll, color)
+function Background:init(image, offset, scale, scroll, color, alpha)
 	if image:type() ~= "Image" then
 		formatError("Background:init() called without a proper 'image' argument: %q", image)
-	elseif type(offset) ~= "nil" and not vec2.isVector(offset) then
+	elseif offset ~= nil and not vec2.isVector(offset) then
 		formatError("Background:init() called with a non-vector 'offset' argument: %q", offset)
-	elseif type(scale) ~= "nil" and not vec2.isVector(scale) then
+	elseif scale ~= nil and not vec2.isVector(scale) then
 		formatError("Background:init() called with a non-vector 'scale' argument: %q", scale)
-	elseif type(scroll) ~= "nil" and not vec2.isVector(scroll) then
+	elseif scroll ~= nil and not vec2.isVector(scroll) then
 		formatError("Background:init() called with a non-vector 'scroll' argument: %q", scroll)
-	elseif type(color) ~= "nil" and type(color) ~= "table" and type(color) ~= "userdata" then
+	elseif color ~= nil and type(color) ~= "table" and type(color) ~= "userdata" then
 		formatError("Background:init() called with an invalid 'color' argument: %q", color)
+	elseif alpha ~= nil and type(alpha) ~= "number" then
+		formatError("Background:init() called with a non-numerical 'alpha' argument: %q", color)
 	end
 
 	self.image = image
@@ -28,6 +31,7 @@ function Background:init(image, offset, scale, scroll, color)
 	if scale then self.scale = scale end
 	if scroll then self.scroll = scroll end
 	if color then self.color = color end
+	if alpha then self.alpha = alpha end
 	self.dimensions = vec2(image:getWidth(), image:getHeight())
 	self.sd = self.dimensions ^ self.scale
 	self.quad = lg.newQuad(0, 0, 0, 0, 0, 0)
@@ -59,7 +63,7 @@ end
 function Background:draw(camera)
 	lg.push("all")
 
-	lg.setColor(self.color)
+	lg.setColor(Stache.colorUnpack(self.color, self.alpha))
 	lg.translate(WINDOW_WIDTH_HALF, WINDOW_HEIGHT_HALF)
 	lg.rotate(camera.rotation)
 	lg.scale(camera.scale)

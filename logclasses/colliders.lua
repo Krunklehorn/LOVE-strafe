@@ -170,16 +170,16 @@ function CircleCollider:draw(scale, color)
 	lg.scale(scale)
 
 	lg.setLineWidth(0.25)
-	lg.setColor(color[1], color[2], color[3], 1)
+	lg.setColor(Stache.colorUnpack(color, 1))
 	lg.circle("line", 0, 0, self.radius)
 	lg.line(0, 0, 0, -self.radius)
 
-	lg.setColor(color[1], color[2], color[3], 0.4)
+	lg.setColor(Stache.colorUnpack(color, 0.4))
 	lg.circle("fill", 0, 0, self.radius)
 
 	lg.translate((-self.offset):split())
 
-	lg.setColor(color[1], color[2], color[3], 0.8)
+	lg.setColor(Stache.colorUnpack(color, 0.8))
 	lg.circle("fill", 0, 0, 1)
 
 	lg.pop()
@@ -571,16 +571,16 @@ function BoxCollider:draw(scale, color)
 	lg.scale(scale)
 
 	lg.setLineWidth(0.25)
-	lg.setColor(color[1], color[2], color[3], 1)
+	lg.setColor(Stache.colorUnpack(color, 1))
 	lg.rectangle("line", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
 	lg.line(0, 0, 0, -self.hheight)
 
-	lg.setColor(color[1], color[2], color[3], 0.4)
+	lg.setColor(Stache.colorUnpack(color, 0.4))
 	lg.rectangle("fill", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
 
 	lg.translate((-self.offset):split())
 
-	lg.setColor(color[1], color[2], color[3], 0.8)
+	lg.setColor(Stache.colorUnpack(color, 0.8))
 	lg.circle("fill", 0, 0, 1)
 
 	lg.pop()

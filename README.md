@@ -1,10 +1,10 @@
 # LÖVEstrafe
+---
 A top-down 2D tech demo of Quake-based strafe jumping physics using the LÖVE engine.
 
----
 
 # Special Thanks
-
+---
 These amazing modules helped me build it!
 
 https://github.com/Yonaba/30log

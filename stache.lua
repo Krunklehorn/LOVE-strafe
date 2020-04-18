@@ -3,13 +3,23 @@ Stache = {
 	timescale = 1,
 	sfx = {},
 	music = {},
+	colors = {
+		white = { 1, 1, 1 },
+		black = { 0, 0, 0 },
+		red = { 1, 0, 0 },
+		green = { 0, 1, 0 },
+		blue = { 0, 0, 1 },
+		cyan = { 0, 1, 1 },
+		magenta = { 1, 0, 1 },
+		yellow = { 1, 1, 0 }
+	},
 	--[[
 	sheets = {},
 	particles = {},
 	props = {},
 	]]--
 	actors = {},
-	players = {},
+	players = {}
 }
 
 setmetatable(Stache, {
@@ -131,7 +141,18 @@ function Stache.play(sfx)
 	Stache.sfx[sfx]:play()
 end
 
+function Stache.colorUnpack(color, alpha)
+	if type(color) ~= "string" and type(color) ~= "table" then
+		formatError("Stache.colorUnpack() called with an invalid 'color' argument: ", color)
+	elseif alpha ~= nil and type(alpha) ~= "number" then
+		formatError("Stache.colorUnpack() called with a non-numerical 'alpha' argument: ", alpha)
+	end
 
+	if type(color) == "string" then
+		color = Stache.colors[color] end
+
+	return color[1], color[2], color[3], alpha
+end
 
 function Stache.updateList(table, ...)
 	local n = #table
@@ -168,7 +189,7 @@ function floatEquality(a, b)
 		formatError("floatEquality() called with one or more non-numerical arguments: %q %q", a, b)
 	end
 
-	return math.abs(a - b) < 0.00000000001
+	return math.abs(a - b) < FLOAT_EPSILON
 end
 
 function equalsZero(x)
@@ -214,7 +235,7 @@ function approach(value, target, rate, callback)
 	if type(value) ~= "number" or type(target) ~= "number" or type(rate) ~= "number" then
 		formatError("approach() called with one or more non-numerial arguments: %q, %q, %q", value, target, rate)
 	elseif callback ~= nil and type(callback) ~= "function" then
-		formatError("approach() called with an invalid callback argument: ", callback)
+		formatError("approach() called with an invalid 'callback' argument: ", callback)
 	end
 
 	if value > target then
@@ -232,12 +253,6 @@ function approach(value, target, rate, callback)
 	end
 
 	return value
-end
-
-function limit(value, cap)
-	if value > cap then return cap
-	elseif value < -cap then return -cap
-	else return value end
 end
 
 function first(obj)
