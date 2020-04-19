@@ -8,7 +8,7 @@ playState = {
 }
 
 function playState:init()
-	self.camera = stalker(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+	self.camera = stalker()
 
 	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(32), vec2(1.25), Stache.colors.magenta, 0.2))
 	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(4), nil, Stache.colors.magenta, 0.2))
@@ -53,9 +53,9 @@ function playState:draw()
 	self.camera:detach()
 	lg.push("all")
 
-	lg.scale(40 * FONT_SHRINK)
 	lg.setColor(1, 0, 1, 0.8)
-	lg.printf(self.agents[1].physmode, 120 - 900, 0, 1800, "center")
+	lg.scale(40 * FONT_SHRINK)
+	lg.printf(self.agents[1].physmode, 120 - 90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
 
 	lg.pop()
 	self.camera:draw()
@@ -75,6 +75,11 @@ function playState:keypressed(key)
 	elseif key == "v" then
 		self.agents[1]:togglePhysMode()
 	end
+end
+
+function playState:resize(w, h)
+	self.camera.w = w
+	self.camera.h = h
 end
 
 function playState:spawnParticle(name, anchor, params)

@@ -205,7 +205,7 @@ function Agent:draw()
 		lg.push("all")
 
 		lg.setLineWidth(0.5)
-		lg.setColor(0.8, 1, 0.8, 0.8)
+		lg.setColor(Stache.colorUnpack("white", 0.8))
 		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 		lg.line(0, 0, DEBUGNORM1.x, DEBUGNORM1.y)
 
@@ -216,7 +216,7 @@ function Agent:draw()
 		lg.push("all")
 
 		lg.setLineWidth(0.5)
-		lg.setColor(0.8, 1, 0.8, 0.8)
+		lg.setColor(Stache.colorUnpack("white", 0.8))
 		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 		lg.line(0, 0, DEBUGNORM2.x, DEBUGNORM2.y)
 
@@ -226,18 +226,18 @@ function Agent:draw()
 	if DEBUGVAR then
 		lg.push("all")
 
-		lg.setColor(0.8, 1, 0.8, 0.8)
+		lg.setColor(Stache.colorUnpack("white", 0.8))
 		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 		lg.rotate(self.angRad)
 		lg.scale(40 * FONT_SHRINK)
-		lg.printf(DEBUGVAR, -900, 0, 1800, "center")
+		lg.printf(DEBUGVAR, -90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
 
 		lg.pop()
 	end
 
 	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...
 
-	self:drawCollider(1 + self.posz / 100)
+	self.collider:draw(1 + self.posz / 100, self:isGrounded() and "red" or "cyan")
 end
 
 function Agent:changeState(next)
@@ -353,11 +353,7 @@ end
 ]]--
 
 function Agent:updateCollider()
-	self.collider:update(self.pos, self.vel, self.angRad, self.offset)
-end
-
-function Agent:drawCollider(scale)
-	self.collider:draw(scale, self:isGrounded() and "red" or "green")
+	self.collider:update(self.pos, self.angRad, self.offset)
 end
 
 function Agent:isGrounded()

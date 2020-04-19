@@ -153,9 +153,8 @@ function CircleCollider:init(radius)
 	self.radius = radius
 end
 
-function CircleCollider:update(currPos, prevPos, angRad, offset)
+function CircleCollider:update(currPos, angRad, offset)
 	self.currPos = currPos
-	self.prevPos = prevPos
 	self.angRad = angRad
 	self.offset = offset
 end
@@ -554,9 +553,8 @@ function LineCollider:getCastBounds()
 	}
 end
 
-function BoxCollider:update(currPos, prevPos, angRad, offset)
+function BoxCollider:update(currPos, angRad, offset)
 	self.currPos = currPos
-	self.prevPos = prevPos
 	self.angRad = angRad
 	self.offset = offset
 end

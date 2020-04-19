@@ -116,7 +116,10 @@ function love.update(dt)
 end
 
 function love.keypressed(key)
-	if key == "escape" then
+	if key == "m" then
+		love.window.setFullscreen(not love.window.getFullscreen())
+		love.resize(lg.getDimensions()) -- Force the resize callback.
+	elseif key == "escape" then
 		love.event.quit()
 	end
 end

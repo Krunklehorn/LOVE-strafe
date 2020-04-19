@@ -21,7 +21,7 @@ editState = {
 }
 
 function editState:init()
-	self.camera = stalker(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+	self.camera = stalker()
 	self.camera:setFollowLerp(1)
 	self.camera:setFollowLead(0)
 
@@ -33,6 +33,8 @@ end
 function editState:resume()
 	self.camera.x = playState.camera.x
 	self.camera.y = playState.camera.y
+	self.camera.w = playState.camera.w
+	self.camera.h = playState.camera.h
 	self.camera.scale = playState.camera.scale
 
 	self:refreshHandles()
@@ -116,6 +118,13 @@ function editState:keypressed(key)
 	elseif key == "return" then
 		humpstate.push(playState)
 	end
+end
+
+function editState:resize(w, h)
+	self.camera.w = w
+	self.camera.h = h
+	playState.camera.w = w
+	playState.camera.h = h
 end
 
 function editState:refreshHandles()

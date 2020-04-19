@@ -33,8 +33,8 @@ end
 
 local function checkType(x, typename, name)
     assert(
-        type(x) == typename,
-        "Expected "..name.." (type = "..type(x)..") to be a "..typename.."."
+	   type(x) == typename,
+	   "Expected "..name.." (type = "..type(x)..") to be a "..typename.."."
     )
     return x
 end
@@ -42,20 +42,20 @@ end
 local function unpackCamera(t)
     local sx, sy, sw, sh
     if t.getWindow then -- assume t is a gamera camera
-        sx, sy, sw, sh = t:getWindow()
+	   sx, sy, sw, sh = t:getWindow()
     else
-        sx, sy, sw, sh =
-            t.sx or 0,
-            t.sy or 0,
-            t.sw or lg.getWidth(),
-            t.sh or lg.getHeight()
+	   sx, sy, sw, sh =
+		  t.sx or 0,
+		  t.sy or 0,
+		  t.sw or t.w or lg.getWidth(), -- Krunk: added support for STALKER-X cameras
+		  t.sh or t.h or lg.getHeight()
     end
     return
-        t.x or 0,
-        t.y or 0,
-        t.scale or t.zoom or 1,
-        t.angle or t.rot or 0,
-        sx, sy, sw, sh
+	   t.x or 0,
+	   t.y or 0,
+	   t.scale or t.zoom or 1,
+	   t.angle or t.rot or 0,
+	   sx, sy, sw, sh
 end
 
 local DEFAULT_COLOR = {220 / 255, 220 / 255, 220 / 255}
@@ -65,18 +65,18 @@ local DEFAULT_Y_COLOR = {0 / 255, 255 / 255, 0 / 255}
 local function unpackVisuals(t, zoom)
     local size = t.size or 256
     if type(size) == "function" then
-        size = size(zoom)
+	   size = size(zoom)
     end
     local sds = t.subdivisions or 4
     if type(sds) == "function" then
-        sds = sds(size, zoom)
+	   sds = sds(size, zoom)
     end
     local color = t.color or DEFAULT_COLOR
     local drawScale
     if t.drawScale == nil then
-        drawScale = true
+	   drawScale = true
     else
-        drawScale = t.drawScale
+	   drawScale = t.drawScale
     end
     local xColor = t.xColor or DEFAULT_X_COLOR
     local yColor = t.yColor or DEFAULT_Y_COLOR
@@ -89,10 +89,10 @@ end
 
 local function getGridInterval(visuals, zoom)
     if visuals.interval then
-        return visuals.interval
+	   return visuals.interval
     else
-        local size, sds = unpackVisuals(visuals, zoom)
-        return size * math.pow(sds, -math.ceil(math.log(zoom, sds)))
+	   local size, sds = unpackVisuals(visuals, zoom)
+	   return size * math.pow(sds, -math.ceil(math.log(zoom, sds)))
     end
 end
 
@@ -101,8 +101,8 @@ local function visible(camera)
     local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
     local w, h = sw / zoom, sh / zoom
     if not equalsZero(angle) then -- Added float equality hook...
-        local sin, cos = math.abs(math.sin(angle)), math.abs(math.cos(angle))
-        w, h = cos * w + sin * h, sin * w + cos * h
+	   local sin, cos = math.abs(math.sin(angle)), math.abs(math.cos(angle))
+	   w, h = cos * w + sin * h, sin * w + cos * h
     end
     return camx - w * 0.5, camy - h * 0.5, w, h
 end
@@ -168,32 +168,32 @@ local function convertCoords(camera, visuals, src, dest, x, y)
     camera = checkType(camera or EMPTY, "table", "camera")
     visuals = checkType(visuals or EMPTY, "table", "visuals")
     assert(
-        src == "screen" or src == "world" or src == "cell",
-        "Unrecognized src " .. tostring(src) .. "."
+	   src == "screen" or src == "world" or src == "cell",
+	   "Unrecognized src " .. tostring(src) .. "."
     )
     assert(
-        dest == "screen" or dest == "world" or dest == "cell",
-        "Unrecognized dest " .. tostring(dest) .. "."
+	   dest == "screen" or dest == "world" or dest == "cell",
+	   "Unrecognized dest " .. tostring(dest) .. "."
     )
     if src == dest then return x, y end
     if src == "screen" then
-        if dest == "cell" then
-            return screenToCell(camera, visuals, x, y)
-        else -- dest == "world"
-            return toWorld(camera, x, y)
-        end
+	   if dest == "cell" then
+		  return screenToCell(camera, visuals, x, y)
+	   else -- dest == "world"
+		  return toWorld(camera, x, y)
+	   end
     elseif src == "cell" then
-        if dest == "screen" then
-            return cellToScreen(camera, visuals, x, y)
-        else -- dest == "world"
-            return cellToWorld(camera, visuals, x, y)
-        end
+	   if dest == "screen" then
+		  return cellToScreen(camera, visuals, x, y)
+	   else -- dest == "world"
+		  return cellToWorld(camera, visuals, x, y)
+	   end
     elseif src == "world" then
-        if dest == "cell" then
-            return worldToCell(camera, visuals, x, y)
-        else -- dest == "screen"
-            return toScreen(camera, x, y)
-        end
+	   if dest == "cell" then
+		  return worldToCell(camera, visuals, x, y)
+	   else -- dest == "screen"
+		  return toScreen(camera, x, y)
+	   end
     end
 end
 
@@ -265,72 +265,72 @@ local function draw(camera, visuals)
     -- lines parallel to y axis
     local xc = sds
     for x = floor(vx, d * sds), vx + vw, d do
-        if xc >= sds then
-            lg.setColor(color[1], color[2], color[3], 1)
-            xc = 1
-        else
-            lg.setColor(color[1] * ff, color[2] * ff, color[3] * ff, 1)
-            xc = xc + 1
-        end
-        lg.line(x, vy, x, vy + vh)
+	   if xc >= sds then
+		  lg.setColor(color[1], color[2], color[3], 1)
+		  xc = 1
+	   else
+		  lg.setColor(color[1] * ff, color[2] * ff, color[3] * ff, 1)
+		  xc = xc + 1
+	   end
+	   lg.line(x, vy, x, vy + vh)
     end
 
     -- lines parallel to x axis
     local yc = sds
     for y = floor(vy, d * sds), vy + vh, d do
-        if yc >= sds then
-            lg.setColor(color[1], color[2], color[3], 1)
-            yc = 1
-        else
-            lg.setColor(color[1] * ff, color[2] * ff, color[3] * ff, 1)
-            yc = yc + 1
-        end
-        if math.abs(y) > delta then
-            lg.line(vx, y, vx + vw, y)
-        end
+	   if yc >= sds then
+		  lg.setColor(color[1], color[2], color[3], 1)
+		  yc = 1
+	   else
+		  lg.setColor(color[1] * ff, color[2] * ff, color[3] * ff, 1)
+		  yc = yc + 1
+	   end
+	   if math.abs(y) > delta then
+		  lg.line(vx, y, vx + vw, y)
+	   end
     end
 
     -- draw labels
     for x = floor(vx, d * sds), vx + vw, d do
-        if math.abs(x) < delta then
-            lg.setColor(yColor[1] * tf, yColor[2] * tf, yColor[3] * tf, 1)
-            lg.line(x, vy, x, vy + vh)
-        else
-            lg.setColor(color[1] * tf, color[2] * tf, color[3] * tf, 1)
-        end
-        if ds then
-            local cx, cy
-            if swapXYLabels then
-                cx, cy = x4, y4
-            else
-                cx, cy = x2, y2
-            end
-            local ix, iy = intersect(x1, y1, cx, cy, x, vy, x, vy + vh)
-            if ix then
-                drawLabel(camera, ix, iy, "x=" .. x)
-            end
-        end
+	   if math.abs(x) < delta then
+		  lg.setColor(yColor[1] * tf, yColor[2] * tf, yColor[3] * tf, 1)
+		  lg.line(x, vy, x, vy + vh)
+	   else
+		  lg.setColor(color[1] * tf, color[2] * tf, color[3] * tf, 1)
+	   end
+	   if ds then
+		  local cx, cy
+		  if swapXYLabels then
+			 cx, cy = x4, y4
+		  else
+			 cx, cy = x2, y2
+		  end
+		  local ix, iy = intersect(x1, y1, cx, cy, x, vy, x, vy + vh)
+		  if ix then
+			 drawLabel(camera, ix, iy, "x=" .. x)
+		  end
+	   end
     end
 
     for y = floor(vy, d * sds), vy + vh, d do
-        if math.abs(y) < delta then
-            lg.setColor(xColor[1] * tf, xColor[2] * tf, xColor[3] * tf, 1)
-            lg.line(vx, y, vx + vw, y)
-        else
-            lg.setColor(color[1] * tf, color[2] * tf, color[3] * tf, 1)
-        end
-        if ds then
-            local cx, cy
-            if swapXYLabels then
-                cx, cy = x2, y2
-            else
-                cx, cy = x4, y4
-            end
-            local ix, iy = intersect(x1, y1, cx, cy, vx, y, vx + vw, y)
-            if ix then
-                drawLabel(camera, ix, iy, "y=" .. y)
-            end
-        end
+	   if math.abs(y) < delta then
+		  lg.setColor(xColor[1] * tf, xColor[2] * tf, xColor[3] * tf, 1)
+		  lg.line(vx, y, vx + vw, y)
+	   else
+		  lg.setColor(color[1] * tf, color[2] * tf, color[3] * tf, 1)
+	   end
+	   if ds then
+		  local cx, cy
+		  if swapXYLabels then
+			 cx, cy = x2, y2
+		  else
+			 cx, cy = x4, y4
+		  end
+		  local ix, iy = intersect(x1, y1, cx, cy, vx, y, vx + vw, y)
+		  if ix then
+			 drawLabel(camera, ix, iy, "y=" .. y)
+		  end
+	   end
     end
 
     lg.pop()
@@ -338,10 +338,10 @@ local function draw(camera, visuals)
 
     -- draw origin
     if not hideOrigin then
-        lg.setColor(1, 1, 1, 1)
-        local ox, oy = toScreen(camera, 0, 0)
-        lg.rectangle("fill", ox - 1, oy - 1, 2, 2)
-        lg.circle("line", ox, oy, 8)
+	   lg.setColor(1, 1, 1, 1)
+	   local ox, oy = toScreen(camera, 0, 0)
+	   lg.rectangle("fill", ox - 1, oy - 1, 2, 2)
+	   lg.circle("line", ox, oy, 8)
     end
 
     lg.setLineWidth(oldLineWidth)
@@ -354,14 +354,14 @@ local gridIndex = {
     toWorld = function (self, x, y) return toWorld(self.camera, x, y) end,
     toScreen = function (self, x, y) return toScreen(self.camera, x, y) end,
     convertCoords = function (self, src, dest, x, y)
-        return convertCoords(self.camera, self.visuals, src, dest, x, y)
+	   return convertCoords(self.camera, self.visuals, src, dest, x, y)
     end,
     draw = function (self) return draw(self.camera, self.visuals) end,
     minorInterval = function (self)
-        return minorInterval(self.camera, self.visuals)
+	   return minorInterval(self.camera, self.visuals)
     end,
     majorInterval = function (self)
-        return majorInterval(self.camera, self.visuals)
+	   return majorInterval(self.camera, self.visuals)
     end,
     visible = function (self) return visible(self.camera) end,
     push = function (self, stack) return push(self.camera, stack) end, -- Added optional parameter for specifying the stackType to push
@@ -376,8 +376,8 @@ local function grid(camera, visuals)
     camera = checkType(camera or EMPTY, "table", "camera") -- Added missing use of EMPTY
     visuals = checkType(visuals or EMPTY, "table", "visuals") -- Added missing use of EMPTY
     return setmetatable({
-        camera = camera,
-        visuals = visuals
+	   camera = camera,
+	   visuals = visuals
     }, gridMt)
 end
 

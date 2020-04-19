@@ -40,6 +40,7 @@ function Background:init(image, offset, scale, scroll, color, alpha)
 end
 
 function Background:update(camera)
+	local width, height = lg.getDimensions()
 	local campos = nil
 	local camscale = camera.scale
 
@@ -54,20 +55,22 @@ function Background:update(camera)
 	campos = campos ^ self.scroll
 	campos = campos - self.offset ^ self.scale
 
-	self.quad:setViewport(campos.x - WINDOW_WIDTH_HALF * BG_OVERDRAW + self.sd.x / 2,
-					  campos.y - WINDOW_HEIGHT_HALF * BG_OVERDRAW + self.sd.y / 2,
-					  WINDOW_WIDTH * BG_OVERDRAW, WINDOW_HEIGHT * BG_OVERDRAW,
+	self.quad:setViewport(campos.x - (width / 2) * BG_OVERDRAW + self.sd.x / 2,
+					  campos.y - (height / 2) * BG_OVERDRAW + self.sd.y / 2,
+					  width * BG_OVERDRAW, height * BG_OVERDRAW,
 					  self.sd.x, self.sd.y)
 end
 
 function Background:draw(camera)
+	local width, height = lg.getDimensions()
+
 	lg.push("all")
 
 	lg.setColor(Stache.colorUnpack(self.color, self.alpha))
-	lg.translate(WINDOW_WIDTH_HALF, WINDOW_HEIGHT_HALF)
+	lg.translate((width / 2), (height / 2))
 	lg.rotate(camera.rotation)
 	lg.scale(camera.scale)
-	lg.translate(-WINDOW_WIDTH_HALF * BG_OVERDRAW, -WINDOW_HEIGHT_HALF * BG_OVERDRAW)
+	lg.translate(-(width / 2) * BG_OVERDRAW, -(height / 2) * BG_OVERDRAW)
 	lg.draw(self.image, self.quad)
 
 	lg.pop()
