@@ -14,36 +14,27 @@ Agent = Entity:extend("Agent", {
 
 	physmode = nil,
 	VQ3 = {
-		accrun = 320 * 10,
-		acccrouch = 320 * 10 / 4,
+		accmove = 320 * 10,
 		accair = 30 * 10,
 		accbny = "nil",
-		toprun = 320,
-		topcrouch = 320 / 4,
-		topair = 320,
+		top = 320,
 		aircont = "nil",
 		airstop = "nil",
 		dampfact = 8
 	},
 	CPM = {
-		accrun = 400 * 15,
-		acccrouch = 400 * 15 / 4,
+		accmove = 400 * 15,
 		accair = 30 * 15,
 		accbny = 30 * 70,
-		toprun = 400,
-		topcrouch = 400 / 4,
-		topair = 400,
+		top = 400,
 		aircont = 150,
 		airstop = 2.5,
 		dampfact = 8
 	},
-	accrun = nil,
-	acccrouch = nil,
+	accmove = nil,
 	accair = nil,
 	accbny = nil,
-	toprun = nil,
-	topcrouch = nil,
-	topair = nil,
+	top = nil,
 	aircont = nil,
 	airstop = nil,
 	dampfact = nil,
@@ -95,11 +86,33 @@ function Agent:update(dt)
 
 	-- Check for state changes based on input...
 	if self:isGrounded() then
-		self:allowJump()
+		if self.action ~= "squat" and
+		   self.action ~= "crouch" then
+			self:allowJump()
+		end
 
 		if self.state == "idle" then
 			if not equalsZero(self.axis.length) then
-				self:changeState("move") end
+				self:changeState("move")
+			else
+				if self.action == "stand" and self.crouch then
+					self:changeAction("squat")
+				elseif self.action == "squat" and not self.crouch then
+					self:changeAction("stand")
+				end
+			end
+		elseif self.state == "move" then
+			if self.action == "run" and self.crouch then
+				self:changeAction("crouch")
+			elseif self.action == "crouch" and not self.crouch then
+				self:changeAction("run")
+			end
+		end
+	else
+		if self.action == "upright" and self.crouch then
+			self:changeAction("tuck")
+		elseif self.action == "tuck" and not self.crouch then
+			self:changeAction("upright")
 		end
 	end
 
@@ -111,14 +124,12 @@ function Agent:update(dt)
 
 		if self.state == "move" then
 			local axis = self.axis:rotated(self.angRad)
-			local acc, top = nil, nil
+			local acc = self.accmove
+			local top = self.top
 
-			if self.action == "run" then
-				acc = self.accrun
-				top = self.toprun
-			elseif self.action == "crouch" then
-				acc = self.acccrouch
-				top = self.topcrouch
+			if self.action == "crouch" then
+				acc = acc / 4
+				top = top / 4
 			end
 
 			self.vel = self.vel + axis * clamp(top - (self.vel * axis), 0, acc * dt)
@@ -140,7 +151,7 @@ function Agent:update(dt)
 				local acc = self.accair
 				if self.airstop and self.vel * axis < 0 then
 					acc = acc * self.airstop end
-				self.vel = self.vel + axis * clamp(self.topair - (self.vel * axis), 0, acc * dt)
+				self.vel = self.vel + axis * clamp(self.top - (self.vel * axis), 0, acc * dt)
 			end
 
 			if self.aircont and control then
@@ -194,50 +205,36 @@ function Agent:update(dt)
 	-- TODO: Set appearance based on state...
 
 	--self.sprite:update(dt) -- TODO: rework visuals...
-
-	DEBUGNORM1 = self.vel / 10
-	DEBUGNORM2 = self.axis:rotated(self.angRad) * 64
-	DEBUGVAR = math.floor(self.vel.length + 0.5)
 end
 
 function Agent:draw()
-	if DEBUGNORM1 then
-		lg.push("all")
+	local axis = self.axis:rotated(self.angRad)
+	local dbgVel = self.vel / 10
+	local dbgAxis = axis * self.top / 10
+	local dbgSpd = dbgVel * axis * axis
+	local crouchScale = (self.action == "squat" or
+					 self.action == "crouch" or
+					 self.action == "tuck") and 2 or 1
 
-		lg.setLineWidth(0.5)
-		lg.setColor(Stache.colorUnpack("white", 0.8))
-		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
-		lg.line(0, 0, DEBUGNORM1.x, DEBUGNORM1.y)
+	lg.push("all")
 
-		lg.pop()
-	end
+	lg.setLineWidth(0.5)
+	lg.setColor(Stache.colorUnpack("white", 0.8))
+	lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 
-	if DEBUGNORM2 then
-		lg.push("all")
+	--lg.line(0, 0, dbgVel:split())
+	--lg.line(0, 0, dbgAxis:split())
+	--lg.line(dbgVel.x, dbgVel.y, dbgSpd:split())
 
-		lg.setLineWidth(0.5)
-		lg.setColor(Stache.colorUnpack("white", 0.8))
-		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
-		lg.line(0, 0, DEBUGNORM2.x, DEBUGNORM2.y)
+	lg.rotate(self.angRad)
+	lg.scale(40 * FONT_SHRINK)
+	lg.printf(math.floor(self.vel.length + 0.5), -90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
 
-		lg.pop()
-	end
-
-	if DEBUGVAR then
-		lg.push("all")
-
-		lg.setColor(Stache.colorUnpack("white", 0.8))
-		lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
-		lg.rotate(self.angRad)
-		lg.scale(40 * FONT_SHRINK)
-		lg.printf(DEBUGVAR, -90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
-
-		lg.pop()
-	end
+	lg.pop()
 
 	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...
 
-	self.collider:draw(1 + self.posz / 100, self:isGrounded() and "red" or "cyan")
+	self.collider:draw(1 + self.posz / 100 / crouchScale, self:isGrounded() and "red" or "cyan")
 end
 
 function Agent:changeState(next)
@@ -254,7 +251,7 @@ function Agent:changeState(next)
 	elseif self.state == "move" then
 		self:changeAction(self.crouch and "crouch" or nil, 1, true)
 	elseif self.state == "air" then
-		self:changeAction(self.crouch and "tucked" or nil, 1, true)
+		self:changeAction(self.crouch and "tuck" or nil, 1, true)
 	end
 end
 

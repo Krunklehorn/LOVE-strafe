@@ -113,7 +113,7 @@ function Stache.init()
 		},
 		air = {
 			upright = {},
-			tucked = {},
+			tuck = {},
 			collider = CircleCollider(32),
 			default = "upright"
 		}
