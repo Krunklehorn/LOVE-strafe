@@ -10,10 +10,10 @@ playState = {
 function playState:init()
 	self.camera = stalker()
 
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(32), vec2(1.25), Stache.colors.magenta, 0.2))
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(4), nil, Stache.colors.magenta, 0.2))
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_grid.png"), nil, vec2(2), nil, Stache.colors.magenta, 0.2))
-	table.insert(self.backgrounds, Background(lg.newImage("sprites/parallax_screen.png"), nil, vec2(2), vec2(0.25), Stache.colors.magenta, 0.2))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(32), vec2(1.25), Stache.colors.white, 0.2))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(4), nil, Stache.colors.white, 0.1))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(2), nil, Stache.colors.white, 0.1))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_screen, nil, vec2(2), vec2(0.25), Stache.colors.white, 0.2))
 
 	Stache.players[1].agent = self:spawnAgent("strafer")
 end
@@ -53,9 +53,64 @@ function playState:draw()
 	self.camera:detach()
 	lg.push("all")
 
-	lg.setColor(1, 0, 1, 0.8)
+
+	lg.translate(-8 * 3, -8 * 3)
+	lg.scale(3)
+	lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
+	if Stache.players[1].boipy:down("up") then
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
+		lg.draw(Stache.sprites.arrowbtn_up_prs)
+	else
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
+		lg.draw(Stache.sprites.arrowbtn_up_rls)
+	end
+	lg.translate(0, 60 / 3)
+	if Stache.players[1].boipy:down("down") then
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
+		lg.draw(Stache.sprites.arrowbtn_down_prs)
+	else
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
+		lg.draw(Stache.sprites.arrowbtn_down_rls)
+	end
+	lg.translate(-60 / 3, 0)
+	if Stache.players[1].boipy:down("left") then
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
+		lg.draw(Stache.sprites.arrowbtn_left_prs)
+	else
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
+		lg.draw(Stache.sprites.arrowbtn_left_rls)
+	end
+	lg.translate(120 / 3, 0)
+	if Stache.players[1].boipy:down("right") then
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
+		lg.draw(Stache.sprites.arrowbtn_right_prs)
+	else
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
+		lg.draw(Stache.sprites.arrowbtn_right_rls)
+	end
+	lg.translate(-140 / 3, 60 / 3)
+	if Stache.players[1].boipy:down("jump") then
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
+		lg.draw(Stache.sprites.spacebtn_prs)
+	else
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
+		lg.draw(Stache.sprites.spacebtn_rls)
+	end
+	lg.translate(140 / 3, 0)
+	if Stache.players[1].boipy:down("crouch") then
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
+		lg.draw(Stache.sprites.crouchbtn_prs)
+	else
+		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
+		lg.draw(Stache.sprites.crouchbtn_rls)
+	end
+
+	lg.pop()
+	lg.push("all")
+
+	lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
 	lg.scale(40 * FONT_SHRINK)
-	lg.printf(self.agents[1].physmode, 120 - 90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
+	lg.printf(Stache.players[1].agent.physmode, 120 - 90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
 
 	lg.pop()
 	self.camera:draw()

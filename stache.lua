@@ -13,6 +13,7 @@ Stache = {
 		magenta = { 1, 0, 1 },
 		yellow = { 1, 1, 0 }
 	},
+	sprites = {},
 	--[[
 	sheets = {},
 	particles = {},
@@ -50,21 +51,26 @@ function makeDir(dir, subdir)
 end
 
 function Stache.init()
-	local subDir, sheet, width, height
+	local filestrings, subDir, sheet, width, height
 
 	lg.setDefaultFilter("nearest", "nearest", 1)
 
-	local filestrings = lfs.getDirectoryItems("sounds/sfx")
-
-	for f = 1, #filestrings do
-		local name, extension = string.match(filestrings[f], "(.+)%.(.+)")
-		Stache.sfx[name] = la.newSource("sounds/sfx/"..filestrings[f], "static")
+	filestrings = lfs.getDirectoryItems("sounds/sfx")
+	for i, fs in ipairs(filestrings) do
+		local name, extension = string.match(fs, "(.+)%.(.+)")
+		Stache.sfx[name] = la.newSource("sounds/sfx/"..fs, "static")
 	end
 
 	filestrings = lfs.getDirectoryItems("sounds/music")
-	for f = 1, #filestrings do
-		local name, extension = string.match(filestrings[f], "(.+)%.(.+)")
-		Stache.music[name] = la.newSource("sounds/music/"..filestrings[f], "stream")
+	for i, fs in ipairs(filestrings) do
+		local name, extension = string.match(fs, "(.+)%.(.+)")
+		Stache.music[name] = la.newSource("sounds/music/"..fs, "stream")
+	end
+
+	filestrings = lfs.getDirectoryItems("sprites")
+	for i, fs in ipairs(filestrings) do
+		local name, extension = string.match(fs, "(.+)%.(.+)")
+		Stache.sprites[name] = lg.newImage("sprites/"..fs)
 	end
 
 	--[[ TODO: ready to add particles, props and actor sprites...

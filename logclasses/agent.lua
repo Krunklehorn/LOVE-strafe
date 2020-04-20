@@ -222,9 +222,10 @@ function Agent:draw()
 	lg.setColor(Stache.colorUnpack("white", 0.8))
 	lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
 
-	--lg.line(0, 0, dbgVel:split())
-	--lg.line(0, 0, dbgAxis:split())
-	--lg.line(dbgVel.x, dbgVel.y, dbgSpd:split())
+	lg.line(0, 0, dbgVel:split())
+	lg.line(0, 0, dbgAxis:split())
+	lg.setColor(Stache.colorUnpack("white", 0.4))
+	lg.line(dbgVel.x, dbgVel.y, dbgSpd:split())
 
 	lg.rotate(self.angRad)
 	lg.scale(40 * FONT_SHRINK)
@@ -234,7 +235,7 @@ function Agent:draw()
 
 	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...
 
-	self.collider:draw(1 + self.posz / 100 / crouchScale, self:isGrounded() and "red" or "cyan")
+	self.collider:draw((1 + self.posz / 100) / crouchScale, self:isGrounded() and "red" or "cyan")
 end
 
 function Agent:changeState(next)
