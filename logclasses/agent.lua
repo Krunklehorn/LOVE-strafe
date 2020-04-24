@@ -118,22 +118,22 @@ function Agent:update(dt)
 
 	-- Iterate physics variables based on current state...
 
-	if self.state == "idle" or
-	   self.state == "move" then
+	if self.state == "idle" then
 		self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, self.dampmin) * self.dampfact * dt)
+	elseif self.state == "move" then
+		local axis = self.axis:rotated(self.angRad)
+		local acc = self.accmove
+		local top = self.top
+		local dampmin = self.dampmin
 
-		if self.state == "move" then
-			local axis = self.axis:rotated(self.angRad)
-			local acc = self.accmove
-			local top = self.top
-
-			if self.action == "crouch" then
-				acc = acc / 4
-				top = top / 4
-			end
-
-			self.vel = self.vel + axis * clamp(top - (self.vel * axis), 0, acc * dt)
+		if self.action == "crouch" then
+			acc = acc / 4
+			top = top / 4
+			dampmin = dampmin / 4
 		end
+
+		self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, dampmin) * self.dampfact * dt)
+		self.vel = self.vel + axis * clamp(top - (self.vel * axis), 0, acc * dt)
 	else
 		self.velz = self.velz + self.grv * dt
 

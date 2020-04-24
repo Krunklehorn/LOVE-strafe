@@ -2,7 +2,7 @@
 
 A top-down 2D tech demo of Quake-based strafe jumping physics using the LÖVE engine.
 
-Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld source codes and
+Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld source codes.
 
 ![VQ3 physics in LÖVEstrafe](meta/LÖVEstrafe_200420_1.png)
 ![CPM physics in LÖVEstrafe](meta/LÖVEstrafe_200420_2.png)
@@ -18,6 +18,8 @@ Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld
 | C | Crouch |
 | V | Toggle Physics |
 | M | Toggle Fullscreen |
+| Enter | Next Menu |
+| Backspace | Previous Menu |
 
 
 # Future Plans
