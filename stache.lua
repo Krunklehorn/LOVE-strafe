@@ -1,6 +1,7 @@
 Stache = {
 	tickrate = 60,
 	timescale = 1,
+	fade = 1,
 	sfx = {},
 	music = {},
 	colors = {
@@ -50,25 +51,25 @@ function makeDir(dir, subdir)
 	return dir[subdir]
 end
 
-function Stache.init()
+function Stache.load()
 	local filestrings, subDir, sheet, width, height
 
 	lg.setDefaultFilter("nearest", "nearest", 1)
 
 	filestrings = lfs.getDirectoryItems("sounds/sfx")
-	for i, fs in ipairs(filestrings) do
+	for _, fs in ipairs(filestrings) do
 		local name, extension = string.match(fs, "(.+)%.(.+)")
 		Stache.sfx[name] = la.newSource("sounds/sfx/"..fs, "static")
 	end
 
 	filestrings = lfs.getDirectoryItems("sounds/music")
-	for i, fs in ipairs(filestrings) do
+	for _, fs in ipairs(filestrings) do
 		local name, extension = string.match(fs, "(.+)%.(.+)")
 		Stache.music[name] = la.newSource("sounds/music/"..fs, "stream")
 	end
 
 	filestrings = lfs.getDirectoryItems("sprites")
-	for i, fs in ipairs(filestrings) do
+	for _, fs in ipairs(filestrings) do
 		local name, extension = string.match(fs, "(.+)%.(.+)")
 		Stache.sprites[name] = lg.newImage("sprites/"..fs)
 	end
@@ -127,6 +128,15 @@ function Stache.init()
 
 	table.insert(Stache.players, Player())
 	Stache.players.active = first(Stache.players)
+end
+
+function Stache.draw()
+	lg.push("all")
+
+	lg.setColor(Stache.colorUnpack("black", Stache.fade))
+	lg.rectangle("fill", 0, 0, lg.getWidth(), lg.getHeight())
+
+	lg.pop()
 end
 
 function Stache.hideMembers(inst)

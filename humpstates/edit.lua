@@ -30,6 +30,10 @@ function editState:init()
 	self:refreshHandles()
 end
 
+function editState:enter()
+	flux.to(Stache, 0.25, { fade = 0 }):ease("quadout")
+end
+
 function editState:resume()
 	self.camera.x = playState.camera.x
 	self.camera.y = playState.camera.y
@@ -54,7 +58,7 @@ function editState:draw()
 	Stache.drawList(playState.agents)
 	Stache.drawList(playState.particles)
 
-	lg.setColor(1, 0, 0, 1)
+	lg.setColor(Stache.colorUnpack("red", 1))
 	lg.rectangle("line", self.grid.visible(playState))
 
 	Stache.drawList(self.handles, self.camera.scale)
@@ -114,7 +118,9 @@ end
 
 function editState:keypressed(key)
 	if key == "backspace" then
-		humpstate.switch(titleState)
+		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
+			humpstate.switch(titleState)
+		end)
 	elseif key == "return" then
 		humpstate.push(playState)
 	end

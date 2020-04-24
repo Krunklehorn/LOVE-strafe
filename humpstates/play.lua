@@ -26,7 +26,7 @@ function playState:leave()
 	lm.setRelativeMode(false)
 end
 
-function playState:update(dt, dtu, t)
+function playState:update(dt)
 	local agent = Stache.players.active.agent
 
 	Stache.updateList(self.agents, dt)

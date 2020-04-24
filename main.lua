@@ -50,11 +50,10 @@ require "logclasses.handles"
 function love.load()
 	lg.setNewFont(FONT_BLOWUP)
 
-	Stache.init()
+	Stache.load()
 
 	humpstate.registerEvents("prep")
-	humpstate.switch(editState)
-	humpstate.push(playState)
+	humpstate.switch(titleState)
 end
 
 function love.run()
@@ -103,7 +102,9 @@ function love.run()
 			lg.clear(lg.getBackgroundColor())
 			lg.origin()
 			if love.draw then
-				love.draw() end
+				love.draw()
+				Stache.draw()
+			end
 			lg.present()
 		end
 
@@ -111,14 +112,14 @@ function love.run()
 	end
 end
 
-function love.update(dt)
-	flux.update(dt)
+function love.update(dt, dtu)
+	flux.update(dtu)
 end
 
 function love.keypressed(key)
 	if key == "m" then
 		love.window.setFullscreen(not love.window.getFullscreen())
-		love.resize(lg.getDimensions()) -- Force the resize callback.
+		love.resize(lg.getDimensions()) -- Force the resize callback
 	elseif key == "lshift" then
 		lg.captureScreenshot("screenshot_" .. os.time() .. ".png")
 	elseif key == "escape" then

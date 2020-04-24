@@ -1,5 +1,9 @@
 titleState = {}
 
+function titleState:enter()
+	flux.to(Stache, 0.25, { fade = 0 }):ease("quadout")
+end
+
 function titleState:draw()
 	local width, height = lg.getDimensions()
 
@@ -15,6 +19,9 @@ end
 
 function titleState:keypressed(key)
 	if key == "return" then
-		humpstate.switch(editState)
+		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
+			humpstate.switch(editState)
+			humpstate.push(playState)
+		end)
 	end
 end
