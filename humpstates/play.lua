@@ -1,7 +1,7 @@
 playState = {
 	camera = nil,
 	backgrounds = {},
-	grounds = {},
+	brushes = {},
 	particles = {},
 	props = {},
 	agents = {}
@@ -10,10 +10,15 @@ playState = {
 function playState:init()
 	self.camera = stalker()
 
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(32), vec2(1.25), Stache.colors.white, 0.2))
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(4), nil, Stache.colors.white, 0.1))
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(2), nil, Stache.colors.white, 0.1))
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_screen, nil, vec2(2), vec2(0.25), Stache.colors.white, 0.2))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(32), vec2(1.25), nil, 0.2))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(4), nil, nil, 0.1))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(2), nil, nil, 0.1))
+	table.insert(self.backgrounds, Background(Stache.sprites.parallax_screen, nil, vec2(2), vec2(0.25), nil, 0.2))
+
+	table.insert(self.brushes, CircleBrush(128))
+	table.insert(self.brushes, CircleBrush(1))
+	table.insert(self.brushes, CircleBrush(64, vec2(0, -400)))
+	table.insert(self.brushes, CircleBrush(64, vec2(0, -700)))
 
 	Stache.players[1].agent = self:spawnAgent("strafer")
 end
@@ -45,7 +50,7 @@ function playState:draw()
 
 	self.camera:attach()
 
-	Stache.drawList(self.grounds)
+	Stache.drawList(self.brushes)
 	Stache.drawList(self.particles)
 	Stache.drawList(self.props)
 	Stache.drawList(self.agents)
@@ -157,11 +162,11 @@ end
 
 function playState:spawnProp(name, params)
 	if type(name) ~= "string" then
-		formatError("playState:spawnProp() called with an invalid 'name' argument: %q", name)
+		formatError("playState:spawnProp() called with a 'name' argument that isn't a string: %q", name)
 	elseif Stache.props[name] == nil then
 		formatError("playState:spawnProp() called with a 'name' argument that does not correspond to a loaded prop: %q", name)
 	elseif params ~= nil and type(params) ~= "table" and type(params) ~= "userdata" then
-			formatError("playState:spawnProp() called with a 'params' argument that isn't a table or userdata: %q", params)
+		formatError("playState:spawnProp() called with a 'params' argument that isn't a table or userdata: %q", params)
 	end
 
 	local data = Stache.props[name]

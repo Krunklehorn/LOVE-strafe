@@ -65,7 +65,21 @@ function Handle:pick(x, y, scale, state)
 	end
 end
 
+PointHandle = Handle:extend("PointHandle")
 
+function PointHandle:init(target, key)
+	if type(target) ~= "table" and type(target) ~= "userdata" then
+		formatError("PointHandle:init() called with a 'target' argument that isn't a table or userdata: %q", target)
+	elseif type(key) ~= "string" or not target[key] or not vec2.isVector(target[key]) then
+		formatError("PointHandle:init() called with an invalid 'key' argument: %q", key)
+	end
+
+	self.pos = target[key]
+	self.target = target
+	self.key = key
+end
+
+--[[
 EdgeHandle = Handle:extend("EdgeHandle")
 
 function EdgeHandle:init(target, key)
@@ -94,3 +108,4 @@ function ControlPointHandle:init(target, key)
 	self.target = target
 	self.key = key
 end
+]]--

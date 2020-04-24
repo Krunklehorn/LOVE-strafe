@@ -53,7 +53,7 @@ function editState:draw()
 
 	self.grid:push("all")
 
-	Stache.drawList(playState.grounds)
+	Stache.drawList(playState.brushes)
 	Stache.drawList(playState.props)
 	Stache.drawList(playState.agents)
 	Stache.drawList(playState.particles)
@@ -136,18 +136,11 @@ end
 function editState:refreshHandles()
 	self.handles = {}
 
-	for g = 1, #playState.grounds do
-		local grnd = playState.grounds[g]
+	for g = 1, #playState.brushes do
+		local brush = playState.brushes[g]
 
-		if grnd:instanceOf(LineGround) then
-			for e = 1, #grnd.edges do
-				table.insert(self.handles, EdgeHandle(grnd.edges[e], "p1")) end
-			if next(grnd.edges) and not last(grnd.edges).next then
-				table.insert(self.handles, EdgeHandle(last(grnd.edges), "p2")) end
-		elseif grnd:instanceOf(BezierGround) then
-			for p = 1, grnd.next and secondlast(grnd.curve) or last(grnd.curve) do
-				table.insert(self.handles, ControlPointHandle(grnd, p))
-			end
+		if brush:instanceOf(CircleBrush) then
+			table.insert(self.handles, PointHandle(brush, "pos"))
 		end
 	end
 end
