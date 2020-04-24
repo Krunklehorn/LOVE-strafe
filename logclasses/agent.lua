@@ -235,7 +235,7 @@ function Agent:draw()
 
 	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...
 
-	self.collider:draw((1 + self.posz / 100) / crouchScale, self:isGrounded() and "red" or "cyan")
+	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
 end
 
 function Agent:changeState(next)
@@ -286,7 +286,7 @@ function Agent:changeAction(action, jumpTo, play)
 	]]--
 
 	self.action = action
-	self:updateCollider()
+	self:updateCollider() -- TODO: rework 2D collisions...
 end
 
 function Agent:allowJump()
@@ -299,7 +299,7 @@ end
 
 function Agent:setPhysMode(mode)
 	if type(mode) ~= "string" then
-		formatError("Agent:setPhysMode() called with an invalid 'mode' argument: %q", name)
+		formatError("Agent:setPhysMode() called with a 'mode' argument that isn't a string: %q", name)
 	elseif mode ~= "VQ3" and mode ~= "CPM" then
 		formatError("Agent:setPhysMode() called with a 'mode' argument that does not correspond to a valid physics mode: %q", mode)
 	end
@@ -345,13 +345,13 @@ function Agent:physRotateWorld()
 			self.vel = sign(self.vel * self.edgeRef.delta) * self.edgeRef.direction * self.vel.length
 		end
 
-		self:updateCollider()
+		self:updateCollider() -- TODO: rework 2D collisions...
 	end
 end
 ]]--
 
-function Agent:updateCollider()
-	self.collider:update(self.pos, self.angRad, self.offset)
+function Agent:updateCollider() -- TODO: rework 2D collisions...
+	self.collider:update(self.pos, vec2(), self.angRad, self.offset)
 end
 
 function Agent:isGrounded()

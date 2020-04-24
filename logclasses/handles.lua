@@ -10,13 +10,14 @@ Handle = class("Handle", {
 	}
 })
 
-Handle.CLAMP_MIN = 1
-Handle.CLAMP_MAX = 10
+Handle.RADIUS = 32
+Handle.SCALE_MIN = 4
+Handle.SCALE_MAX = 32
 
 function Handle:draw(scale)
 	local r, g, b = unpack(self.colors[self.state])
 	local x, y, w, h = self:getBox(scale)
-	
+
 	lg.push("all")
 
 	lg.setLineWidth(0.25 / scale)
@@ -36,19 +37,19 @@ function Handle:drag(dx, dy)
 end
 
 function Handle:getBox(scale)
-	scale = clamp(scale, Handle.CLAMP_MIN, Handle.CLAMP_MAX)
-	return self.pos.x - 5 / scale,
-		  self.pos.y - 5 / scale,
-		  10 / scale,
-		  10 / scale
+	scale = clamp(scale, Handle.SCALE_MIN, Handle.SCALE_MAX)
+	return self.pos.x - Handle.RADIUS / scale,
+		  self.pos.y - Handle.RADIUS / scale,
+		  2 * Handle.RADIUS / scale,
+		  2 * Handle.RADIUS / scale
 end
 
 function Handle:getBounds(scale)
-	scale = clamp(scale, Handle.CLAMP_MIN, Handle.CLAMP_MAX)
-	return self.pos.x - 5 / scale,
-		  self.pos.y - 5 / scale,
-		  self.pos.x + 5 / scale,
-		  self.pos.y + 5 / scale
+	scale = clamp(scale, Handle.SCALE_MIN, Handle.SCALE_MAX)
+	return self.pos.x - Handle.RADIUS / scale,
+		  self.pos.y - Handle.RADIUS / scale,
+		  self.pos.x + Handle.RADIUS / scale,
+		  self.pos.y + Handle.RADIUS / scale
 end
 
 function Handle:pick(x, y, scale, state)
@@ -78,7 +79,6 @@ function EdgeHandle:init(target, key)
 	self.target = target
 	self.key = key
 end
-
 
 ControlPointHandle = Handle:extend("ControlPointHandle")
 

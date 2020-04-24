@@ -148,18 +148,25 @@ function Stache.hideMembers(inst)
 	end
 end
 
-function Stache.play(sfx)
-	if type(sfx) ~= "string" or not Stache.sfx[sfx] then
-		formatError("Stache.play() called with an invalid 'sfx' argument: %q", sfx)
+function Stache.play(sound)
+	if type(sound) ~= "string" then
+		formatError("Stache.play() called with a 'sound' argument that isn't a string: %q", sfx)
+	elseif not Stache.sfx[sound] then
+		formatError("Stache:play() called with a 'sound' argument that does not correspond to a loaded sound: %q", name)
 	end
 
-	Stache.sfx[sfx]:stop()
-	Stache.sfx[sfx]:play()
+	if Stache.sfx[sound] then
+		Stache.sfx[sound]:stop()
+		Stache.sfx[sound]:play()
+	elseif Stache.music[sound] then
+		Stache.music[sound]:stop()
+		Stache.music[sound]:play()
+	end
 end
 
 function Stache.colorUnpack(color, alpha)
-	if type(color) ~= "string" and type(color) ~= "table" then
-		formatError("Stache.colorUnpack() called with an invalid 'color' argument: ", color)
+	if type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
+		formatError("Stache.colorUnpack() called with a 'color' argument that isn't a table or userdata: ", color)
 	elseif alpha ~= nil and type(alpha) ~= "number" then
 		formatError("Stache.colorUnpack() called with a non-numerical 'alpha' argument: ", alpha)
 	end
@@ -251,7 +258,7 @@ function approach(value, target, rate, callback)
 	if type(value) ~= "number" or type(target) ~= "number" or type(rate) ~= "number" then
 		formatError("approach() called with one or more non-numerial arguments: %q, %q, %q", value, target, rate)
 	elseif callback ~= nil and type(callback) ~= "function" then
-		formatError("approach() called with an invalid 'callback' argument: ", callback)
+		formatError("approach() called with a 'callback' argument that isn't a function: ", callback)
 	end
 
 	if value > target then

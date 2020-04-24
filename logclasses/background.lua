@@ -21,7 +21,7 @@ function Background:init(image, offset, scale, scroll, color, alpha)
 	elseif scroll ~= nil and not vec2.isVector(scroll) then
 		formatError("Background:init() called with a non-vector 'scroll' argument: %q", scroll)
 	elseif color ~= nil and type(color) ~= "table" and type(color) ~= "userdata" then
-		formatError("Background:init() called with an invalid 'color' argument: %q", color)
+		formatError("Background:init() called with a 'color' argument that isn't a table or userdata: %q", color)
 	elseif alpha ~= nil and type(alpha) ~= "number" then
 		formatError("Background:init() called with a non-numerical 'alpha' argument: %q", color)
 	end
@@ -32,6 +32,7 @@ function Background:init(image, offset, scale, scroll, color, alpha)
 	if scroll then self.scroll = scroll end
 	if color then self.color = color end
 	if alpha then self.alpha = alpha end
+
 	self.dimensions = vec2(image:getWidth(), image:getHeight())
 	self.sd = self.dimensions ^ self.scale
 	self.quad = lg.newQuad(0, 0, 0, 0, 0, 0)

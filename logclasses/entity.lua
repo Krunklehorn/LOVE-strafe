@@ -38,7 +38,7 @@ function Entity:__newindex(key, value)
 
 	if key == "sprite" then
 		if value ~= nil and not value:instanceOf(Sprite) then
-			formatError("Entity:init() called without a 'sprite' argument of type 'Sprite': %q", sprite)
+			formatError("Entity:init() called with a 'sprite' argument that isn't of type 'Sprite': %q", sprite)
 		end
 
 		slf.sprite = value

@@ -139,7 +139,7 @@ end
 
 function playState:spawnParticle(name, anchor, params)
 	if type(name) ~= "string" then
-		formatError("playState:spawnParticle() called with an invalid 'name' argument: %q", name)
+		formatError("playState:spawnParticle() called with a 'name' argument that isn't a string: %q", name)
 	elseif Stache.particles[name] == nil then
 		formatError("playState:spawnParticle() called with a 'name' argument that does not correspond to a loaded particle: %q", name)
 	end
@@ -178,7 +178,7 @@ end
 
 function playState:spawnAgent(name, params)
 	if type(name) ~= "string" then
-		formatError("playState:spawnAgent() called with an invalid 'name' argument: %q", name)
+		formatError("playState:spawnAgent() called with a 'name' argument that isn't a string: %q", name)
 	elseif Stache.actors[name] == nil then
 		formatError("playState:spawnAgent() called with a 'name' argument that does not correspond to a loaded actor: %q", name)
 	elseif params ~= nil and type(params) ~= "table" and type(params) ~= "userdata" then

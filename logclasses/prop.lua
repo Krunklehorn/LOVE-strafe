@@ -8,7 +8,7 @@ function Prop:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "collider" then
-		if value ~= nil and type(value) ~= "table" and type(value) ~= "userdata" then
+		if value ~= nil and not value:instanceOf(Collider) then
 			formatError("Attempted to set 'collider' key of class 'Prop' to a value that isn't of type 'Collider': %q", value)
 		end
 

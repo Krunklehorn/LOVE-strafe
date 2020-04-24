@@ -19,6 +19,13 @@ function Collider:init()
 	Stache.hideMembers(self)
 end
 
+function Collider:update(currPos, prevPos, angRad, offset)
+	if currPos then self.currPos = currPos end
+	if prevPos then self.prevPos = prevPos end
+	if angRad then self.angRad = angRad end
+	if offset then self.offset = offset end
+end
+
 function Collider:castAABB(other)
 	local b1 = self:getCastBounds()
 	local b2 = other:getCastBounds()
@@ -33,7 +40,7 @@ end
 
 function Collider:overlaps(other)
 	if not other:instanceOf(Collider) then
-		formatError("Collider:overlaps() called without an 'other' argument of type 'Collider': %q", other)
+		formatError("Collider:overlaps() called with an 'other' argument that isn't of type 'Collider': %q", other)
 	end
 
 	if self:instanceOf(CircleCollider) then
@@ -89,12 +96,12 @@ function Collider:box_box(other)
 end
 
 CircleCollider = Collider:extend("CircleCollider", {
-	currPos = nil,
-	prevPos = nil,
-	angRad = nil,
+	currPos = vec2(),
+	prevPos = vec2(),
+	angRad = 0,
 	angDeg = nil,
 	offset = vec2(),
-	radius = nil,
+	radius = 1,
 })
 
 function CircleCollider:__index(key)
@@ -153,13 +160,10 @@ function CircleCollider:init(radius)
 	self.radius = radius
 end
 
-function CircleCollider:update(currPos, angRad, offset)
-	self.currPos = currPos
-	self.angRad = angRad
-	self.offset = offset
-end
+function CircleCollider:draw(color, scale)
+	color = color or Stache.colors.white
+	scale = scale or 1
 
-function CircleCollider:draw(scale, color)
 	lg.push("all")
 
 	lg.translate(self.currPos:split())
@@ -195,7 +199,7 @@ end
 
 function CircleCollider:line_contact(line)
 	if not line:instanceOf(LineCollider) then
-		formatError("CircleCollider:line_contact() called without an 'line' argument of type 'LineCollider': %q", line)
+		formatError("CircleCollider:line_contact() called with a 'line' argument that isn't of type 'LineCollider': %q", line)
 	end
 
 	local contact = {}
@@ -360,7 +364,7 @@ function LineCollider:intersect(arg1, arg2)
 		end
 	else
 		if not arg1:instanceOf(LineCollider) then
-			formatError("LineCollider:intersect(other) called without an 'other' argument of type 'LineCollider': %q", arg1)
+			formatError("LineCollider:intersect(other) called with an 'other' argument that isn't of type 'LineCollider': %q", arg1)
 		end
 	end
 
@@ -399,13 +403,13 @@ BoxCollider = Collider:extend("BoxCollider", {
 	pp2 = nil,
 	pp3 = nil,
 	pp4 = nil,
-	currPos = nil,
-	prevPos = nil,
+	currPos = vec2(),
+	prevPos = vec2(),
 	angRad = 0,
 	angDeg = nil,
 	offset = vec2(),
-	hwidth = nil,
-	hheight = nil
+	hwidth = 16,
+	hheight = 16
 })
 
 function BoxCollider:__index(key)
@@ -531,35 +535,10 @@ function BoxCollider:init(hwidth, hheight)
 	self.hheight = hheight or hwidth
 end
 
-function BoxCollider:dirty()
-	local slf = rawget(self, "members")
+function BoxCollider:draw(color, scale)
+	color = color or Stache.colors.white
+	scale = scale or 1
 
-	slf.p1 = nil
-	slf.p2 = nil
-	slf.p3 = nil
-	slf.p4 = nil
-	slf.pp1 = nil
-	slf.pp2 = nil
-	slf.pp3 = nil
-	slf.pp4 = nil
-end
-
-function LineCollider:getCastBounds()
-	return {
-		left = math.min(self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x),
-		right = math.max(self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x),
-		top = math.min(self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y),
-		bottom = math.max(self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y)
-	}
-end
-
-function BoxCollider:update(currPos, angRad, offset)
-	self.currPos = currPos
-	self.angRad = angRad
-	self.offset = offset
-end
-
-function BoxCollider:draw(scale, color)
 	lg.push("all")
 
 	lg.translate(self.currPos:split())
@@ -584,6 +563,28 @@ function BoxCollider:draw(scale, color)
 	lg.pop()
 end
 
+function BoxCollider:dirty()
+	local slf = rawget(self, "members")
+
+	slf.p1 = nil
+	slf.p2 = nil
+	slf.p3 = nil
+	slf.p4 = nil
+	slf.pp1 = nil
+	slf.pp2 = nil
+	slf.pp3 = nil
+	slf.pp4 = nil
+end
+
+function LineCollider:getCastBounds()
+	return {
+		left = math.min(self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x),
+		right = math.max(self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x),
+		top = math.min(self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y),
+		bottom = math.max(self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y)
+	}
+end
+
 function BoxCollider:cast(colliders)
 	for c = 1, #colliders do
 		local collider = colliders[c]
@@ -598,7 +599,7 @@ end
 
 function BoxCollider:line_contact(line)
 	if not line:instanceOf(LineCollider) then
-		formatError("BoxCollider:line_contact() called without an 'line' argument of type 'LineCollider': %q", line)
+		formatError("BoxCollider:line_contact() called without a 'line' argument that isn't of type 'LineCollider': %q", line)
 	end
 
 	local contact = {}
