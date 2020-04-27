@@ -23,7 +23,6 @@ function Collider:update(currPos, prevPos, angRad, offset)
 	if currPos then self.currPos = currPos end
 	if prevPos then self.prevPos = prevPos end
 	if angRad then self.angRad = angRad end
-	if offset then self.offset = offset end
 end
 
 function Collider:castAABB(other)

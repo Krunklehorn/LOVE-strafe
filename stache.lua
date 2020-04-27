@@ -132,10 +132,8 @@ end
 
 function Stache.draw()
 	lg.push("all")
-
-	lg.setColor(Stache.colorUnpack("black", Stache.fade))
-	lg.rectangle("fill", 0, 0, lg.getWidth(), lg.getHeight())
-
+		lg.setColor(Stache.colorUnpack("black", Stache.fade))
+		lg.rectangle("fill", 0, 0, lg.getWidth(), lg.getHeight())
 	lg.pop()
 end
 

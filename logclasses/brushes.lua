@@ -6,8 +6,6 @@ CircleBrush = CircleCollider:extend("CircleBrush", {
 function CircleBrush:__index(key)
 	local slf = rawget(self, "members")
 
-	if key == "pos" then key = "currPos" end
-
 	if slf[key] ~= nil then return slf[key]
 	else return CircleCollider.__index(self, key) end
 end
@@ -15,9 +13,10 @@ end
 function CircleBrush:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "pos" then key = "currPos" end
-
-	if key == "height" then
+	if key == "pos" then
+		slf.pos = value
+		slf.ppos = value
+	elseif key == "height" then
 		if type(value) ~= "number" then
 			formatError("Attempted to set 'height' key of class 'CircleBrush' to a non-numerical value: %q", value)
 		end

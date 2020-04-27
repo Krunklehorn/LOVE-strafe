@@ -184,19 +184,17 @@ end
 
 function Ground:draw()
 	lg.push("all")
+		if self.color then
+			lg.setColor(self.color)
+			lg.line(self.coords)
+		else
+			for e = 1, #self.edges do
+				local edge = self.edges[e]
 
-	if self.color then
-		lg.setColor(self.color)
-		lg.line(self.coords)
-	else
-		for e = 1, #self.edges do
-			local edge = self.edges[e]
-
-			lg.setColor(edge.color)
-			lg.line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y)
+				lg.setColor(edge.color)
+				lg.line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y)
+			end
 		end
-	end
-	
 	lg.pop()
 end
 

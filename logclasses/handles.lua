@@ -19,13 +19,11 @@ function Handle:draw(scale)
 	local x, y, w, h = self:getBox(scale)
 
 	lg.push("all")
-
-	lg.setLineWidth(0.25 / scale)
-	lg.setColor(r, g, b, 0.8)
-	lg.rectangle("line", x, y, w, h)
-	lg.setColor(r, g, b, 0.6)
-	lg.rectangle("fill", x, y, w, h)
-
+		lg.setLineWidth(0.25 / scale)
+		lg.setColor(r, g, b, 0.8)
+		lg.rectangle("line", x, y, w, h)
+		lg.setColor(r, g, b, 0.6)
+		lg.rectangle("fill", x, y, w, h)
 	lg.pop()
 end
 

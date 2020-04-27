@@ -38,7 +38,7 @@ function playState:update(dt)
 	Stache.updateList(self.props, dt)
 	Stache.updateList(self.particles, dt)
 
-	self.camera:follow((agent.pos + agent.offset:rotated(agent.angRad)):split())
+	self.camera:follow(agent.pos:split())
 	self.camera.rotation = -agent.angRad
 	self.camera:update(dt)
 
@@ -57,66 +57,68 @@ function playState:draw()
 
 	self.camera:detach()
 	lg.push("all")
+		lg.translate(-8 * 3, -8 * 3)
+		lg.scale(3)
 
+		lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
+		if Stache.players[1].boipy:down("up") then
+			lg.setColor(Stache.colorUnpack("white", 0.8))
+			lg.draw(Stache.sprites.arrowbtn_up_prs)
+		else
+			lg.setColor(Stache.colorUnpack("white", 0.4))
+			lg.draw(Stache.sprites.arrowbtn_up_rls)
+		end
 
-	lg.translate(-8 * 3, -8 * 3)
-	lg.scale(3)
-	lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
-	if Stache.players[1].boipy:down("up") then
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
-		lg.draw(Stache.sprites.arrowbtn_up_prs)
-	else
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
-		lg.draw(Stache.sprites.arrowbtn_up_rls)
-	end
-	lg.translate(0, 60 / 3)
-	if Stache.players[1].boipy:down("down") then
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
-		lg.draw(Stache.sprites.arrowbtn_down_prs)
-	else
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
-		lg.draw(Stache.sprites.arrowbtn_down_rls)
-	end
-	lg.translate(-60 / 3, 0)
-	if Stache.players[1].boipy:down("left") then
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
-		lg.draw(Stache.sprites.arrowbtn_left_prs)
-	else
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
-		lg.draw(Stache.sprites.arrowbtn_left_rls)
-	end
-	lg.translate(120 / 3, 0)
-	if Stache.players[1].boipy:down("right") then
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
-		lg.draw(Stache.sprites.arrowbtn_right_prs)
-	else
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
-		lg.draw(Stache.sprites.arrowbtn_right_rls)
-	end
-	lg.translate(-140 / 3, 60 / 3)
-	if Stache.players[1].boipy:down("jump") then
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
-		lg.draw(Stache.sprites.spacebtn_prs)
-	else
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
-		lg.draw(Stache.sprites.spacebtn_rls)
-	end
-	lg.translate(140 / 3, 0)
-	if Stache.players[1].boipy:down("crouch") then
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
-		lg.draw(Stache.sprites.crouchbtn_prs)
-	else
-		lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.4))
-		lg.draw(Stache.sprites.crouchbtn_rls)
-	end
+		lg.translate(0, 60 / 3)
+		if Stache.players[1].boipy:down("down") then
+			lg.setColor(Stache.colorUnpack("white", 0.8))
+			lg.draw(Stache.sprites.arrowbtn_down_prs)
+		else
+			lg.setColor(Stache.colorUnpack("white", 0.4))
+			lg.draw(Stache.sprites.arrowbtn_down_rls)
+		end
 
+		lg.translate(-60 / 3, 0)
+		if Stache.players[1].boipy:down("left") then
+			lg.setColor(Stache.colorUnpack("white", 0.8))
+			lg.draw(Stache.sprites.arrowbtn_left_prs)
+		else
+			lg.setColor(Stache.colorUnpack("white", 0.4))
+			lg.draw(Stache.sprites.arrowbtn_left_rls)
+		end
+
+		lg.translate(120 / 3, 0)
+		if Stache.players[1].boipy:down("right") then
+			lg.setColor(Stache.colorUnpack("white", 0.8))
+			lg.draw(Stache.sprites.arrowbtn_right_prs)
+		else
+			lg.setColor(Stache.colorUnpack("white", 0.4))
+			lg.draw(Stache.sprites.arrowbtn_right_rls)
+		end
+
+		lg.translate(-140 / 3, 60 / 3)
+		if Stache.players[1].boipy:down("jump") then
+			lg.setColor(Stache.colorUnpack("white", 0.8))
+			lg.draw(Stache.sprites.spacebtn_prs)
+		else
+			lg.setColor(Stache.colorUnpack("white", 0.4))
+			lg.draw(Stache.sprites.spacebtn_rls)
+		end
+
+		lg.translate(140 / 3, 0)
+		if Stache.players[1].boipy:down("crouch") then
+			lg.setColor(Stache.colorUnpack("white", 0.8))
+			lg.draw(Stache.sprites.crouchbtn_prs)
+		else
+			lg.setColor(Stache.colorUnpack("white", 0.4))
+			lg.draw(Stache.sprites.crouchbtn_rls)
+		end
 	lg.pop()
+
 	lg.push("all")
-
-	lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
-	lg.scale(40 * FONT_SHRINK)
-	lg.printf(Stache.players[1].agent.physmode, 120 - 90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
-
+		lg.setColor(Stache.colorUnpack("white", 0.8))
+		lg.scale(40 * FONT_SHRINK)
+		lg.printf(Stache.players[1].agent.physmode, 0, 0, lg.getWidth() * FONT_BLOWUP, "left")
 	lg.pop()
 	self.camera:draw()
 end
@@ -174,7 +176,8 @@ function playState:spawnProp(name, params)
 	--data.sheet = Stache.sheets.props[name] TODO: ready to add particles, props and actor sprites...
 	if params ~= nil then
 		for k, v in pairs(params) do
-			data[k] = params[k] end end
+			data[k] = params[k] end
+	end
 
 	table.insert(self.props, Prop(prop))
 
@@ -187,7 +190,7 @@ function playState:spawnAgent(name, params)
 	elseif Stache.actors[name] == nil then
 		formatError("playState:spawnAgent() called with a 'name' argument that does not correspond to a loaded actor: %q", name)
 	elseif params ~= nil and type(params) ~= "table" and type(params) ~= "userdata" then
-		formatError("playState:spawnProp() called with a 'params' argument that isn't a table or userdata: %q", params)
+		formatError("playState:spawnAgent() called with a 'params' argument that isn't a table or userdata: %q", params)
 	end
 
 	local data = Stache.actors[name]
@@ -196,7 +199,8 @@ function playState:spawnAgent(name, params)
 	--data.sheet = Stache.sheets.actors[name] TODO: ready to add particles, props and actor sprites...
 	if params ~= nil then
 		for k, v in pairs(params) do
-			data[k] = params[k] end end
+			data[k] = params[k] end
+	end
 
 	table.insert(self.agents, Agent(data))
 

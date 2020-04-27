@@ -3,8 +3,7 @@ Agent = Entity:extend("Agent", {
 	state = nil,
 	action = nil,
 	collider = nil,
-	offset = vec2(),
-	posz = 0, -- TODO: SCALE? BRINEVEC3?
+	posz = 0, -- TODO: BRINEVEC3?
 	velz = 0, -- TODO: BRINEVEC3?
 
 	aim = vec2(),
@@ -42,40 +41,25 @@ Agent = Entity:extend("Agent", {
 	grv = -800,
 	jmp = 270,
 
-	grndRef = nil,
-	edgeRef = nil,
-	edgeInd = nil,
-	grndAngRad = nil,
-	grndAngDeg = nil,
-	pushCos = nil,
-	pushSin = nil,
+	grndRef = nil
 })
 
 function Agent:__index(key)
 	local slf = rawget(self, "members")
 
-	if key == "grndAngRad" then
-		return self:isGrounded() and self.edgeRef.angRad or 0
-	elseif key == "grndAngDeg" then
-		return self:isGrounded() and self.edgeRef.angDeg or 0
-	else
-		if slf[key] ~= nil then return slf[key]
-		else return Entity.__index(self, key) end
-	end
+	if slf[key] ~= nil then return slf[key]
+	else return Entity.__index(self, key) end
 end
 
 function Agent:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "grndAngRad" or key == "grndAngDeg" then
-		formatError("Attempted to set a key of class 'Agent' that is read-only: %q", key)
-	else
-		Entity.__newindex(self, key, value)
-	end
+	Entity.__newindex(self, key, value)
 end
 
 function Agent:init(data)
 	Entity.init(self, data)
+
 	self:changeState("idle")
 	self:setPhysMode("VQ3")
 end
@@ -205,6 +189,7 @@ function Agent:update(dt)
 	-- TODO: Set appearance based on state...
 
 	--self.sprite:update(dt) -- TODO: rework visuals...
+	return false
 end
 
 function Agent:draw()
@@ -217,20 +202,19 @@ function Agent:draw()
 					 self.action == "tuck") and 2 or 1
 
 	lg.push("all")
+		lg.translate(self.pos:split())
 
-	lg.setLineWidth(0.5)
-	lg.setColor(Stache.colorUnpack("white", 0.8))
-	lg.translate(self.pos.x - self.offset.x, self.pos.y - self.offset.y)
+		lg.setLineWidth(0.5)
+		lg.setColor(Stache.colorUnpack("white", 0.8))
+		lg.line(0, 0, dbgVel:split())
+		lg.line(0, 0, dbgAxis:split())
+		lg.setColor(Stache.colorUnpack("white", 0.4))
+		lg.line(dbgVel.x, dbgVel.y, dbgSpd:split())
 
-	lg.line(0, 0, dbgVel:split())
-	lg.line(0, 0, dbgAxis:split())
-	lg.setColor(Stache.colorUnpack("white", 0.4))
-	lg.line(dbgVel.x, dbgVel.y, dbgSpd:split())
-
-	lg.rotate(self.angRad)
-	lg.scale(40 * FONT_SHRINK)
-	lg.printf(math.floor(self.vel.length + 0.5), -90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
-
+		lg.rotate(self.angRad)
+		lg.line(0, 0, 0, -self.collider.radius)
+		lg.scale(40 * FONT_SHRINK)
+		lg.printf(math.floor(self.vel.length + 0.5), -90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
 	lg.pop()
 
 	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...
@@ -239,11 +223,14 @@ function Agent:draw()
 end
 
 function Agent:changeState(next)
-	if next == self.state then return end -- Do not allow state re-entry
-	--print("changeState():", self.state, next)
+	if next == self.state then
+		return end -- Do not allow state re-entry
+
+	if DEBUG_STATECHANGES then
+		print("changeState():", self.state, next) end
 
 	if next == "air" then
-		self:clearGround() end
+		self.grndRef = nil end
 
 	self.state = next
 
@@ -253,6 +240,8 @@ function Agent:changeState(next)
 		self:changeAction(self.crouch and "crouch" or nil, 1, true)
 	elseif self.state == "air" then
 		self:changeAction(self.crouch and "tuck" or nil, 1, true)
+	else
+		self:changeAction(nil, 1, true)
 	end
 end
 
@@ -261,7 +250,6 @@ function Agent:changeAction(action, jumpTo, play)
 
 	self.sprite = subDir.sprite
 	self.collider = subDir.collider
-	self.offset = subDir.offset
 
 	if not action then
 		action = subDir.default end
@@ -270,7 +258,6 @@ function Agent:changeAction(action, jumpTo, play)
 		subDir = subDir[action]
 		if subDir.sprite then self.sprite = subDir.sprite end
 		if subDir.collider then self.collider = subDir.collider end
-		if subDir.offset then self.offset = subDir.offset end
 	end
 
 	--[[ TODO: ready to add particles, props and actor sprites...
@@ -324,49 +311,11 @@ function Agent:togglePhysMode()
 	end
 end
 
---[[
-function Agent:physRotateLocal()
-	if not self.pushCos and not self.pushSin then
-		self.pushCos = math.cos(-self.grndAngRad)
-		self.pushSin = math.sin(-self.grndAngRad)
-		self.pos = self.pos:rotated(self.pushCos, self.pushSin)
-		self.vel = self.vel:rotated(self.pushCos, self.pushSin)
-	end
-end
-
-function Agent:physRotateWorld()
-	if self.pushCos and self.pushSin then
-		self.pos = self.pos:rotated(self.pushCos, -self.pushSin)
-		self.vel = self.vel:rotated(self.pushCos, -self.pushSin)
-		self.pushCos = nil
-		self.pushSin = nil
-
-		if self:isGrounded() then -- Fixes small imperfections
-			self.vel = sign(self.vel * self.edgeRef.delta) * self.edgeRef.direction * self.vel.length
-		end
-
-		self:updateCollider() -- TODO: rework 2D collisions...
-	end
-end
-]]--
-
 function Agent:updateCollider() -- TODO: rework 2D collisions...
-	self.collider:update(self.pos, vec2(), self.angRad, self.offset)
+	self.collider:update(self.pos, self.ppos, self.angRad)
 end
 
 function Agent:isGrounded()
 	return self.posz <= 0
-	--return self.grndRef and self.edgeRef and self.edgeInd
-end
-
-function Agent:setGround(grnd, edge, index)
-	self.grndRef = grnd
-	self.edgeRef = edge
-	self.edgeInd = index
-end
-
-function Agent:clearGround()
-	self.grndRef = nil
-	self.edgeRef = nil
-	self.edgeInd = nil
+	--return self.grndRef ~= nil
 end

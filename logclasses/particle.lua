@@ -53,5 +53,5 @@ function Particle:draw()
 		end
 	end
 
-	self.sprite:draw(self.sheet, self.pos + pos, self.angRad + angRad, self.scale ^ scale)
+	self.sprite:draw(self.sheet, pos + self.pos, self.angRad + angRad, self.scale ^ scale)
 end

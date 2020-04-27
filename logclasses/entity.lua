@@ -66,8 +66,10 @@ end
 function Entity:init(data)
 	Stache.hideMembers(self)
 
-	for k, v in pairs(data) do
-		self[k] = data[k] end
+	if data then
+		for k, v in pairs(data) do
+			self[k] = v end
+	end
 end
 
 function Entity:update(dt)
