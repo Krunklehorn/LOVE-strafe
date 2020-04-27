@@ -2,6 +2,7 @@ Entity = class("Entity", {
 	sheet = nil,
 	sprite = nil,
 	pos = vec2(),
+	ppos = vec2(),
 	vel = vec2(),
 	angRad = 0,
 	angDeg = nil,
@@ -38,7 +39,7 @@ function Entity:__newindex(key, value)
 
 	if key == "sprite" then
 		if value ~= nil and not value:instanceOf(Sprite) then
-			formatError("Entity:init() called with a 'sprite' argument that isn't of type 'Sprite': %q", sprite)
+			formatError("Attempted to set 'sprite' key of class 'Entity' to a value that isn't of type 'Sprite': %q", sprite)
 		end
 
 		slf.sprite = value
@@ -73,6 +74,7 @@ function Entity:init(data)
 end
 
 function Entity:update(dt)
+	self.ppos = self.pos
 	self.pos = self.pos + self.vel * dt
 	self.angRad = self.angRad + self.angVelRad * dt
 	self.sprite:update(dt)

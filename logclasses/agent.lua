@@ -154,11 +154,45 @@ function Agent:update(dt)
 		end
 	end
 
+	self.ppos = self.pos
 	self.pos = self.pos + self.vel * dt
 	self.posz = self.posz + self.velz * dt
-	self:updateCollider() -- TODO: rework 2D collisions...
+	self:updateCollider()
 
-	-- TODO: Calculate contacts, resolve and repeat...
+	repeat
+		local impulse = nil
+
+		for b, brush in ipairs(playState.brushes) do
+			if self.collider:checkCastBounds(brush) then
+				local impulse = self.collider:overlap(brush)
+
+				if impulse then
+					impulse = impulse.normal * impulse.depth
+					self.pos = self.pos + impulse
+					self.ppos = self.ppos + impulse
+				end
+			end
+		end
+	until not impulse
+
+	repeat
+		local contact = nil
+
+		for b, brush in ipairs(playState.brushes) do
+			local result = self.collider:cast(brush)
+
+			if result and result.t > 0 and result.t <= 1 and (not contact or result.t < contact.t) then
+				contact = result
+			end
+		end
+
+		if contact then
+			self.ppos = contact.pos
+			self.pos = self.ppos + contact.tangent * (self.collider.vel * contact.r * contact.tangent)
+			self.vel = contact.tangent * (self.vel * contact.tangent)
+			self:updateCollider()
+		end
+	until not contact
 
 	-- TODO: Check for state changes based on contact resolution...
 	if self.state == "air" then

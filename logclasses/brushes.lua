@@ -33,14 +33,6 @@ function CircleBrush:__newindex(key, value)
 	end
 end
 
-function CircleBrush:init(radius, pos, height, color)
-	CircleCollider.init(self, radius)
-
-	if pos then self.pos = pos end
-	if height then self.height = height end
-	if color then self.color = color end
-end
-
 function CircleBrush:draw()
 	CircleCollider.draw(self, self.color)
 end

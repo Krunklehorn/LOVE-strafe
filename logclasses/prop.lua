@@ -28,7 +28,7 @@ function Prop:update(dt)
 	local result = false
 
 	Entity.update(self, dt)
-	self.collider:update(self.pos, self.vel, self.angRad)
+	self.collider:update(self.pos, self.ppos, self.vel, self.angRad)
 
 	for a = 1, #playState.agents do
 		if self.collider:overlaps(playState.agents[a].collider) == true then

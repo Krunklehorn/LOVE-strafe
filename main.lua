@@ -33,6 +33,7 @@ require "humpstates.title"
 require "humpstates.edit"
 require "humpstates.play"
 require "humpstates.pause"
+require "humpstates.debug"
 
 Stache = require "stache"
 
@@ -49,6 +50,7 @@ require "logclasses.particle"
 require "logclasses.prop"
 require "logclasses.agent"
 require "logclasses.handles"
+require "logclasses.dummy"
 
 function love.load()
 	lg.setNewFont(FONT_BLOWUP)

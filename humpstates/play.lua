@@ -15,10 +15,9 @@ function playState:init()
 	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(2), nil, nil, 0.1))
 	table.insert(self.backgrounds, Background(Stache.sprites.parallax_screen, nil, vec2(2), vec2(0.25), nil, 0.2))
 
-	table.insert(self.brushes, CircleBrush(128))
-	table.insert(self.brushes, CircleBrush(1))
-	table.insert(self.brushes, CircleBrush(64, vec2(0, -400)))
-	table.insert(self.brushes, CircleBrush(64, vec2(0, -700)))
+	table.insert(self.brushes, CircleBrush({ radius = 64 , pos = vec2(0, -100) }))
+	table.insert(self.brushes, CircleBrush({ radius = 64 , pos = vec2(0, -400) }))
+	table.insert(self.brushes, CircleBrush({ radius = 64 , pos = vec2(0, -700) }))
 
 	Stache.players[1].agent = self:spawnAgent("strafer")
 end

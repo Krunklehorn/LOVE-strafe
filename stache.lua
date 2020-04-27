@@ -109,19 +109,19 @@ function Stache.load()
 		idle = {
 			stand = {},
 			squat = {},
-			collider = CircleCollider(32),
+			collider = CircleCollider({ radius = 32 }),
 			default = "stand"
 		},
 		move = {
 			run = {},
 			crouch = {},
-			collider = CircleCollider(32),
+			collider = CircleCollider({ radius = 32 }),
 			default = "run"
 		},
 		air = {
 			upright = {},
 			tuck = {},
-			collider = CircleCollider(32),
+			collider = CircleCollider({ radius = 32 }),
 			default = "upright"
 		}
 	}
@@ -250,6 +250,20 @@ function clamp(value, min, max)
 	elseif value > max then value = max end
 
 	return value
+end
+
+function isNaN(x)
+	return x ~= x
+end
+
+function lesser(a, b)
+	if math.abs(a) <= math.abs(b) then return a
+	else return b end
+end
+
+function greater(a, b)
+	if math.abs(a) >= math.abs(b) then return a
+	else return b end
 end
 
 function approach(value, target, rate, callback)

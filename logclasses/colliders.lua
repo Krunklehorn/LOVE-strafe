@@ -15,17 +15,26 @@ function Collider:__newindex(key, value)
 	slf[key] = value
 end
 
-function Collider:init()
+function Collider:init(data)
 	Stache.hideMembers(self)
+
+	if data then
+		for k, v in pairs(data) do
+			self[k] = v end
+	end
 end
 
-function Collider:update(currPos, prevPos, angRad, offset)
-	if currPos then self.currPos = currPos end
-	if prevPos then self.prevPos = prevPos end
+function Collider:update(pos, ppos, angRad)
+	if pos then self.pos = pos end
+	if ppos then self.ppos = ppos end
 	if angRad then self.angRad = angRad end
 end
 
-function Collider:castAABB(other)
+function Collider:draw()
+	formatError("Abstract function Collider:draw() called!")
+end
+
+function Collider:checkCastBounds(other)
 	local b1 = self:getCastBounds()
 	local b2 = other:getCastBounds()
 
@@ -37,9 +46,9 @@ function Collider:castAABB(other)
 	else return false end
 end
 
-function Collider:overlaps(other)
+function Collider:overlap(other)
 	if not other:instanceOf(Collider) then
-		formatError("Collider:overlaps() called with an 'other' argument that isn't of type 'Collider': %q", other)
+		formatError("Collider:overlap() called with an 'other' argument that isn't of type 'Collider': %q", other)
 	end
 
 	if self:instanceOf(CircleCollider) then
@@ -56,20 +65,26 @@ function Collider:overlaps(other)
 		elseif other:instanceOf(BoxCollider) then return Collider.box_box(self, other) end
 	end
 
-	formatError("Collider:overlaps() called with an unsupported subclass or subclass combination: %q", ref)
+	formatError("Collider:overlap() called with an unsupported subclass combination: %q", ref)
 end
 
 function Collider:circ_circ(other)
-	local offset = other.currPos - self.currPos
-	return offset.length < self.radius + other.radius
+	local result = {}
+
+	result.offset = self.pos - other.pos
+	result.normal = result.offset.normalized
+	result.depth = self.radius + other.radius - result.offset.length
+
+	return result.depth > 0 and result or nil
 end
 
 function Collider:circ_line(other)
-	local circ = other:point_determinant(self.currPos + self.offset)
-	return self.radius - circ.clmpdist > 0
+	local discrim = other:point_discriminant(self.pos)
+	return self.radius - discrim.clmpdist > 0
 end
 
 function Collider:circ_box(other)
+	formatError("Collider:circ_box() has not yet been implemented!")
 	return false
 end
 
@@ -87,28 +102,28 @@ function Collider:line_line(other)
 end
 
 function Collider:line_box(other)
+	formatError("Collider:line_box() has not yet been implemented!")
 	return false
 end
 
 function Collider:box_box(other)
+	formatError("Collider:box_box() has not yet been implemented!")
 	return false
 end
 
 CircleCollider = Collider:extend("CircleCollider", {
-	currPos = vec2(),
-	prevPos = vec2(),
-	angRad = 0,
-	angDeg = nil,
-	offset = vec2(),
+	pos = vec2(),
+	ppos = vec2(),
+	vel = nil,
 	radius = 1,
 })
 
 function CircleCollider:__index(key)
 	local slf = rawget(self, "members")
 
-	if key == "angDeg" then
+	if key == "vel" then
 		if not slf[key] then
-			slf[key] = math.deg(self.angRad)
+			slf[key] = slf.pos - slf.ppos
 		end
 
 		return slf[key]
@@ -121,79 +136,93 @@ end
 function CircleCollider:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "currPos" then
+	if key == "pos" then
 		if not vec2.isVector(value) then
-			formatError("Attempted to set 'currPos' key of class 'CircleCollider' to a non-vector value: %q", value)
+			formatError("Attempted to set 'pos' key of class 'CircleCollider' to a non-vector value: %q", value)
 		end
 
-		slf.currPos = value
-	elseif key == "prevPos" then
+		slf.pos = value
+		slf.vel = nil
+	elseif key == "ppos" then
 		if not vec2.isVector(value) then
-			formatError("Attempted to set 'prevPos' key of class 'CircleCollider' to a non-vector value: %q", value)
+			formatError("Attempted to set 'ppos' key of class 'CircleCollider' to a non-vector value: %q", value)
 		end
 
-		slf.prevPos = value
-	elseif key == "angRad" then
-		if type(value) ~= "number" then
-			formatError("Attempted to set 'angRad' key of class 'CircleCollider' to a non-numerical value: %q", value)
-		end
-
-		slf.angRad = value
-		slf.angDeg = nil
+		slf.ppos = value
+		slf.vel = nil
 	elseif key == "radius" then
 		if type(value) ~= "number" then
 			formatError("Attempted to set 'radius' key of class 'CircleCollider' to a non-numerical value: %q", value)
 		end
 
 		slf.radius = value
-	elseif key == "angDeg" then
+	elseif key == "vel" then
 		formatError("Attempted to set a key of class 'CircleCollider' that is read-only: %q", key)
 	else
 		Collider.__newindex(self, key, value)
 	end
 end
 
-function CircleCollider:init(radius)
-	Collider.init(self)
-
-	self.radius = radius
-end
-
 function CircleCollider:draw(color, scale)
+	if color ~= nil and type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
+		formatError("CircleCollider:draw() called with a 'color' argument that isn't a string, table or userdata: %q", color)
+	elseif scale ~= nil and type(scale) ~= "number" then
+		formatError("CircleCollider:draw() called with a non-numerical 'scale' argument: %q", scale)
+	end
+
 	color = color or Stache.colors.white
 	scale = scale or 1
 
 	lg.push("all")
+		lg.translate(self.pos:split())
+		lg.scale(scale)
 
-	lg.translate(self.currPos:split())
-	lg.rotate(self.angRad)
+		lg.setLineWidth(0.25)
+		lg.setColor(Stache.colorUnpack(color, 1))
+		lg.circle("line", 0, 0, self.radius)
 
-	lg.translate(self.offset:split())
-	lg.scale(scale)
+		lg.setColor(Stache.colorUnpack(color, 0.4))
+		lg.circle("fill", 0, 0, self.radius)
 
-	lg.setLineWidth(0.25)
-	lg.setColor(Stache.colorUnpack(color, 1))
-	lg.circle("line", 0, 0, self.radius)
-	lg.line(0, 0, 0, -self.radius)
-
-	lg.setColor(Stache.colorUnpack(color, 0.4))
-	lg.circle("fill", 0, 0, self.radius)
-
-	lg.translate((-self.offset):split())
-
-	lg.setColor(Stache.colorUnpack(color, 0.8))
-	lg.circle("fill", 0, 0, 1)
-
+		lg.setColor(Stache.colorUnpack(color, 0.8))
+		lg.circle("fill", 0, 0, 1)
 	lg.pop()
 end
 
 function CircleCollider:getCastBounds()
 	return {
-		left = math.min(self.currPos.x, self.prevPos.x) - self.radius,
-		right = math.max(self.currPos.x, self.prevPos.x) + self.radius,
-		top = math.min(self.currPos.y, self.prevPos.y) - self.radius,
-		bottom = math.max(self.currPos.y, self.prevPos.y) + self.radius
+		left = math.min(self.pos.x, self.ppos.x) - self.radius,
+		right = math.max(self.pos.x, self.ppos.x) + self.radius,
+		top = math.min(self.pos.y, self.ppos.y) - self.radius,
+		bottom = math.max(self.pos.y, self.ppos.y) + self.radius
 	}
+end
+
+function CircleCollider:cast(other)
+	if other:instanceOf(CircleCollider) then
+		local result = nil
+
+		if self:checkCastBounds(other) then
+			local line = LineCollider({ p1 = self.ppos, p2 = self.pos })
+			local circ = CircleCollider({ pos = other.pos, radius = self.radius + other.radius })
+			local contact = circ:line_contact(line)
+
+			if contact.discrim >= 0 then
+				result = {}
+				result.t = contact.t
+				result.r = 1 - result.t
+				result.pos = self.ppos + self.vel * result.t
+				result.delta = result.pos - other.pos
+				result.normal = result.delta.normalized
+				result.tangent = result.normal.normal
+				result.discrim = contact.discrim
+				result.sign = contact.sign
+				result.collider = other
+			end
+		end
+
+		return result
+	end
 end
 
 function CircleCollider:line_contact(line)
@@ -201,13 +230,20 @@ function CircleCollider:line_contact(line)
 		formatError("CircleCollider:line_contact() called with a 'line' argument that isn't of type 'LineCollider': %q", line)
 	end
 
+	local delta = line.delta
+	local offset = line.p1 - self.pos
+	local dot = delta * offset
+	local radius2 = self.radius * self.radius
+	local discrim = dot * dot - delta.length2 * (offset.length2 - radius2)
+	local root = math.sqrt(math.abs(discrim))
+	local t1 = (-dot - root) / delta.length2
+	local t2 = (-dot + root) / delta.length2
 	local contact = {}
-	local circ = line:point_determinant(self.currPos + self.offset)
 
-	contact.point = circ.clamped
-	contact.normal = circ.clmpnorm
-	contact.depth = self.radius - circ.clmpdist
-	contact.sextant = circ.sextant
+	contact.t = lesser(not isNaN(t1) and t1 or 0, not isNaN(t2) and t2 or 0)
+	contact.pos = line.p1 + line.direction * contact.t
+	contact.discrim = discrim
+	contact.sign = sign(discrim)
 
 	return contact
 end
@@ -292,13 +328,6 @@ function LineCollider:__newindex(key, value)
 	end
 end
 
-function LineCollider:init(p1, p2)
-	Collider.init(self)
-
-	self.p1 = p1
-	self.p2 = p2
-end
-
 function LineCollider:dirty()
 	local slf = rawget(self, "members")
 
@@ -318,27 +347,27 @@ function LineCollider:getCastBounds()
 	}
 end
 
-function LineCollider:point_determinant(point)
+function LineCollider:point_discriminant(point)
 	if not vec2.isVector(point) then
-		formatError("LineCollider:point_determinant() called with a non-vector 'point' argument: %q", point)
+		formatError("LineCollider:point_discriminant() called with a non-vector 'point' argument: %q", point)
 	end
 
 	local offset = point - self.p1
 	local result = {}
 
 	result.sign = sign(offset / self.delta)
-	result.projnorm = self.normal * result.sign
+	result.projdir = self.normal * result.sign
 
 	local scalar = (self.delta * offset) / self.delta.length2
 
 	if scalar <= 0 then
-		result.clmpnorm = (point - self.p1).normalized
+		result.clmpdir = (point - self.p1).normalized
 		result.sextant = "lesser"
 	elseif scalar >= 1 then
-		result.clmpnorm = (point - self.p2).normalized
+		result.clmpdir = (point - self.p2).normalized
 		result.sextant = "greater"
 	else
-		result.clmpnorm = result.projnorm
+		result.clmpdir = result.projdir
 		result.sextant = "medial"
 	end
 
@@ -354,16 +383,16 @@ function LineCollider:point_determinant(point)
 	return result
 end
 
-function LineCollider:intersect(arg1, arg2)
-	if arg2 then
-		if not vec2.isVector(arg1) then
-			formatError("LineCollider:intersect(p1, p2) called with a non-vector 'p1' argument: %q", arg1)
-		elseif not vec2.isVector(arg2) then
-			formatError("LineCollider:intersect(p1, p2) called with a non-vector 'p2' argument: %q", arg2)
+function LineCollider:line_contact(arg1, arg2)
+	if not arg2 then
+		if not arg1:instanceOf(LineCollider) then
+			formatError("LineCollider:intersect() called with an 'other' argument that isn't of type 'LineCollider': %q", arg1)
 		end
 	else
-		if not arg1:instanceOf(LineCollider) then
-			formatError("LineCollider:intersect(other) called with an 'other' argument that isn't of type 'LineCollider': %q", arg1)
+		if not vec2.isVector(arg1) then
+			formatError("LineCollider:intersect() called with a non-vector 'p1' argument: %q", arg1)
+		elseif not vec2.isVector(arg2) then
+			formatError("LineCollider:intersect() called with a non-vector 'p2' argument: %q", arg2)
 		end
 	end
 
@@ -402,11 +431,10 @@ BoxCollider = Collider:extend("BoxCollider", {
 	pp2 = nil,
 	pp3 = nil,
 	pp4 = nil,
-	currPos = vec2(),
-	prevPos = vec2(),
+	pos = vec2(),
+	ppos = vec2(),
 	angRad = 0,
 	angDeg = nil,
-	offset = vec2(),
 	hwidth = 16,
 	hheight = 16
 })
@@ -416,49 +444,49 @@ function BoxCollider:__index(key)
 
 	if key == "p1" then
 		if not slf[key] then
-			slf[key] = self.currPos + self.offset + vec2(self.hwidth, self.hheight)
+			slf[key] = self.pos + vec2(self.hwidth, self.hheight)
 		end
 
 		return slf[key]
 	elseif key == "p2" then
 		if not slf[key] then
-			slf[key] = self.currPos + self.offset + vec2(-self.hwidth, self.hheight)
+			slf[key] = self.pos + vec2(-self.hwidth, self.hheight)
 		end
 
 		return slf[key]
 	elseif key == "p3" then
 		if not slf[key] then
-			slf[key] = self.currPos + self.offset + vec2(-self.hwidth, -self.hheight)
+			slf[key] = self.pos + vec2(-self.hwidth, -self.hheight)
 		end
 
 		return slf[key]
 	elseif key == "p4" then
 		if not slf[key] then
-			slf[key] = self.currPos + self.offset + vec2(self.hwidth, -self.hheight)
+			slf[key] = self.pos + vec2(self.hwidth, -self.hheight)
 		end
 
 		return slf[key]
 	elseif key == "pp1" then
 		if not slf[key] then
-			slf[key] = self.prevPos + self.offset + vec2(self.hwidth, self.hheight)
+			slf[key] = self.ppos + vec2(self.hwidth, self.hheight)
 		end
 
 		return slf[key]
 	elseif key == "pp2" then
 		if not slf[key] then
-			slf[key] = self.prevPos + self.offset + vec2(-self.hwidth, self.hheight)
+			slf[key] = self.ppos + vec2(-self.hwidth, self.hheight)
 		end
 
 		return slf[key]
 	elseif key == "pp3" then
 		if not slf[key] then
-			slf[key] = self.prevPos + self.offset + vec2(-self.hwidth, -self.hheight)
+			slf[key] = self.ppos + vec2(-self.hwidth, -self.hheight)
 		end
 
 		return slf[key]
 	elseif key == "pp4" then
 		if not slf[key] then
-			slf[key] = self.prevPos + self.offset + vec2(self.hwidth, -self.hheight)
+			slf[key] = self.ppos + vec2(self.hwidth, -self.hheight)
 		end
 
 		return slf[key]
@@ -477,19 +505,19 @@ end
 function BoxCollider:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "currPos" then
+	if key == "pos" then
 		if not vec2.isVector(value) then
-			formatError("Attempted to set 'currPos' key of class 'BoxCollider' to a non-vector value: %q", value)
+			formatError("Attempted to set 'pos' key of class 'BoxCollider' to a non-vector value: %q", value)
 		end
 
-		slf.currPos = value
+		slf.pos = value
 		self:dirty()
-	elseif key == "prevPos" then
+	elseif key == "ppos" then
 		if not vec2.isVector(value) then
-			formatError("Attempted to set 'prevPos' key of class 'BoxCollider' to a non-vector value: %q", value)
+			formatError("Attempted to set 'ppos' key of class 'BoxCollider' to a non-vector value: %q", value)
 		end
 
-		slf.prevPos = value
+		slf.ppos = value
 		self:dirty()
 	elseif key == "angRad" then
 		if type(value) ~= "number" then
@@ -513,13 +541,6 @@ function BoxCollider:__newindex(key, value)
 
 		slf.hheight = value
 		self:dirty()
-	elseif key == "offset" then
-		if not vec2.isVector(value) then
-			formatError("Attempted to set 'offset' key of class 'BoxCollider' to a non-vector value: %q", value)
-		end
-
-		slf.offset = value
-		self:dirty()
 	elseif key == "angDeg" then
 		formatError("Attempted to set a key of class 'BoxCollider' that is read-only: %q", key)
 	else
@@ -527,38 +548,31 @@ function BoxCollider:__newindex(key, value)
 	end
 end
 
-function BoxCollider:init(hwidth, hheight)
-	Collider.init(self)
-
-	self.hwidth = hwidth
-	self.hheight = hheight or hwidth
-end
-
 function BoxCollider:draw(color, scale)
+	if color ~= nil and type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
+		formatError("BoxCollider:draw() called with a 'color' argument that isn't a string, table or userdata: %q", color)
+	elseif scale ~= nil and type(scale) ~= "number" then
+		formatError("BoxCollider:draw() called with a non-numerical 'scale' argument: %q", scale)
+	end
+
 	color = color or Stache.colors.white
 	scale = scale or 1
 
 	lg.push("all")
+		lg.translate(self.pos:split())
+		lg.rotate(self.angRad)
+		lg.scale(scale)
 
-	lg.translate(self.currPos:split())
-	lg.rotate(self.angRad)
+		lg.setLineWidth(0.25)
+		lg.setColor(Stache.colorUnpack(color, 1))
+		lg.rectangle("line", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
+		lg.line(0, 0, 0, -self.hheight)
 
-	lg.translate(self.offset:split())
-	lg.scale(scale)
+		lg.setColor(Stache.colorUnpack(color, 0.4))
+		lg.rectangle("fill", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
 
-	lg.setLineWidth(0.25)
-	lg.setColor(Stache.colorUnpack(color, 1))
-	lg.rectangle("line", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
-	lg.line(0, 0, 0, -self.hheight)
-
-	lg.setColor(Stache.colorUnpack(color, 0.4))
-	lg.rectangle("fill", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
-
-	lg.translate((-self.offset):split())
-
-	lg.setColor(Stache.colorUnpack(color, 0.8))
-	lg.circle("fill", 0, 0, 1)
-
+		lg.setColor(Stache.colorUnpack(color, 0.8))
+		lg.circle("fill", 0, 0, 1)
 	lg.pop()
 end
 
@@ -575,7 +589,7 @@ function BoxCollider:dirty()
 	slf.pp4 = nil
 end
 
-function LineCollider:getCastBounds()
+function BoxCollider:getCastBounds()
 	return {
 		left = math.min(self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x),
 		right = math.max(self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x),
@@ -584,16 +598,7 @@ function LineCollider:getCastBounds()
 	}
 end
 
-function BoxCollider:cast(colliders)
-	for c = 1, #colliders do
-		local collider = colliders[c]
-
-		if self:castAABB(collider) then
-			if collider:instanceOf(LineCollider) then -- TODO: Use numeric integration, check for t vars of the lines traced by the corners...
-
-			end
-		end
-	end
+function BoxCollider:cast(colliders) -- TODO: Check for t vars of the lines traced by the corners...
 end
 
 function BoxCollider:line_contact(line)
@@ -607,56 +612,56 @@ function BoxCollider:line_contact(line)
 	local intrsct3 = line:intersect(self.p3, self.p4)
 	local intrsct4 = line:intersect(self.p4, self.p1)
 
-	local determ1 = line:point_determinant(self.p1)
-	local determ2 = line:point_determinant(self.p2)
-	local determ3 = line:point_determinant(self.p3)
-	local determ4 = line:point_determinant(self.p4)
+	local discrim1 = line:point_discriminant(self.p1)
+	local discrim2 = line:point_discriminant(self.p2)
+	local discrim3 = line:point_discriminant(self.p3)
+	local discrim4 = line:point_discriminant(self.p4)
 
-	local nearest = determ1.clmpdist >= determ2.clmpdist and determ1 or determ2
-	nearest = nearest.clmpdist >= determ3.clmpdist and nearest or determ3
-	nearest = nearest.clmpdist >= determ4.clmpdist and nearest or determ4
+	local nearest = discrim1.clmpdist >= discrim2.clmpdist and discrim1 or discrim2
+	nearest = nearest.clmpdist >= discrim3.clmpdist and nearest or discrim3
+	nearest = nearest.clmpdist >= discrim4.clmpdist and nearest or discrim4
 
-	contact.normal = nearest.clmpnorm
+	contact.normal = nearest.clmpdir
 	contact.depth = -nearest.clmpdist
 
 	if intrsct1.parallel == true or intrsct3.parallel == true then
 		if intrsct2.overlap == true then
-			if determ2.sign < 0 then
-				contact.normal = -determ2.projnorm
-				contact.depth = determ2.projdist * -determ2.sign
-			elseif determ3.sign < 0 then
-				contact.normal = -determ3.projnorm
-				contact.depth = determ3.projdist * -determ3.sign
+			if discrim2.sign < 0 then
+				contact.normal = -discrim2.projdir
+				contact.depth = discrim2.projdist * -discrim2.sign
+			elseif discrim3.sign < 0 then
+				contact.normal = -discrim3.projdir
+				contact.depth = discrim3.projdist * -discrim3.sign
 			end
 		elseif intrsct4.overlap == true then
-			if determ4.sign < 0 then
-				contact.normal = -determ4.projnorm
-				contact.depth = determ4.projdist * -determ4.sign
-			elseif determ1.sign < 0 then
-				contact.normal = -determ1.projnorm
-				contact.depth = determ1.projdist * -determ1.sign
+			if discrim4.sign < 0 then
+				contact.normal = -discrim4.projdir
+				contact.depth = discrim4.projdist * -discrim4.sign
+			elseif discrim1.sign < 0 then
+				contact.normal = -discrim1.projdir
+				contact.depth = discrim1.projdist * -discrim1.sign
 			end
 		end
 	elseif intrsct2.parallel == true or intrsct4.parallel == true then
 		if intrsct1.overlap == true then
-			if determ1.sign < 0 then
-				contact.normal = -determ1.projnorm
-				contact.depth = determ1.projdist * -determ1.sign
-			elseif determ2.sign < 0 then
-				contact.normal = -determ2.projnorm
-				contact.depth = determ2.projdist * -determ2.sign
+			if discrim1.sign < 0 then
+				contact.normal = -discrim1.projdir
+				contact.depth = discrim1.projdist * -discrim1.sign
+			elseif discrim2.sign < 0 then
+				contact.normal = -discrim2.projdir
+				contact.depth = discrim2.projdist * -discrim2.sign
 			end
 		elseif intrsct3.overlap == true then
-			if determ3.sign < 0 then
-				contact.normal = -determ3.projnorm
-				contact.depth = determ3.projdist * -determ3.sign
-			elseif determ4.sign < 0 then
-				contact.normal = -determ4.projnorm
-				contact.depth = determ4.projdist * -determ4.sign
+			if discrim3.sign < 0 then
+				contact.normal = -discrim3.projdir
+				contact.depth = discrim3.projdist * -discrim3.sign
+			elseif discrim4.sign < 0 then
+				contact.normal = -discrim4.projdir
+				contact.depth = discrim4.projdist * -discrim4.sign
 			end
 		end
 	else
-		-- TODO: find overlaps, do sextant checking...
+		-- TODO: find overlap, do sextant checking...
 
 
 	end
