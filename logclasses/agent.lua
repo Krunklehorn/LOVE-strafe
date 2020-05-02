@@ -117,25 +117,25 @@ function Agent:update(dt)
 		end
 
 		self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, dampmin) * self.dampfact * dt)
-		self.vel = self.vel + axis * clamp(top - (self.vel * axis), 0, acc * dt)
+		self.vel = self.vel + axis * clamp(top - self.vel * axis, 0, acc * dt)
 	else
 		self.velz = self.velz + self.grv * dt
 
 		if self.state == "air" then
 			local axis = self.axis:rotated(self.angRad)
-			local bunny = math.abs(self.axis.x) ~= 0 and math.abs(self.axis.y) == 0
-			local control = math.abs(self.axis.x) == 0 and math.abs(self.axis.y) ~= 0
+			local bunny = not equalsZero(math.abs(self.axis.x)) and equalsZero(math.abs(self.axis.y))
+			local control = equalsZero(math.abs(self.axis.x)) and not equalsZero(math.abs(self.axis.y))
 
 			if self.accbny and bunny then
 				local acc = self.accbny
 				if self.airstop and self.vel * axis < 0 then
 					acc = acc * self.airstop end
-				self.vel = self.vel + axis * clamp(30 - (self.vel * axis), 0, acc * dt)
+				self.vel = self.vel + axis * clamp(30 - self.vel * axis, 0, acc * dt)
 			else
 				local acc = self.accair
 				if self.airstop and self.vel * axis < 0 then
 					acc = acc * self.airstop end
-				self.vel = self.vel + axis * clamp(self.top - (self.vel * axis), 0, acc * dt)
+				self.vel = self.vel + axis * clamp(self.top - self.vel * axis, 0, acc * dt)
 			end
 
 			if self.aircont and control then
@@ -159,38 +159,34 @@ function Agent:update(dt)
 	self.posz = self.posz + self.velz * dt
 	self:updateCollider()
 
-	repeat
-		local impulse = nil
-
-		for b, brush in ipairs(playState.brushes) do
-			if self.collider:checkCastBounds(brush) then
-				local impulse = self.collider:overlap(brush)
-
-				if impulse then
-					impulse = impulse.normal * impulse.depth
-					self.pos = self.pos + impulse
-					self.ppos = self.ppos + impulse
-				end
-			end
-		end
-	until not impulse
+	local skip = {}
 
 	repeat
-		local contact = nil
+		local contact
 
 		for b, brush in ipairs(playState.brushes) do
+			for _, skip in pairs(skip) do
+				if brush == skip then
+					goto continue end end
+
 			local result = self.collider:cast(brush)
 
-			if result and result.t > 0 and result.t <= 1 and (not contact or result.t < contact.t) then
-				contact = result
+			if result then
+				if result.t >= 0 and (not contact or result.t < contact.t) then
+					contact = result
+				end
 			end
+
+			::continue::
 		end
 
 		if contact then
-			self.ppos = contact.pos
-			self.pos = self.ppos + contact.tangent * (self.collider.vel * contact.r * contact.tangent)
-			self.vel = contact.tangent * (self.vel * contact.tangent)
+			self.ppos = contact.self_pos
+			self.vel = contact.tangent * self.vel * contact.tangent
+			self.pos = self.ppos + self.vel * contact.r * dt
 			self:updateCollider()
+
+			table.insert(skip, contact.other)
 		end
 	until not contact
 
@@ -218,7 +214,7 @@ function Agent:update(dt)
 		end
 	end
 
-	self:updateCollider() -- TODO: rework 2D collisions...
+	self:updateCollider()
 
 	-- TODO: Set appearance based on state...
 
@@ -239,10 +235,10 @@ function Agent:draw()
 		lg.translate(self.pos:split())
 
 		lg.setLineWidth(0.5)
-		lg.setColor(Stache.colorUnpack("white", 0.8))
+		Stache.setColor("white", 0.8)
 		lg.line(0, 0, dbgVel:split())
 		lg.line(0, 0, dbgAxis:split())
-		lg.setColor(Stache.colorUnpack("white", 0.4))
+		Stache.setColor("white", 0.4)
 		lg.line(dbgVel.x, dbgVel.y, dbgSpd:split())
 
 		lg.rotate(self.angRad)
@@ -307,7 +303,7 @@ function Agent:changeAction(action, jumpTo, play)
 	]]--
 
 	self.action = action
-	self:updateCollider() -- TODO: rework 2D collisions...
+	self:updateCollider()
 end
 
 function Agent:allowJump()
@@ -345,8 +341,8 @@ function Agent:togglePhysMode()
 	end
 end
 
-function Agent:updateCollider() -- TODO: rework 2D collisions...
-	self.collider:update(self.pos, self.ppos, self.angRad)
+function Agent:updateCollider()
+	self.collider:update({ pos = self.pos, ppos = self.ppos, angRad = self.angRad })
 end
 
 function Agent:isGrounded()

@@ -4,7 +4,7 @@ lk = love.keyboard
 lm = love.mouse
 la = love.audio
 
-FLOAT_EPSILON = 0.00000000001
+FLOAT_EPSILON = 0.00001
 
 WINDOW_WIDTH = 720
 WINDOW_HEIGHT = 480
@@ -59,6 +59,7 @@ function love.load()
 	Stache.load()
 
 	humpstate.registerEvents("prep")
+	--humpstate.switch(debugState)
 	humpstate.switch(editState)
 	humpstate.push(playState)
 end

@@ -141,6 +141,9 @@ function editState:refreshHandles()
 
 		if brush:instanceOf(CircleBrush) then
 			table.insert(self.handles, PointHandle(brush, "pos"))
+		elseif brush:instanceOf(LineBrush) then
+			table.insert(self.handles, PointHandle(brush, "p1"))
+			table.insert(self.handles, PointHandle(brush, "p2"))
 		end
 	end
 end
