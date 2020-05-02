@@ -39,6 +39,7 @@ setmetatable(Stache, {
 function formatError(msg,...)
 	local args = { n = select('#', ...), ...}
 	local strings = {}
+
 	for i = 1, args.n do
 		if args[i] then table.insert(strings, tostring(args[i]))
 		else table.insert(strings, "nil") end
@@ -132,8 +133,68 @@ end
 
 function Stache.draw()
 	lg.push("all")
-		lg.setColor(Stache.colorUnpack("black", Stache.fade))
+		Stache.setColor("black", Stache.fade)
 		lg.rectangle("fill", 0, 0, lg.getWidth(), lg.getHeight())
+	lg.pop()
+end
+
+function Stache.debugCircle(pos, radius, color, alpha)
+	pos = pos and pos or vec2()
+	radius = radius or 1
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.translate(pos:split())
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.circle("line", 0, 0, radius)
+		Stache.setColor(color, 0.4 * alpha)
+		lg.circle("fill", 0, 0, radius)
+		Stache.setColor(color, 0.8 * alpha)
+		lg.circle("fill", 0, 0, 1)
+	lg.pop()
+end
+
+function Stache.debugLine(p1, p2, color, alpha)
+	p1 = p1 and p1 or vec2()
+	p2 = p2 and p2 or vec2()
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.line(p1.x, p1.y, p2:split())
+	lg.pop()
+end
+
+function Stache.debugNormal(orig, dir, color, alpha)
+	orig = orig and orig or vec2()
+	dir = dir and dir or vec2()
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.translate(orig:split())
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.line(0, 0, dir.x, dir.y)
+	lg.pop()
+end
+
+function Stache.debugTangent(orig, dir, color, alpha)
+	Stache.debugNormal(orig, dir, color, alpha)
+	Stache.debugNormal(orig, -dir, color, alpha)
+end
+
+function Stache.debugBounds(bounds, color, alpha)
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		Stache.setColor(color, alpha)
+		lg.rectangle("line", bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top)
 	lg.pop()
 end
 
@@ -164,7 +225,7 @@ end
 
 function Stache.colorUnpack(color, alpha)
 	if type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
-		formatError("Stache.colorUnpack() called with a 'color' argument that isn't a table or userdata: ", color)
+		formatError("Stache.colorUnpack() called with a 'color' argument that isn't a string, table or userdata: ", color)
 	elseif alpha ~= nil and type(alpha) ~= "number" then
 		formatError("Stache.colorUnpack() called with a non-numerical 'alpha' argument: ", alpha)
 	end
@@ -173,6 +234,16 @@ function Stache.colorUnpack(color, alpha)
 		color = Stache.colors[color] end
 
 	return color[1], color[2], color[3], alpha
+end
+
+function Stache.setColor(color, alpha)
+	if type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
+		formatError("Stache.setColor() called with a 'color' argument that isn't a string, table or userdata: ", color)
+	elseif alpha ~= nil and type(alpha) ~= "number" then
+		formatError("Stache.setColor() called with a non-numerical 'alpha' argument: ", alpha)
+	end
+
+	lg.setColor(Stache.colorUnpack(color, alpha))
 end
 
 function Stache.updateList(table, ...)
@@ -203,6 +274,25 @@ end
 function Stache.drawList(table, ...)
 	for t = 1, #table do
 		table[t]:draw(...) end
+end
+
+function Stache.copy(obj, seen)
+    if type(obj) ~= "table" then
+	    return obj end
+
+    if seen and seen[obj] then
+	    return seen[obj] end
+
+    local s = seen or {}
+    local result = {}
+
+    s[obj] = result
+
+    for k, v in pairs(obj) do
+	    result[Stache.copy(k, s)] = Stache.copy(v, s)
+    end
+
+    return setmetatable(result, getmetatable(obj))
 end
 
 function floatEquality(a, b)
@@ -246,10 +336,7 @@ function clamp(value, min, max)
 		formatError("clamp() called with one or more non-numerial arguments: %q, %q, %q", value, min, max)
 	end
 
-	if value < min then value = min
-	elseif value > max then value = max end
-
-	return value
+	return math.min(math.max(min, value), max)
 end
 
 function isNaN(x)

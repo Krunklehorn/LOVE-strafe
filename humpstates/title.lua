@@ -8,7 +8,7 @@ function titleState:draw()
 	local width, height = lg.getDimensions()
 
 	lg.push("all")
-		lg.setColor(Stache.colorUnpack("white", 0.8))
+		Stache.setColor("white", 0.8)
 		lg.translate((width / 2), (height / 2))
 		lg.scale(60 * FONT_SHRINK)
 

@@ -29,10 +29,14 @@ function debugState:draw()
 	Stache.drawList(self.brushes)
 	Stache.drawList(self.dummies)
 
+	if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
+	if DEBUG_LINE then Stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
+	if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
+
 	self.camera:detach()
 	lg.push("all")
 
-	lg.setColor(Stache.colorUnpack(Stache.colors.white, 0.8))
+	Stache.setColor("white", 0.8)
 	lg.scale(40 * FONT_SHRINK)
 	lg.printf(Stache.players[1].agent.controlmode, 0, 0, lg.getWidth() * FONT_BLOWUP, "left")
 
@@ -43,6 +47,8 @@ end
 function debugState:keypressed(key)
 	if key == "v" then
 		self.dummies[1]:toggleControlMode()
+	elseif key == "n" then
+		DEBUG_DRAW = not DEBUG_DRAW
 	end
 end
 

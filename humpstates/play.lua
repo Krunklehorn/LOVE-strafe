@@ -54,6 +54,10 @@ function playState:draw()
 	Stache.drawList(self.props)
 	Stache.drawList(self.agents)
 
+	if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
+	if DEBUG_LINE then Stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
+	if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
+
 	self.camera:detach()
 	lg.push("all")
 		lg.translate(-8 * 3, -8 * 3)
@@ -61,61 +65,61 @@ function playState:draw()
 
 		lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
 		if Stache.players[1].boipy:down("up") then
-			lg.setColor(Stache.colorUnpack("white", 0.8))
+			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_up_prs)
 		else
-			lg.setColor(Stache.colorUnpack("white", 0.4))
+			Stache.setColor("white", 0.4)
 			lg.draw(Stache.sprites.arrowbtn_up_rls)
 		end
 
 		lg.translate(0, 60 / 3)
 		if Stache.players[1].boipy:down("down") then
-			lg.setColor(Stache.colorUnpack("white", 0.8))
+			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_down_prs)
 		else
-			lg.setColor(Stache.colorUnpack("white", 0.4))
+			Stache.setColor("white", 0.4)
 			lg.draw(Stache.sprites.arrowbtn_down_rls)
 		end
 
 		lg.translate(-60 / 3, 0)
 		if Stache.players[1].boipy:down("left") then
-			lg.setColor(Stache.colorUnpack("white", 0.8))
+			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_left_prs)
 		else
-			lg.setColor(Stache.colorUnpack("white", 0.4))
+			Stache.setColor("white", 0.4)
 			lg.draw(Stache.sprites.arrowbtn_left_rls)
 		end
 
 		lg.translate(120 / 3, 0)
 		if Stache.players[1].boipy:down("right") then
-			lg.setColor(Stache.colorUnpack("white", 0.8))
+			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_right_prs)
 		else
-			lg.setColor(Stache.colorUnpack("white", 0.4))
+			Stache.setColor("white", 0.4)
 			lg.draw(Stache.sprites.arrowbtn_right_rls)
 		end
 
 		lg.translate(-140 / 3, 60 / 3)
 		if Stache.players[1].boipy:down("jump") then
-			lg.setColor(Stache.colorUnpack("white", 0.8))
+			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.spacebtn_prs)
 		else
-			lg.setColor(Stache.colorUnpack("white", 0.4))
+			Stache.setColor("white", 0.4)
 			lg.draw(Stache.sprites.spacebtn_rls)
 		end
 
 		lg.translate(140 / 3, 0)
 		if Stache.players[1].boipy:down("crouch") then
-			lg.setColor(Stache.colorUnpack("white", 0.8))
+			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.crouchbtn_prs)
 		else
-			lg.setColor(Stache.colorUnpack("white", 0.4))
+			Stache.setColor("white", 0.4)
 			lg.draw(Stache.sprites.crouchbtn_rls)
 		end
 	lg.pop()
 
 	lg.push("all")
-		lg.setColor(Stache.colorUnpack("white", 0.8))
+		Stache.setColor("white", 0.8)
 		lg.scale(40 * FONT_SHRINK)
 		lg.printf(Stache.players[1].agent.physmode, 0, 0, lg.getWidth() * FONT_BLOWUP, "left")
 	lg.pop()
@@ -135,6 +139,8 @@ function playState:keypressed(key)
 		Stache.timescale = Stache.timescale / 2
 	elseif key == "v" then
 		self.agents[1]:togglePhysMode()
+	elseif key == "n" then
+		DEBUG_DRAW = not DEBUG_DRAW
 	end
 end
 

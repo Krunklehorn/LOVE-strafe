@@ -20,6 +20,7 @@ AIM_SENSITIVITY = 1/400
 BG_OVERDRAW = 3
 
 DEBUG_STATECHANGES = false
+DEBUG_DRAW = true
 
 vec2 = require "modules.brinevector"
 stalker = require "modules.stalker-x"

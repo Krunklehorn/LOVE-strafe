@@ -108,20 +108,20 @@ end
 function Vector.__newindex(t,k,v)
 	if k == "length" then
 		local res = t.normalized * v
+
 		t.x = res.x
 		t.y = res.y
-		return
-	end
-	if k == "angle" then
+	elseif k == "angle" then
 		local res = t:angled(v)
+
 		t.x = res.x
 		t.y = res.y
-		return
-	end
-	if t == Vector then
-		rawset(t,k,v)
 	else
-		error("Cannot assign a new property '" .. k .. "' to a Vector", 2)
+		if t == Vector then
+			rawset(t,k,v)
+		else
+			error("Cannot assign a new property '" .. k .. "' to a Vector", 2)
+		end
 	end
 end
 

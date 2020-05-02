@@ -1,6 +1,6 @@
 CircleBrush = CircleCollider:extend("CircleBrush", {
 	height = 0,
-	color = Stache.colors.white
+	color = "white"
 })
 
 function CircleBrush:__index(key)
@@ -13,10 +13,7 @@ end
 function CircleBrush:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "pos" then
-		slf.pos = value
-		slf.ppos = value
-	elseif key == "height" then
+	if key == "height" then
 		if type(value) ~= "number" then
 			formatError("Attempted to set 'height' key of class 'CircleBrush' to a non-numerical value: %q", value)
 		end

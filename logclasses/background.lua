@@ -3,7 +3,7 @@ Background = class("Background", {
 	offset = vec2(),
 	scale = vec2(1),
 	scroll = vec2(1),
-	color = Stache.colors.white,
+	color = "white",
 	alpha = 1,
 	dimensions = vec2(),
 	sd = vec2(),
@@ -25,9 +25,6 @@ function Background:init(image, offset, scale, scroll, color, alpha)
 	elseif alpha ~= nil and type(alpha) ~= "number" then
 		formatError("Background:init() called with a non-numerical 'alpha' argument: %q", color)
 	end
-
-	if type(color) == "string" then
-		color = Stache.colors[color] end
 
 	self.image = image
 	if offset then self.offset = offset end
@@ -73,7 +70,7 @@ function Background:draw(camera)
 		lg.scale(camera.scale)
 		lg.translate(-(width / 2) * BG_OVERDRAW, -(height / 2) * BG_OVERDRAW)
 
-		lg.setColor(Stache.colorUnpack(self.color, self.alpha))
+		Stache.setColor(self.color, self.alpha)
 		lg.draw(self.image, self.quad)
 	lg.pop()
 end

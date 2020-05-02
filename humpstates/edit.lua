@@ -58,7 +58,7 @@ function editState:draw()
 	Stache.drawList(playState.agents)
 	Stache.drawList(playState.particles)
 
-	lg.setColor(Stache.colorUnpack("red", 1))
+	Stache.setColor("red", 1)
 	lg.rectangle("line", self.grid.visible(playState))
 
 	Stache.drawList(self.handles, self.camera.scale)
