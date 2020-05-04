@@ -118,11 +118,9 @@ function playState:draw()
 		end
 	lg.pop()
 
-	lg.push("all")
-		Stache.setColor("white", 0.8)
-		lg.scale(40 * FONT_SHRINK)
-		lg.printf(Stache.players[1].agent.physmode, 0, 0, lg.getWidth() * FONT_BLOWUP, "left")
-	lg.pop()
+	Stache.setColor("white", 0.8)
+	Stache.debugPrintf(40, Stache.players[1].agent.physmode, 5, 0, nil, "left")
+
 	self.camera:draw()
 end
 

@@ -232,19 +232,16 @@ function Agent:draw()
 					 self.action == "tuck") and 2 or 1
 
 	lg.push("all")
-		lg.translate(self.pos:split())
 
-		lg.setLineWidth(0.5)
-		Stache.setColor("white", 0.8)
-		lg.line(0, 0, dbgVel:split())
-		lg.line(0, 0, dbgAxis:split())
-		Stache.setColor("white", 0.4)
-		lg.line(dbgVel.x, dbgVel.y, dbgSpd:split())
+		Stache.debugNormal(self.pos, dbgVel, "white", 0.8)
+		Stache.debugNormal(self.pos, dbgAxis, "white", 0.8)
+		lg.translate(self.pos:split())
+		Stache.debugLine(dbgVel, dbgSpd, "white", 0.4)
 
 		lg.rotate(self.angRad)
+		Stache.setColor("white", 0.4)
 		lg.line(0, 0, 0, -self.collider.radius)
-		lg.scale(40 * FONT_SHRINK)
-		lg.printf(math.floor(self.vel.length + 0.5), -90 * FONT_BLOWUP, 0, 180 * FONT_BLOWUP, "center")
+		Stache.debugPrintf(40, math.floor(self.vel.length + 0.5), nil, nil, nil, "center")
 	lg.pop()
 
 	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...

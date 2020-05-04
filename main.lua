@@ -54,8 +54,6 @@ require "logclasses.handles"
 require "logclasses.dummy"
 
 function love.load()
-	lg.setNewFont(FONT_BLOWUP)
-
 	Stache.load()
 
 	humpstate.registerEvents("prep")

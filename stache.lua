@@ -145,6 +145,8 @@ end
 function Stache.load()
 	local filestrings, subDir, sheet, width, height
 
+	lg.setNewFont(FONT_BLOWUP)
+
 	local makeDir = function(dir, subdir)
 		dir[subdir] = {}
 		return dir[subdir]
@@ -226,6 +228,15 @@ function Stache.load()
 	Stache.players.active = first(Stache.players)
 end
 
+function Stache.hideMembers(inst)
+	for k, v in pairs(inst) do
+		if k ~= "members" then
+			inst.members[k] = v
+			rawset(inst, k, nil)
+		end
+	end
+end
+
 function Stache.draw()
 	lg.push("all")
 		Stache.setColor("black", Stache.fade)
@@ -234,7 +245,11 @@ function Stache.draw()
 end
 
 function Stache.debugCircle(pos, radius, color, alpha)
-	pos = pos and pos or vec2()
+	Stache.checkArg("pos", pos, "vector", "Stache.debugCircle")
+	Stache.checkArg("radius", radius, "number", "Stache.debugCircle", true)
+	Stache.checkArg("color", color, "color", "Stache.debugCircle", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugCircle", true)
+
 	radius = radius or 1
 	color = color or "white"
 	alpha = alpha or 1
@@ -252,8 +267,11 @@ function Stache.debugCircle(pos, radius, color, alpha)
 end
 
 function Stache.debugLine(p1, p2, color, alpha)
-	p1 = p1 and p1 or vec2()
-	p2 = p2 and p2 or vec2()
+	Stache.checkArg("p1", p1, "vector", "Stache.debugLine")
+	Stache.checkArg("p2", p2, "vector", "Stache.debugLine")
+	Stache.checkArg("color", color, "color", "Stache.debugLine", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugLine", true)
+
 	color = color or "white"
 	alpha = alpha or 1
 
@@ -265,8 +283,11 @@ function Stache.debugLine(p1, p2, color, alpha)
 end
 
 function Stache.debugNormal(orig, dir, color, alpha)
-	orig = orig and orig or vec2()
-	dir = dir and dir or vec2()
+	Stache.checkArg("orig", orig, "vector", "Stache.debugNormal")
+	Stache.checkArg("dir", dir, "vector", "Stache.debugNormal")
+	Stache.checkArg("color", color, "color", "Stache.debugNormal", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugNormal", true)
+
 	color = color or "white"
 	alpha = alpha or 1
 
@@ -279,11 +300,27 @@ function Stache.debugNormal(orig, dir, color, alpha)
 end
 
 function Stache.debugTangent(orig, dir, color, alpha)
-	Stache.debugNormal(orig, dir, color, alpha)
-	Stache.debugNormal(orig, -dir, color, alpha)
+	Stache.checkArg("orig", orig, "vector", "Stache.debugTangent")
+	Stache.checkArg("dir", dir, "vector", "Stache.debugTangent")
+	Stache.checkArg("color", color, "color", "Stache.debugTangent", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugTangent", true)
+
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.translate(orig:split())
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.line(0, 0, dir.x, dir.y)
+		lg.line(0, 0, -dir.x, -dir.y)
+	lg.pop()
 end
 
 function Stache.debugBounds(bounds, color, alpha)
+	Stache.checkArg("color", color, "color", "Stache.debugPrintf", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugPrintf", true)
+
 	color = color or "white"
 	alpha = alpha or 1
 
@@ -293,13 +330,55 @@ function Stache.debugBounds(bounds, color, alpha)
 	lg.pop()
 end
 
-function Stache.hideMembers(inst)
-	for k, v in pairs(inst) do
-		if k ~= "members" then
-			inst.members[k] = v
-			rawset(inst, k, nil)
-		end
-	end
+function Stache.debugPrintf(size, text, x, y, limit, align, r, sx, sy)
+	Stache.checkArg("size", size, "number", "Stache.debugPrintf")
+	Stache.checkArg("x", x, "number", "Stache.debugPrintf", true)
+	Stache.checkArg("y", y, "number", "Stache.debugPrintf", true)
+	Stache.checkArg("limit", limit, "number", "Stache.debugPrintf", true)
+	Stache.checkArg("align", align, "string", "Stache.debugPrintf", true)
+	Stache.checkArg("r", r, "number", "Stache.debugPrintf", true)
+	Stache.checkArg("sx", sx, "number", "Stache.debugPrintf", true)
+	Stache.checkArg("sy", sy, "number", "Stache.debugPrintf", true)
+
+	local ox = 0
+
+	size = size * FONT_SHRINK
+	x = x or 0
+	y = y or 0
+	limit = (limit or 100000) / size
+	align = align or "center"
+	sx = (sx or 1) * size
+	sy = (sy or 1) * size
+
+	if align == "center" then
+		ox = limit / 2
+	elseif align == "right" then
+		ox = limit end
+
+	lg.push("all")
+		lg.printf(text, x, y, limit, align, r, sx, sy, ox)
+	lg.pop()
+end
+
+function Stache.colorUnpack(color, alpha)
+	Stache.checkArg("color", color, "color", "Stache.colorUnpack")
+	Stache.checkArg("alpha", alpha, "number", "Stache.colorUnpack", true)
+
+	alpha = alpha or 1
+
+	if type(color) == "string" then
+		color = Stache.colors[color] end
+
+	return color[1], color[2], color[3], alpha
+end
+
+function Stache.setColor(color, alpha)
+	Stache.checkArg("color", color, "color", "Stache.setColor")
+	Stache.checkArg("alpha", alpha, "number", "Stache.setColor", true)
+
+	alpha = alpha or 1
+
+	lg.setColor(Stache.colorUnpack(color, alpha))
 end
 
 function Stache.play(sound)
@@ -316,23 +395,6 @@ function Stache.play(sound)
 		Stache.music[sound]:stop()
 		Stache.music[sound]:play()
 	end
-end
-
-function Stache.colorUnpack(color, alpha)
-	Stache.checkArg("color", color, "color", "Stache.colorUnpack")
-	Stache.checkArg("alpha", alpha, "number", "Stache.colorUnpack", true)
-
-	if type(color) == "string" then
-		color = Stache.colors[color] end
-
-	return color[1], color[2], color[3], alpha
-end
-
-function Stache.setColor(color, alpha)
-	Stache.checkArg("color", color, "color", "Stache.setColor")
-	Stache.checkArg("alpha", alpha, "number", "Stache.setColor", true)
-
-	lg.setColor(Stache.colorUnpack(color, alpha))
 end
 
 function Stache.updateList(table, ...)

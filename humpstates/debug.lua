@@ -35,13 +35,10 @@ function debugState:draw()
 	if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
 
 	self.camera:detach()
-	lg.push("all")
 
 	Stache.setColor("white", 0.8)
-	lg.scale(40 * FONT_SHRINK)
-	lg.printf(Stache.players[1].agent.controlmode, 0, 0, lg.getWidth() * FONT_BLOWUP, "left")
+	Stache.debugPrintf(40, Stache.players[1].agent.controlmode, 10, 0, nil, "left")
 
-	lg.pop()
 	self.camera:draw()
 end
 

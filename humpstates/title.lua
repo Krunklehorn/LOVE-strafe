@@ -9,12 +9,9 @@ function titleState:draw()
 
 	lg.push("all")
 		Stache.setColor("white", 0.8)
-		lg.translate((width / 2), (height / 2))
-		lg.scale(60 * FONT_SHRINK)
-
-		lg.printf("LÖVEstrafe", -90 * FONT_BLOWUP, -FONT_BLOWUP, 180 * FONT_BLOWUP, "center")
-		lg.scale(1 / 3)
-		lg.printf("A top-down 2D tech demo of Quake-based strafe jumping physics using the LÖVE engine.", -10 * FONT_BLOWUP, FONT_BLOWUP, 20 * FONT_BLOWUP, "center")
+		lg.translate(20, height - 140)
+		Stache.debugPrintf(50, "LÖVEstrafe", 0, 0, nil, "left")
+		Stache.debugPrintf(50 / 3, "A top-down 2D tech demo of Quake-based strafe jumping physics using the LÖVE engine.", 0, 60, 360, "left")
 	lg.pop()
 end
 
