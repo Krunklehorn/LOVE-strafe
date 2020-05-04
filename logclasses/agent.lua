@@ -4,6 +4,7 @@ Agent = Entity:extend("Agent", {
 	action = nil,
 	collider = nil,
 	posz = 0, -- TODO: BRINEVEC3?
+	pposz = 0, -- TODO: BRINEVEC3?
 	velz = 0, -- TODO: BRINEVEC3?
 
 	aim = vec2(),
@@ -60,7 +61,7 @@ end
 function Agent:init(data)
 	Entity.init(self, data)
 
-	self:changeState("idle")
+	self:changeState("air")
 	self:setPhysMode("VQ3")
 end
 
@@ -102,25 +103,25 @@ function Agent:update(dt)
 
 	-- Iterate physics variables based on current state...
 
-	if self.state == "idle" then
-		self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, self.dampmin) * self.dampfact * dt)
-	elseif self.state == "move" then
-		local axis = self.axis:rotated(self.angRad)
-		local acc = self.accmove
-		local top = self.top
-		local dampmin = self.dampmin
+	if self:isGrounded() then
+		if self.state == "idle" then
+			self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, self.dampmin) * self.dampfact * dt)
+		elseif self.state == "move" then
+			local axis = self.axis:rotated(self.angRad)
+			local acc = self.accmove
+			local top = self.top
+			local dampmin = self.dampmin
 
-		if self.action == "crouch" then
-			acc = acc / 4
-			top = top / 4
-			dampmin = dampmin / 4
+			if self.action == "crouch" then
+				acc = acc / 4
+				top = top / 4
+				dampmin = dampmin / 4
+			end
+
+			self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, dampmin) * self.dampfact * dt)
+			self.vel = self.vel + axis * clamp(top - self.vel * axis, 0, acc * dt)
 		end
-
-		self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, dampmin) * self.dampfact * dt)
-		self.vel = self.vel + axis * clamp(top - self.vel * axis, 0, acc * dt)
 	else
-		self.velz = self.velz + self.grv * dt
-
 		if self.state == "air" then
 			local axis = self.axis:rotated(self.angRad)
 			local bunny = not equalsZero(math.abs(self.axis.x)) and equalsZero(math.abs(self.axis.y))
@@ -151,20 +152,73 @@ function Agent:update(dt)
 
 				self.vel = dir * speed
 			end
+
+			self.velz = self.velz + self.grv * dt
+			self.pposz = self.posz
+			self.posz = self.posz + self.velz * dt
+			self.posz = self.posz > -100 and self.posz or -100
 		end
 	end
 
 	self.ppos = self.pos
 	self.pos = self.pos + self.vel * dt
-	self.posz = self.posz + self.velz * dt
 	self:updateCollider()
 
+	-- Check for ground interactions...
+	if self:isGrounded() then
+		local result = self.collider:overlap(self.grndRef)
+
+		if result.depth < 0 then
+			local floor
+
+			for b, brush in ipairs(playState.brushes) do
+				if brush ~= self.grndRef and self.posz == brush.height then
+					local result = self.collider:overlap(brush)
+
+					if result.depth > 0 then
+						floor = brush
+						break
+					end
+				end
+			end
+
+			if floor then
+				self:setGround(floor)
+			else
+				self:clearGround()
+				self:changeState("air")
+			end
+		end
+	else
+		for b, brush in ipairs(playState.brushes) do
+			if self.posz <= brush.height and self.pposz > brush.height then
+				local result = self.collider:overlap(brush)
+
+				if result.depth > 0 then
+					self.posz = brush.height
+					self.pposz = brush.height
+					self.velz = 0
+					self:setGround(brush)
+					self:changeState(equalsZero(self.vel.length) and "idle" or "move")
+
+					break
+				end
+			end
+		end
+	end
+
+	self:updateCollider()
+
+	-- Check for and resolve contacts...
 	local skip = {}
 
 	repeat
 		local contact
 
 		for b, brush in ipairs(playState.brushes) do
+			if self.posz >= brush.height then
+				goto continue end
+
 			for _, skip in pairs(skip) do
 				if brush == skip then
 					goto continue end end
@@ -173,8 +227,7 @@ function Agent:update(dt)
 
 			if result then
 				if result.t >= 0 and (not contact or result.t < contact.t) then
-					contact = result
-				end
+					contact = result end
 			end
 
 			::continue::
@@ -190,27 +243,12 @@ function Agent:update(dt)
 		end
 	until not contact
 
-	-- TODO: Check for state changes based on contact resolution...
-	if self.state == "air" then
-		if self.posz <= 0 then
-			self.posz = 0
-			self.velz = 0
-			if equalsZero(self.vel.length) then
-				self:changeState("idle")
-			else
-				self:changeState("move")
-			end
-		end
-	end
-
-	-- TODO: Check for edge slips...
-
 	-- Check for state changes based on velocity...
 	if self:isGrounded() then
 		if self.state == "idle" and not equalsZero(self.vel.length) then
-				self:changeState("move")
+			self:changeState("move")
 		elseif self.state == "move" and equalsZero(self.vel.length) then
-				self:changeState("idle")
+			self:changeState("idle")
 		end
 	end
 
@@ -256,9 +294,6 @@ function Agent:changeState(next)
 	if DEBUG_STATECHANGES then
 		print("changeState():", self.state, next) end
 
-	if next == "air" then
-		self.grndRef = nil end
-
 	self.state = next
 
 	if self.state == "idle" then
@@ -266,6 +301,7 @@ function Agent:changeState(next)
 	elseif self.state == "move" then
 		self:changeAction(self.crouch and "crouch" or nil, 1, true)
 	elseif self.state == "air" then
+		self.grndRef = nil
 		self:changeAction(self.crouch and "tuck" or nil, 1, true)
 	else
 		self:changeAction(nil, 1, true)
@@ -343,6 +379,13 @@ function Agent:updateCollider()
 end
 
 function Agent:isGrounded()
-	return self.posz <= 0
-	--return self.grndRef ~= nil
+	return self.grndRef ~= nil
+end
+
+function Agent:setGround(brush)
+	self.grndRef = brush
+end
+
+function Agent:clearGround()
+	self.grndRef = nil
 end

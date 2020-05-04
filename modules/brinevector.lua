@@ -38,7 +38,7 @@ else
 end
 
 local Vector = {}
-setmetatable(Vector,Vector)
+setmetatable(Vector, Vector)
 
 local special_properties = {
 	length = "getLength",
@@ -57,7 +57,7 @@ function Vector.__index(t, k)
 	if special_properties[k] then
 		return Vector[special_properties[k]](t)
 	end
-	return rawget(Vector,k)
+	return rawget(Vector, k)
 end
 
 function Vector.getLength(v)
@@ -79,7 +79,7 @@ function Vector.getAngle(v)
 end
 
 function Vector.getCopy(v)
-	return Vector(v.x,v.y)
+	return Vector(v.x, v.y)
 end
 
 function Vector.getInverse(v)
@@ -105,7 +105,7 @@ function Vector.getCeil(v)
 	return Vector(math.ceil(v.x), math.ceil(v.y))
 end
 
-function Vector.__newindex(t,k,v)
+function Vector.__newindex(t, k, v)
 	if k == "length" then
 		local res = t.normalized * v
 
@@ -118,7 +118,7 @@ function Vector.__newindex(t,k,v)
 		t.y = res.y
 	else
 		if t == Vector then
-			rawset(t,k,v)
+			rawset(t, k, v)
 		else
 			error("Cannot assign a new property '" .. k .. "' to a Vector", 2)
 		end
@@ -130,7 +130,7 @@ function Vector.angled(v, angle)
 	return Vector(math.cos(angle) * length, math.sin(angle) * length)
 end
 
-function Vector.trim(v,mag)
+function Vector.trim(v, mag)
 	if v.length < mag then return v end
 	return v.normalized * mag
 end
@@ -171,9 +171,10 @@ end
 ----------------------------------------------------------------------------------------------
 
 local iteraxes_lookup = {
-	xy = {"x","y"},
-	yx = {"y","x"}
+	xy = {"x", "y"},
+	yx = {"y", "x"}
 }
+
 local function iteraxes(ordertable, i)
 	i = i + 1
 	if i > 2 then return nil end
@@ -201,7 +202,7 @@ end
 
 if ffi then
 	function Vector.isVector(arg)
-		return ffi.istype("brinevector",arg)
+		return ffi.istype("brinevector", arg)
 	end
 else
 	function Vector.isVector(arg)
@@ -247,26 +248,26 @@ function Vector.__unm(v)
 	return Vector(-v.x, -v.y)
 end
 
-function Vector.__eq(v1,v2)
+function Vector.__eq(v1, v2)
 	if (not Vector.isVector(v1)) or (not Vector.isVector(v2)) then return false end
 	return floatEquality(v1.x, v2.x) and floatEquality(v1.y, v2.y) -- Krunk: Added float equality hooks
 end
 
 ----------------------------------------------------------------------------------------------------
 -- Krunk: Modified the Hadamard product to use the caret sign because it's a product, not a quotient
-function Vector.__pow(v1,v2) -- Previously the modulo operator...
+function Vector.__pow(v1, v2) -- Previously the modulo operator...
 	return Vector(v1.x * v2.x, v1.y * v2.y)
 end
 
 -- Modulo operator now performs inverse Hadamard product...
-function Vector.__mod(v1,v2)
+function Vector.__mod(v1, v2)
 	if v2.x * v2.y == 0 then error("Vector NaN occured") end
 	return Vector(v1.x / v2.x, v1.y / v2.y)
 end
 ----------------------------------------------------------------------------------------------------
 
 function Vector.__tostring(t)
-	return string.format("Vector{ %.4f, %.4f }",t.x,t.y) -- Krunk: Added spaces, personal preference...
+	return string.format("Vector{ %.4f, %.4f }", t.x, t.y) -- Krunk: Added spaces, personal preference...
 end
 
 function Vector.__concat(str, v)
@@ -280,12 +281,12 @@ end
 ------------------------------------------------------------------------------------------------
 -- Krunk: Modified to allow a single numerical argument to be used to define both x and y fields
 if ffi then
-	function Vector.__call(t,x,y)
-		return ffi.new("brinevector",x or 0,y or x or 0)
+	function Vector.__call(t, x, y)
+		return ffi.new("brinevector", x or 0, y or x or 0)
 	end
 else
-	function Vector.__call(t,x,y)
-		return setmetatable({x = x or 0, y = y or x or 0}, Vector)
+	function Vector.__call(t, x, y)
+		return setmetatable({ x = x or 0, y = y or x or 0 }, Vector)
 	end
 end
 ------------------------------------------------------------------------------------------------
@@ -295,10 +296,10 @@ end
 local cos45, sin45 = math.cos(45), math.sin(45)
 
 local dirs = {
-	up = Vector(0,-1),
-	down = Vector(0,1),
-	left = Vector(-1,0),
-	right = Vector(1,0),
+	up = Vector(0, -1),
+	down = Vector(0, 1),
+	left = Vector(-1, 0),
+	right = Vector(1, 0),
 	upleft = Vector(-cos45, -sin45),
 	upright = Vector(cos45, -sin45),
 	downleft = Vector(-cos45, sin45),
@@ -312,7 +313,7 @@ end
 
 
 if ffi then
-	ffi.metatype("brinevector",Vector)
+	ffi.metatype("brinevector", Vector)
 end
 
 return Vector

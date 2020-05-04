@@ -15,11 +15,31 @@ function playState:init()
 	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(2), nil, nil, 0.1))
 	table.insert(self.backgrounds, Background(Stache.sprites.parallax_screen, nil, vec2(2), vec2(0.25), nil, 0.2))
 
-	table.insert(self.brushes, CircleBrush({ pos = vec2(0, -400), radius = 64 }))
-	table.insert(self.brushes, CircleBrush({ pos = vec2(0, -700), radius = 64 }))
-	table.insert(self.brushes, LineBrush({ p1 = vec2(-1000, 200), p2 = vec2(1000, 200), radius = 128 }))
+	table.insert(self.brushes, LineBrush({ p1 = vec2(-1000, 0), p2 = vec2(1000, 0), radius = 300 }))
 
-	Stache.players[1].agent = self:spawnAgent("strafer")
+	local lane = -800
+	local hwidth = 200
+	local dist = -600
+	for i = 1, 10 do
+		table.insert(self.brushes, LineBrush({ p1 = vec2(lane + hwidth, dist), p2 = vec2(lane - hwidth, dist), radius = 80 }))
+		dist = dist - 300 * (1 + i / 7)
+	end
+
+	lane = 0
+	dist = -700
+	for i = 1, 8 do
+		table.insert(self.brushes, LineBrush({ p1 = vec2(lane + hwidth, dist), p2 = vec2(lane - hwidth, dist), radius = 80 }))
+		dist = dist - 425 * (1 + i / 7)
+	end
+
+	lane = 800
+	dist = -600
+	for i = 1, 16 do
+		table.insert(self.brushes, CircleBrush({ pos = vec2(lane + math.sin(math.rad(dist * 0.25)) * 200, dist), radius = 100 }))
+		dist = dist - 300
+	end
+
+	Stache.players[1].agent = self:spawnAgent("strafer", { posz = 20 })
 end
 
 function playState:enter()
@@ -31,14 +51,24 @@ function playState:leave()
 end
 
 function playState:update(dt)
-	local agent = Stache.players.active.agent
+	local active_agent = Stache.players.active.agent
 
 	Stache.updateList(self.agents, dt)
 	Stache.updateList(self.props, dt)
 	Stache.updateList(self.particles, dt)
 
-	self.camera:follow(agent.pos:split())
-	self.camera.rotation = -agent.angRad
+	if active_agent.posz <= -100 then
+		active_agent.pos = vec2()
+		active_agent.ppos = vec2()
+		active_agent.vel = vec2()
+		active_agent.posz = 20
+		active_agent.pposz = 20
+		active_agent.velz = 20
+		active_agent:changeState("air")
+		end
+
+	self.camera:follow(active_agent.pos:split())
+	self.camera.rotation = -active_agent.angRad
 	self.camera:update(dt)
 
 	Stache.updateList(self.backgrounds, self.camera)
@@ -167,7 +197,7 @@ end
 
 function playState:spawnProp(name, params)
 	Stache.checkArg("name", name, "string", "playState:spawnProp")
-	Stache.checkArg("params", params, "indxable", "playState:spawnProp", true)
+	Stache.checkArg("params", params, "indexable", "playState:spawnProp", true)
 
 	if Stache.props[name] == nil then
 		Stache.formatError("playState:spawnProp() called with a 'name' argument that does not correspond to a loaded prop: %q", name)
@@ -188,7 +218,7 @@ end
 
 function playState:spawnAgent(name, params)
 	Stache.checkArg("name", name, "string", "playState:spawnAgent")
-	Stache.checkArg("params", params, "indxable", "playState:spawnAgent", true)
+	Stache.checkArg("params", params, "indexable", "playState:spawnAgent", true)
 
 	if Stache.actors[name] == nil then
 		Stache.formatError("playState:spawnAgent() called with a 'name' argument that does not correspond to a loaded actor: %q", name)
