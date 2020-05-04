@@ -12,19 +12,12 @@ Background = class("Background", {
 })
 
 function Background:init(image, offset, scale, scroll, color, alpha)
-	if image:type() ~= "Image" then
-		formatError("Background:init() called without a proper 'image' argument: %q", image)
-	elseif offset ~= nil and not vec2.isVector(offset) then
-		formatError("Background:init() called with a non-vector 'offset' argument: %q", offset)
-	elseif scale ~= nil and not vec2.isVector(scale) then
-		formatError("Background:init() called with a non-vector 'scale' argument: %q", scale)
-	elseif scroll ~= nil and not vec2.isVector(scroll) then
-		formatError("Background:init() called with a non-vector 'scroll' argument: %q", scroll)
-	elseif color ~= nil and type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
-		formatError("Background:init() called with a 'color' argument that isn't a string, table or userdata: %q", color)
-	elseif alpha ~= nil and type(alpha) ~= "number" then
-		formatError("Background:init() called with a non-numerical 'alpha' argument: %q", color)
-	end
+	Stache.checkArg("image", image, "Image", "Background:init")
+	Stache.checkArg("offset", offset, "vector", "Background:init", true)
+	Stache.checkArg("scale", scale, "vector", "Background:init", true)
+	Stache.checkArg("scroll", scroll, "vector", "Background:init", true)
+	Stache.checkArg("color", color, "color", "Background:init", true)
+	Stache.checkArg("alpha", alpha, "number", "Background:init", true)
 
 	self.image = image
 	if offset then self.offset = offset end
@@ -49,7 +42,7 @@ function Background:update(camera)
 	elseif camera.x and camera.y then
 		pos = vec2(camera.x, camera.y)
 	else
-		formatError("Background:update() called with an invalid 'camera' argument: %q", camera)
+		Stache.formatError("Background:update() called with an invalid 'camera' argument: %q", camera)
 	end
 
 	pos = pos ^ self.scroll

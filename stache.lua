@@ -36,7 +36,7 @@ setmetatable(Stache, {
 	end
 })
 
-function formatError(msg,...)
+function Stache.formatError(msg, ...)
 	local args = { n = select('#', ...), ...}
 	local strings = {}
 
@@ -47,13 +47,108 @@ function formatError(msg,...)
 	error(msg:format(unpack(strings)), 2)
 end
 
-function makeDir(dir, subdir)
-	dir[subdir] = {}
-	return dir[subdir]
+function Stache.checkSet(key, value, query, class, nillable)
+	if value == nil and nillable == true then
+		return
+	else
+		if query == "number" then
+			if type(value) ~= query then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a number: %q", key, class, value)
+			end
+		elseif query == "string" then
+			if type(value) ~= query then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a string: %q", key, class, value)
+			end
+		elseif query == "boolean" then
+			if type(value) ~= query then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a boolean: %q", key, class, value)
+			end
+		elseif query == "function" then
+			if type(value) ~= query then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a function: %q", key, class, value)
+			end
+		elseif query == "color" then
+			if type(value) ~= "string" and type(value) ~= "table" and type(value) ~= "userdata" then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a string, table or userdata: %q", key, class, value)
+			end
+		elseif query == "vector" then
+			if not vec2.isVector(value) then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a vector: %q", key, class, value)
+			end
+		elseif query == "indexable" then
+			if type(value) ~= "table" and type(value) ~= "userdata" then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a table or userdata: %q", key, class, value)
+			end
+		elseif type(query) ~= "string" then
+			if not value:instanceOf(query) then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't of type '%s': %q", key, class, query--[[.class]], value)
+			end
+		else
+			Stache.formatError("Stache.checkSet() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
+		end
+	end
+end
+
+function Stache.checkArg(key, arg, query, func, nillable)
+	if value == nil and nillable == true then
+		return
+	else
+		if query == "number" then
+			if type(arg) ~= query then
+				Stache.formatError("%s() called with a '%s' argument that isn't a number: %q", func, key, arg)
+			end
+		elseif query == "string" then
+			if type(arg) ~= query then
+				Stache.formatError("%s() called with a '%s' argument that isn't a string: %q", func, key, arg)
+			end
+		elseif query == "boolean" then
+			if type(arg) ~= query then
+				Stache.formatError("%s() called with a '%s' argument that isn't a boolean: %q", func, key, arg)
+			end
+		elseif query == "function" then
+			if type(arg) ~= query then
+				Stache.formatError("%s() called with a '%s' argument that isn't a function: %q", func, key, arg)
+			end
+		elseif query == "color" then
+			if type(arg) ~= "string" and type(arg) ~= "table" and type(arg) ~= "userdata" then
+				Stache.formatError("%s() called with a '%s' argument that isn't a string, table or userdata: %q", func, key, arg)
+			end
+		elseif query == "vector" then
+			if not vec2.isVector(arg) then
+				Stache.formatError("%s() called with a '%s' argument that isn't a vector: %q", func, key, arg)
+			end
+		elseif query == "indexable" then
+			if type(arg) ~= "table" and type(arg) ~= "userdata" then
+				Stache.formatError("%s() called with a '%s' argument that isn't a table or userdata: %q", func, key, arg)
+			end
+		elseif query == "Image" then
+			if arg:type() ~= "Image" then
+				Stache.formatError("%s() called without a proper '%s' argument: %q", func, key, arg)
+			end
+		elseif type(query) ~= "string" then
+			if not arg:instanceOf(query) then
+				Stache.formatError("%s() called with a '%s' argument that isn't of type '%s': %q", func, key, query, arg)
+			end
+		else
+			Stache.formatError("Stache.checkArg() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
+		end
+	end
+end
+
+function Stache.readOnly(key, queries, class)
+	for _, query in ipairs(queries) do
+		if key == query then
+			Stache.formatError("Attempted to set a key of class '%s' that is read-only: %q", class, key) end
+	end
 end
 
 function Stache.load()
 	local filestrings, subDir, sheet, width, height
+
+	local makeDir = function(dir, subdir)
+		dir[subdir] = {}
+		return dir[subdir]
+	end
 
 	lg.setDefaultFilter("nearest", "nearest", 1)
 
@@ -208,10 +303,10 @@ function Stache.hideMembers(inst)
 end
 
 function Stache.play(sound)
-	if type(sound) ~= "string" then
-		formatError("Stache.play() called with a 'sound' argument that isn't a string: %q", sfx)
-	elseif not Stache.sfx[sound] then
-		formatError("Stache:play() called with a 'sound' argument that does not correspond to a loaded sound: %q", name)
+	Stache.checkArg("sound", sound, "string", "Stache.play")
+
+	if not Stache.sfx[sound] then
+		Stache.formatError("Stache:play() called with a 'sound' argument that does not correspond to a loaded sound: %q", name)
 	end
 
 	if Stache.sfx[sound] then
@@ -224,11 +319,8 @@ function Stache.play(sound)
 end
 
 function Stache.colorUnpack(color, alpha)
-	if type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
-		formatError("Stache.colorUnpack() called with a 'color' argument that isn't a string, table or userdata: ", color)
-	elseif alpha ~= nil and type(alpha) ~= "number" then
-		formatError("Stache.colorUnpack() called with a non-numerical 'alpha' argument: ", alpha)
-	end
+	Stache.checkArg("color", color, "color", "Stache.colorUnpack")
+	Stache.checkArg("alpha", alpha, "number", "Stache.colorUnpack", true)
 
 	if type(color) == "string" then
 		color = Stache.colors[color] end
@@ -237,11 +329,8 @@ function Stache.colorUnpack(color, alpha)
 end
 
 function Stache.setColor(color, alpha)
-	if type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
-		formatError("Stache.setColor() called with a 'color' argument that isn't a string, table or userdata: ", color)
-	elseif alpha ~= nil and type(alpha) ~= "number" then
-		formatError("Stache.setColor() called with a non-numerical 'alpha' argument: ", alpha)
-	end
+	Stache.checkArg("color", color, "color", "Stache.setColor")
+	Stache.checkArg("alpha", alpha, "number", "Stache.setColor", true)
 
 	lg.setColor(Stache.colorUnpack(color, alpha))
 end
@@ -277,27 +366,27 @@ function Stache.drawList(table, ...)
 end
 
 function Stache.copy(obj, seen)
-    if type(obj) ~= "table" then
-	    return obj end
+	if type(obj) ~= "table" then
+		return obj end
 
-    if seen and seen[obj] then
-	    return seen[obj] end
+	if seen and seen[obj] then
+		return seen[obj] end
 
-    local s = seen or {}
-    local result = {}
+	local s = seen or {}
+	local result = {}
 
-    s[obj] = result
+	s[obj] = result
 
-    for k, v in pairs(obj) do
-	    result[Stache.copy(k, s)] = Stache.copy(v, s)
-    end
+	for k, v in pairs(obj) do
+		result[Stache.copy(k, s)] = Stache.copy(v, s)
+	end
 
-    return setmetatable(result, getmetatable(obj))
+	return setmetatable(result, getmetatable(obj))
 end
 
 function floatEquality(a, b)
 	if type(a) ~= "number" or type(b) ~= "number" then
-		formatError("floatEquality() called with one or more non-numerical arguments: %q %q", a, b)
+		Stache.formatError("floatEquality() called with one or more non-numerical arguments: %q %q", a, b)
 	end
 
 	return math.abs(a - b) < FLOAT_EPSILON
@@ -305,14 +394,14 @@ end
 
 function equalsZero(x)
 	if type(x) ~= "number" then
-		formatError("equalsZero() called with a non-numerial argument: %q", x)
+		Stache.formatError("equalsZero() called with a non-numerial argument: %q", x)
 	end
 	return floatEquality(x, 0)
 end
 
 function sign(x)
 	if type(x) ~= "number" then
-		formatError("sign() called with a non-numerial argument: %q", x)
+		Stache.formatError("sign() called with a non-numerial argument: %q", x)
 	end
 
 	if equalsZero(x) then return 0
@@ -333,7 +422,7 @@ end
 
 function clamp(value, min, max)
 	if type(value) ~= "number" or type(min) ~= "number" or type(max) ~= "number" then
-		formatError("clamp() called with one or more non-numerial arguments: %q, %q, %q", value, min, max)
+		Stache.formatError("clamp() called with one or more non-numerial arguments: %q, %q, %q", value, min, max)
 	end
 
 	return math.min(math.max(min, value), max)
@@ -354,10 +443,10 @@ function greater(a, b)
 end
 
 function approach(value, target, rate, callback)
+	Stache.checkArg("callback", callback, "function", "approach", true)
+
 	if type(value) ~= "number" or type(target) ~= "number" or type(rate) ~= "number" then
-		formatError("approach() called with one or more non-numerial arguments: %q, %q, %q", value, target, rate)
-	elseif callback ~= nil and type(callback) ~= "function" then
-		formatError("approach() called with a 'callback' argument that isn't a function: ", callback)
+		Stache.formatError("approach() called with one or more non-numerial arguments: %q, %q, %q", value, target, rate)
 	end
 
 	if value > target then
@@ -386,7 +475,7 @@ function first(obj)
 		return obj[1]
 	end
 
-	formatError("first() called with an invalid 'obj' argument: %q", obj)
+	Stache.formatError("first() called with an invalid 'obj' argument: %q", obj)
 end
 
 function second(obj)
@@ -410,7 +499,7 @@ function second(obj)
 		end
 	end
 
-	formatError("second() called with an invalid 'obj' argument: %q", obj)
+	Stache.formatError("second() called with an invalid 'obj' argument: %q", obj)
 end
 
 function last(obj)
@@ -422,7 +511,7 @@ function last(obj)
 		return obj[obj.curve:getControlPointCount()]
 	end
 
-	formatError("last() called with an invalid 'obj' argument: %q", obj)
+	Stache.formatError("last() called with an invalid 'obj' argument: %q", obj)
 end
 
 function secondlast(obj)
@@ -446,7 +535,7 @@ function secondlast(obj)
 		end
 	end
 
-	formatError("seclast() called with an invalid 'obj' argument: %q", obj)
+	Stache.formatError("seclast() called with an invalid 'obj' argument: %q", obj)
 end
 
 return Stache

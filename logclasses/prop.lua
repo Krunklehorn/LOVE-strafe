@@ -8,15 +8,11 @@ function Prop:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "collider" then
-		if value ~= nil and not value:instanceOf(Collider) then
-			formatError("Attempted to set 'collider' key of class 'Prop' to a value that isn't of type 'Collider': %q", value)
-		end
+		Stache.checkSet(key, value, Collider, "Prop", true)
 
 		slf.collider = value
 	elseif key == "onOverlap" then
-		if value ~= nil and type(value) ~= "function" then
-			formatError("Attempted to set 'onOverlap' key of class 'Prop' to a value that isn't a function: %q", value)
-		end
+		Stache.checkSet(key, value, "function", "Prop", true)
 
 		slf.onOverlap = value
 	else

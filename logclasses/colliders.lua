@@ -32,11 +32,11 @@ function Collider:update(data)
 end
 
 function Collider:draw()
-	formatError("Abstract function Collider:draw() called!")
+	Stache.formatError("Abstract function Collider:draw() called!")
 end
 
 function Collider:getCastBounds()
-	formatError("Abstract function Collider:getCastBounds() called!")
+	Stache.formatError("Abstract function Collider:getCastBounds() called!")
 end
 
 function Collider:checkCastBounds(other)
@@ -50,9 +50,7 @@ function Collider:checkCastBounds(other)
 end
 
 function Collider:overlap(other)
-	if not other:instanceOf(Collider) then
-		formatError("Collider:overlap() called with an 'other' argument that isn't of type 'Collider': %q", other)
-	end
+	Stache.checkArg("other", other, Collider, "Collider:overlap")
 
 	if self:instanceOf(CircleCollider) then
 		if other:instanceOf(CircleCollider) then return Collider.circ_circ(self, other)
@@ -62,7 +60,7 @@ function Collider:overlap(other)
 		elseif other:instanceOf(LineCollider) then return Collider.line_line(self, other) end
 	end
 
-	formatError("Collider:overlap() called with an unsupported subclass combination: %q", ref)
+	Stache.formatError("Collider:overlap() called with an unsupported subclass combination: %q", ref)
 end
 
 function Collider:circ_circ(other)
@@ -111,46 +109,37 @@ CircleCollider = Collider:extend("CircleCollider", {
 function CircleCollider:__index(key)
 	local slf = rawget(self, "members")
 
-	if key == "ppos" then
-		if not slf[key] then print("NOTICE: 'ppos' is nil so __index will return 'pos' instead!") end
-		return slf[key] or slf.pos
-	elseif key == "vel" then
-		if not slf[key] then
-			slf[key] = slf.pos - slf.ppos
-		end
-
-		return slf[key]
-	else
-		if slf[key] ~= nil then return slf[key]
-		else return Collider.__index(self, key) end
+	if slf[key] == nil then
+		if key == "ppos" then slf[key] = slf.vel and (slf.pos - slf.vel) or slf.pos
+		elseif key == "vel" then slf[key] = slf.pos - (slf.ppos or slf.p1) end
 	end
+
+	if slf[key] ~= nil then return slf[key]
+	else return Collider.__index(self, key) end
 end
 
 function CircleCollider:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "pos" then
-		if not vec2.isVector(value) then
-			formatError("Attempted to set 'pos' key of class 'CircleCollider' to a non-vector value: %q", value)
-		end
+		Stache.checkSet(key, value, "vector", "CircleCollider")
 
 		slf.pos = value
 		slf.vel = nil
 	elseif key == "ppos" then
-		if not vec2.isVector(value) then
-			formatError("Attempted to set 'ppos' key of class 'CircleCollider' to a non-vector value: %q", value)
-		end
+		Stache.checkSet(key, value, "vector", "CircleCollider")
 
 		slf.ppos = value
 		slf.vel = nil
+	elseif key == "vel" then
+		Stache.checkSet(key, value, "vector", "CircleCollider")
+
+		slf.vel = value
+		slf.ppos = nil
 	elseif key == "radius" then
-		if type(value) ~= "number" then
-			formatError("Attempted to set 'radius' key of class 'CircleCollider' to a non-numerical value: %q", value)
-		end
+		Stache.checkSet(key, value, "number", "CircleCollider")
 
 		slf.radius = value
-	elseif key == "vel" then
-		formatError("Attempted to set a key of class 'CircleCollider' that is read-only: %q", key)
 	else
 		Collider.__newindex(self, key, value)
 	end
@@ -163,13 +152,9 @@ function CircleCollider:init(data)
 end
 
 function CircleCollider:draw(color, scale, debug)
-	if color ~= nil and type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
-		formatError("CircleCollider:draw() called with a 'color' argument that isn't a string, table or userdata: %q", color)
-	elseif scale ~= nil and type(scale) ~= "number" then
-		formatError("CircleCollider:draw() called with a non-numerical 'scale' argument: %q", scale)
-	elseif debug ~= nil and type(debug) ~= "boolean" then
-		formatError("CircleCollider:draw() called with a 'debug' argument that isn't a boolean: %q", debug)
-	end
+	Stache.checkArg("color", color, "color", "CircleCollider:draw", true)
+	Stache.checkArg("scale", scale, "number", "CircleCollider:draw", true)
+	Stache.checkArg("debug", debug, "boolean", "CircleCollider:draw", true)
 
 	color = color or "white"
 	scale = scale or 1
@@ -217,9 +202,7 @@ function CircleCollider:cast(other)
 end
 
 function CircleCollider:circ_contact(other)
-	if not other:instanceOf(CircleCollider) then
-		formatError("CircleCollider:circ_contact() called with a 'other' argument that isn't of type 'CircleCollider': %q", other)
-	end
+	Stache.checkArg("other", other, CircleCollider, "CircleCollider:circ_contact")
 
 	-- https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 	-- make SELF a ray and OTHER a stationary circle
@@ -249,9 +232,7 @@ function CircleCollider:circ_contact(other)
 end
 
 function CircleCollider:line_contact(other)
-	if not other:instanceOf(LineCollider) then
-		formatError("CircleCollider:line_contact() called with a 'other' argument that isn't of type 'CircleCollider': %q", other)
-	end
+	Stache.checkArg("other", other, LineCollider, "CircleCollider:line_contact")
 
 	-- https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 	-- make SELF a ray and OTHER a stationary capsule
@@ -329,108 +310,75 @@ LineCollider = Collider:extend("LineCollider", {
 function LineCollider:__index(key)
 	local slf = rawget(self, "members")
 
-	if key == "pp1" then
-		if not slf[key] then print("NOTICE: 'pp1' is nil so __index will return 'p1' instead!") end
-		return slf[key] or slf.p1
-	elseif key == "pp2" then
-		if not slf[key] then print("NOTICE: 'pp2' is nil so __index will return 'p2' instead!") end
-		return slf[key] or slf.p2
-	elseif key == "vel" then
-		if not slf[key] then
-			local v1 = slf.p1 - slf.pp1
-			local v2 = slf.p2 - slf.pp2
+	if slf[key] == nil then
+		if key == "pp1" then slf[key] = slf.vel and (slf.p1 - slf.vel) or slf.p1
+		elseif key == "pp2" then slf[key] = slf.vel and (slf.p2 - slf.vel) or slf.p2
+		elseif key == "vel" then
+			local v1 = slf.p1 - (slf.pp1 or slf.p1)
+			local v2 = slf.p2 - (slf.pp2 or slf.p2)
 
-			if v1 ~= v2 then formatError("Attempted to get 'vel' key of class LineCollider but could not agree on a value: %q, %q", v1, v2) end
+			if v1 ~= v2 then Stache.formatError("Attempted to get 'vel' key of class LineCollider but could not agree on a value: %q, %q", v1, v2) end
 
 			slf[key] = v1
-		end
-
-		return slf[key]
-	elseif key == "delta" then
-		if not slf[key] then
-			local dpp = self.pp2 - self.pp1
+		elseif key == "delta" then
+			local dpp = (slf.pp2 or slf.p2) - (slf.pp1 or slf.p1)
 			local dp = slf.p2 - slf.p1
 
-			if dpp ~= dp then formatError("Attempted to get 'delta' key of class LineCollider but could not agree on a value: %q, %q", dpp, dp) end
+			if dpp ~= dp then Stache.formatError("Attempted to get 'delta' key of class LineCollider but could not agree on a value: %q, %q", dpp, dp) end
 
 			slf[key] = dpp
-		end
-
-		return slf[key]
-	elseif key == "direction" then
-		if not slf[key] then
-			slf[key] = self.delta.normalized
-		end
-
-		return slf[key]
-	elseif key == "normal" then
-		if not slf[key] then
-			slf[key] = self.delta.normal
-		end
-
-		return slf[key]
-	elseif key == "angRad" then
-		if not slf[key] then
-			slf[key] = self.delta.angle
-		end
-
-		return slf[key]
-	elseif key == "angDeg" then
-		if not slf[key] then
-			slf[key] = math.deg(self.angRad)
-		end
-
-		return slf[key]
-	else
-		if slf[key] ~= nil then return slf[key]
-		else return Collider.__index(self, key) end
+		elseif key == "direction" then slf[key] = self.delta.normalized
+		elseif key == "normal" then slf[key] = self.delta.normal
+		elseif key == "angRad" then slf[key] = self.delta.angle
+		elseif key == "angDeg" then slf[key] = math.deg(self.angRad) end
 	end
+
+	if slf[key] ~= nil then return slf[key]
+	else return Collider.__index(self, key) end
 end
 
 function LineCollider:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "p1" then
-		if not vec2.isVector(value) then
-			formatError("Attempted to set 'p1' key of class 'LineCollider' to a non-vector value: %q", value)
-		end
+		Stache.checkSet(key, value, "vector", "CircleCollider")
 
 		slf.p1 = value
 		self:dirty()
 	elseif key == "p2" then
-		if not vec2.isVector(value) then
-			formatError("Attempted to set 'p2' key of class 'LineCollider' to a non-vector value: %q", value)
-		end
+		Stache.checkSet(key, value, "vector", "CircleCollider")
 
 		slf.p2 = value
 		self:dirty()
 	elseif key == "pp1" then
-		if not vec2.isVector(value) then
-			formatError("Attempted to set 'pp1' key of class 'LineCollider' to a non-vector value: %q", value)
-		end
+		Stache.checkSet(key, value, "vector", "CircleCollider")
 
 		slf.pp1 = value
+		slf.vel = nil
 		self:dirty()
 	elseif key == "pp2" then
-		if not vec2.isVector(value) then
-			formatError("Attempted to set 'pp2' key of class 'LineCollider' to a non-vector value: %q", value)
-		end
+		Stache.checkSet(key, value, "vector", "CircleCollider")
 
 		slf.pp2 = value
+		slf.vel = nil
+		self:dirty()
+	elseif key == "vel" then
+		Stache.checkSet(key, value, "vector", "CircleCollider")
+
+		slf.vel = value
+		slf.pp1 = nil
+		slf.pp2 = nil
 		self:dirty()
 	elseif key == "radius" then
-		if type(value) ~= "number" then
-			formatError("Attempted to set 'radius' key of class 'LineCollider' to a non-numerical value: %q", value)
-		end
+		Stache.checkSet(key, value, "number", "CircleCollider")
 
 		slf.radius = value
-	elseif key == "vel" or
-		  key == "delta" or
+	elseif key == "delta" or
 		  key == "direction" or
 		  key == "normal" or
 		  key == "angRad" or
 		  key == "angDeg" then
-		formatError("Attempted to set a key of class 'LineCollider' that is read-only: %q", key)
+			  Stache.readonly(key, "LineCollider")
 	else
 		Collider.__newindex(self, key, value)
 	end
@@ -439,7 +387,6 @@ end
 function LineCollider:dirty()
 	local slf = rawget(self, "members")
 
-	slf.vel = nil
 	slf.delta = nil
 	slf.direction = nil
 	slf.normal = nil
@@ -455,13 +402,9 @@ function LineCollider:init(data)
 end
 
 function LineCollider:draw(color, scale, debug)
-	if color ~= nil and type(color) ~= "string" and type(color) ~= "table" and type(color) ~= "userdata" then
-		formatError("LineCollider:draw() called with a 'color' argument that isn't a string, table or userdata: %q", color)
-	elseif scale ~= nil and type(scale) ~= "number" then
-		formatError("LineCollider:draw() called with a non-numerical 'scale' argument: %q", scale)
-	elseif debug ~= nil and type(debug) ~= "boolean" then
-		formatError("LineCollider:draw() called with a 'debug' argument that isn't a boolean: %q", debug)
-	end
+	Stache.checkArg("color", color, "color", "LineCollider:draw", true)
+	Stache.checkArg("scale", scale, "number", "LineCollider:draw", true)
+	Stache.checkArg("debug", debug, "boolean", "LineCollider:draw", true)
 
 	color = color or "white"
 	scale = scale or 1
@@ -536,9 +479,7 @@ function LineCollider:getCastBounds()
 end
 
 function LineCollider:point_determinant(point)
-	if not vec2.isVector(point) then
-		formatError("LineCollider:point_determinant() called with a non-vector 'point' argument: %q", point)
-	end
+	Stache.checkArg("point", point, "vector", "LineCollider:point_determinant")
 
 	local offset = point - self.p1
 	local result = {}
@@ -573,15 +514,10 @@ end
 
 function LineCollider:line_contact(arg1, arg2)
 	if not arg2 then
-		if not arg1:instanceOf(LineCollider) then
-			formatError("LineCollider:intersect() called with an 'other' argument that isn't of type 'LineCollider': %q", arg1)
-		end
+		Stache.checkArg("arg1", arg1, LineCollider, "LineCollider:line_contact")
 	else
-		if not vec2.isVector(arg1) then
-			formatError("LineCollider:intersect() called with a non-vector 'p1' argument: %q", arg1)
-		elseif not vec2.isVector(arg2) then
-			formatError("LineCollider:intersect() called with a non-vector 'p2' argument: %q", arg2)
-		end
+		Stache.checkArg("arg1", arg1, "vector", "LineCollider:line_contact")
+		Stache.checkArg("arg2", arg2, "vector", "LineCollider:line_contact")
 	end
 
 	local offset = self.p1 - (arg2 and arg1 or arg1.p1)

@@ -16,49 +16,34 @@ Entity = class("Entity", {
 function Entity:__index(key)
 	local slf = rawget(self, "members")
 
-	if key == "angDeg" then
-		if not slf[key] then
-			slf[key] = math.deg(self.angRad)
-		end
-
-		return slf[key]
-	elseif key == "angVelDeg" then
-		if not slf[key] then
-			slf[key] = math.deg(self.angVelRad)
-		end
-
-		return slf[key]
-	else
-		if slf[key] ~= nil then return slf[key]
-		else return rawget(self.class, key) end
+	if slf[key] == nil then
+		if key == "angDeg" then slf[key] = math.deg(self.angRad)
+		elseif key == "angVelDeg" then slf[key] = math.deg(self.angVelRad) end
 	end
+
+	if slf[key] ~= nil then return slf[key]
+	else return rawget(self.class, key) end
 end
 
 function Entity:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "sprite" then
-		if value ~= nil and not value:instanceOf(Sprite) then
-			formatError("Attempted to set 'sprite' key of class 'Entity' to a value that isn't of type 'Sprite': %q", sprite)
-		end
+		Stache.checkSet(key, value, Sprite, "Entity", true)
 
 		slf.sprite = value
 	elseif key == "angRad" then
-		if type(value) ~= "number" then
-			formatError("Attempted to set 'angRad' key of class 'Entity' to a non-numerical value: %q", value)
-		end
+		Stache.checkSet(key, value, "number", "Entity")
 
 		slf.angRad = value
 		slf.angDeg = nil
 	elseif key == "angVelRad" then
-		if type(value) ~= "number" then
-			formatError("Attempted to set 'angVelRad' key of class 'Entity' to a non-numerical value: %q", value)
-		end
+		Stache.checkSet(key, value, "number", "Entity")
 
 		slf.angVelRad = value
 		slf.angVelDeg = nil
 	elseif key == "angDeg" or key == "angVelDeg" then
-		formatError("Attempted to set a key of class 'Entity' that is read-only: %q", key)
+		Stache.readOnly(key, "Entity")
 	else
 		slf[key] = value
 	end

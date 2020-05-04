@@ -33,12 +33,12 @@ function Edge:__newindex(key, value)
 	local grnd = slf.grnd and  slf.grnd.members or nil
 
 	if slf.grnd and slf.grnd:instanceOf(BezierGround) and slf[key] ~= nil then
-		formatError("Attempted to modify a key of class 'Edge' that belongs to a bezier and is therefore write-once: %q", key)
+		Stache.formatError("Attempted to modify a key of class 'Edge' that belongs to a bezier and is therefore write-once: %q", key)
 	end
 
 	if key == "p1" then
 		if not vec2.isVector(value) then
-			formatError("Attempted to set 'p1' key of class 'Edge' to a non-vector value: %q", value)
+			Stache.formatError("Attempted to set 'p1' key of class 'Edge' to a non-vector value: %q", value)
 		end
 
 		slf.p1 = value
@@ -56,7 +56,7 @@ function Edge:__newindex(key, value)
 		end
 	elseif key == "p2" then
 		if not vec2.isVector(value) then
-			formatError("Attempted to set 'p2' key of class 'Edge' to a non-vector value: %q", value)
+			Stache.formatError("Attempted to set 'p2' key of class 'Edge' to a non-vector value: %q", value)
 		end
 
 		slf.p2 = value
@@ -74,15 +74,15 @@ function Edge:__newindex(key, value)
 		end
 	elseif key == "grnd" then
 		if not value:instanceOf(Ground) then
-			formatError("Attempted to set 'grnd' key of class 'Edge' to a value that isn't of type 'Ground': %q", value)
+			Stache.formatError("Attempted to set 'grnd' key of class 'Edge' to a value that isn't of type 'Ground': %q", value)
 		end
 
 		slf.grnd = value
 	elseif key == "prev" then
 		if not value:instanceOf(Edge) then
-			formatError("Attempted to set 'next' key of class 'Edge' to a value that isn't of type 'Edge': %q", value)
+			Stache.formatError("Attempted to set 'next' key of class 'Edge' to a value that isn't of type 'Edge': %q", value)
 		elseif slf.grnd and self ~= first(grnd.edges) then
-			formatError("Attempted to set 'prev' key of class 'Edge' which would cause a ground to split! %q", self)
+			Stache.formatError("Attempted to set 'prev' key of class 'Edge' which would cause a ground to split! %q", self)
 		end
 
 		if slf.prev then
@@ -102,9 +102,9 @@ function Edge:__newindex(key, value)
 		self:dirty()
 	elseif key == "next" then
 		if not value:instanceOf(Edge) then
-			formatError("Attempted to set 'next' key of class 'Edge' to a value that isn't of type 'Edge': %q", value)
+			Stache.formatError("Attempted to set 'next' key of class 'Edge' to a value that isn't of type 'Edge': %q", value)
 		elseif slf.grnd and self ~= last(grnd.edges) then
-			formatError("Attempted to set 'next' key of class 'Edge' which would cause a ground to split! %q", self)
+			Stache.formatError("Attempted to set 'next' key of class 'Edge' which would cause a ground to split! %q", self)
 		end
 
 		if slf.next then
@@ -123,7 +123,7 @@ function Edge:__newindex(key, value)
 		slf.p2 = nxt.p1
 		self:dirty()
 	elseif key == "color" then
-		formatError("Attempted to set a key of class 'Edge' that is read-only: %q", key)
+		Stache.formatError("Attempted to set a key of class 'Edge' that is read-only: %q", key)
 	else
 		LineCollider.__newindex(self, key, value)
 	end

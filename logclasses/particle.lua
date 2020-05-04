@@ -8,15 +8,11 @@ function Particle:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "anchor" then
-		if value ~= nil and type(value) ~= "table" and type(value) ~= "userdata" then
-			formatError("Attempted to set 'anchor' key of class 'Particle' to a value that isn't a table or userdata: %q", value)
-		end
+		Stache.checkSet(key, value, "indexable", "Particle", true)
 
 		slf.anchor = value
 	elseif key == "params" then
-		if value ~= nil and type(value) ~= "table" and type(value) ~= "userdata" then
-			formatError("Attempted to set 'params' key of class 'Particle' to a value that isn't a table or userdata: %q", value)
-		end
+		Stache.checkSet(key, value, "indexable", "Particle", true)
 
 		slf.params = value
 	else

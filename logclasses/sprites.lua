@@ -3,9 +3,7 @@ Sprite = class("Sprite", {
 })
 
 function Sprite:init(origin)
-	if not vec2.isVector(origin) then
-		formatError("Sprite:init() called with a non-vector 'origin' argument: %q", origin)
-	end
+	Stache.checkArg("origin", origin, "vector", "Sprite:init")
 
 	self.origin = origin
 end

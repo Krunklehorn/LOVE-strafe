@@ -21,13 +21,13 @@ function Ground:__index(key)
 				elseif key == #self.edges then
 					return last(self.edges).p2
 				else
-					formatError("LineGround:__index() called with a numerical index out of bounds: &q", key)
+					Stache.formatError("LineGround:__index() called with a numerical index out of bounds: &q", key)
 				end
 			elseif self:instanceOf(BezierGround) then
 				if key > 0 and key < last(self.curve) then
 					return vec2(self.curve:getControlPoint(key))
 				else
-					formatError("BezierGround:__index() called with a numerical index out of bounds: &q", key)
+					Stache.formatError("BezierGround:__index() called with a numerical index out of bounds: &q", key)
 				end
 			end
 		elseif key == "coords" and next(slf[key]) == nil then
@@ -117,7 +117,7 @@ function Ground:__newindex(key, value)
 		self:dirty()
 	elseif key == "prev" then
 		if not value:instanceOf(Ground) then
-			formatError("Attempted to set 'prev' key of class 'Ground' to a value that isn't of type 'Ground': %q", value)
+			Stache.formatError("Attempted to set 'prev' key of class 'Ground' to a value that isn't of type 'Ground': %q", value)
 		end
 
 		if slf.prev then
@@ -142,7 +142,7 @@ function Ground:__newindex(key, value)
 		first(self.edges).members.prev = last(self.prev.edges)
 	elseif key == "next" then
 		if not value:instanceOf(Ground) then
-			formatError("Attempted to set 'next' key of class 'Ground' to a value that isn't of type 'Ground': %q", value)
+			Stache.formatError("Attempted to set 'next' key of class 'Ground' to a value that isn't of type 'Ground': %q", value)
 		end
 
 		if slf.next then
@@ -171,7 +171,7 @@ function Ground:__newindex(key, value)
 end
 
 function Ground:init()
-	formatError("Abstract function Ground:init() called!")
+	Stache.formatError("Abstract function Ground:init() called!")
 end
 
 function Ground:dirty()
@@ -245,7 +245,7 @@ function LineGround:addPoints(...)
 		local currPoint = args[p]
 
 		if not vec2.isVector(currPoint) then
-			formatError("LineGround:addPoints() called with one or more non-vector arguments!")
+			Stache.formatError("LineGround:addPoints() called with one or more non-vector arguments!")
 		else
 			if prevPoint then
 				currEdge = Edge(prevPoint, currPoint, self)
@@ -280,7 +280,7 @@ function BezierGround:addPoints(...)
 	for p = #points, 1, -1 do
 		local point = points[p]
 		if not vec2.isVector(point) then
-			formatError("BezierGround:addPoints() called with one or more non-vector arguments!")
+			Stache.formatError("BezierGround:addPoints() called with one or more non-vector arguments!")
 		else
 			self.curve:insertControlPoint(point.x, point.y, 1)
 		end

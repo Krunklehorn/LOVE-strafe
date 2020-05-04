@@ -96,10 +96,10 @@ function Dummy:draw()
 end
 
 function Dummy:setControlMode(mode)
-	if type(mode) ~= "string" then
-		formatError("Dummy:setControlMode() called with a 'mode' argument that isn't a string: %q", name)
-	elseif mode ~= "Current" and mode ~= "Previous" then
-		formatError("Dummy:setControlMode() called with a 'mode' argument that does not correspond to a valid control mode: %q", mode)
+	Stache.checkArg("mode", mode, "string", "Dummy:setControlMode")
+
+	if mode ~= "Current" and mode ~= "Previous" then
+		Stache.formatError("Dummy:setControlMode() called with a 'mode' argument that does not correspond to a valid control mode: %q", mode)
 	end
 
 	self.controlmode = mode

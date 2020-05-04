@@ -150,10 +150,10 @@ function playState:resize(w, h)
 end
 
 function playState:spawnParticle(name, anchor, params)
-	if type(name) ~= "string" then
-		formatError("playState:spawnParticle() called with a 'name' argument that isn't a string: %q", name)
-	elseif Stache.particles[name] == nil then
-		formatError("playState:spawnParticle() called with a 'name' argument that does not correspond to a loaded particle: %q", name)
+	Stache.checkArg("name", name, "string", "playState:spawnParticle")
+
+	if Stache.particles[name] == nil then
+		Stache.formatError("playState:spawnParticle() called with a 'name' argument that does not correspond to a loaded particle: %q", name)
 	end
 
 	local data = Stache.particles[name]
@@ -168,12 +168,11 @@ function playState:spawnParticle(name, anchor, params)
 end
 
 function playState:spawnProp(name, params)
-	if type(name) ~= "string" then
-		formatError("playState:spawnProp() called with a 'name' argument that isn't a string: %q", name)
-	elseif Stache.props[name] == nil then
-		formatError("playState:spawnProp() called with a 'name' argument that does not correspond to a loaded prop: %q", name)
-	elseif params ~= nil and type(params) ~= "table" and type(params) ~= "userdata" then
-		formatError("playState:spawnProp() called with a 'params' argument that isn't a table or userdata: %q", params)
+	Stache.checkArg("name", name, "string", "playState:spawnProp")
+	Stache.checkArg("params", params, "indxable", "playState:spawnProp", true)
+
+	if Stache.props[name] == nil then
+		Stache.formatError("playState:spawnProp() called with a 'name' argument that does not correspond to a loaded prop: %q", name)
 	end
 
 	local data = Stache.props[name]
@@ -190,12 +189,11 @@ function playState:spawnProp(name, params)
 end
 
 function playState:spawnAgent(name, params)
-	if type(name) ~= "string" then
-		formatError("playState:spawnAgent() called with a 'name' argument that isn't a string: %q", name)
-	elseif Stache.actors[name] == nil then
-		formatError("playState:spawnAgent() called with a 'name' argument that does not correspond to a loaded actor: %q", name)
-	elseif params ~= nil and type(params) ~= "table" and type(params) ~= "userdata" then
-		formatError("playState:spawnAgent() called with a 'params' argument that isn't a table or userdata: %q", params)
+	Stache.checkArg("name", name, "string", "playState:spawnAgent")
+	Stache.checkArg("params", params, "indxable", "playState:spawnAgent", true)
+
+	if Stache.actors[name] == nil then
+		Stache.formatError("playState:spawnAgent() called with a 'name' argument that does not correspond to a loaded actor: %q", name)
 	end
 
 	local data = Stache.actors[name]
@@ -213,9 +211,7 @@ function playState:spawnAgent(name, params)
 end
 
 function playState:removeEntity(ref)
-	if not class.isInstance(ref) or not ref:instanceOf(Entity) then
-		formatError("playState:removeEntity() called with a 'ref' parameter that isn't of type 'Entity': %q", ref)
-	end
+	Stache.checkArg("ref", ref, Entity, "playState:removeEntity")
 
 	local list
 
@@ -230,5 +226,5 @@ function playState:removeEntity(ref)
 		end
 	end
 
-	formatError("playState:removeEntity() called with a reference that should not exist: %q", ref)
+	Stache.formatError("playState:removeEntity() called with a reference that should not exist: %q", ref)
 end

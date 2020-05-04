@@ -315,10 +315,10 @@ function Agent:allowJump()
 end
 
 function Agent:setPhysMode(mode)
-	if type(mode) ~= "string" then
-		formatError("Agent:setPhysMode() called with a 'mode' argument that isn't a string: %q", name)
-	elseif mode ~= "VQ3" and mode ~= "CPM" then
-		formatError("Agent:setPhysMode() called with a 'mode' argument that does not correspond to a valid physics mode: %q", mode)
+	Stache.checkArg("mode", mode, "string", "Agent:setPhysMode")
+
+	if mode ~= "VQ3" and mode ~= "CPM" then
+		Stache.formatError("Agent:setPhysMode() called with a 'mode' argument that does not correspond to a valid physics mode: %q", mode)
 	end
 
 	self.physmode = mode

@@ -14,15 +14,11 @@ function CircleBrush:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "height" then
-		if type(value) ~= "number" then
-			formatError("Attempted to set 'height' key of class 'CircleBrush' to a non-numerical value: %q", value)
-		end
+		Stache.checkSet(key, value, "number", "CircleBrush")
 
 		slf.height = value
 	elseif key == "color" then
-		if type(value) ~= "table" and type(value) ~= "userdata" then
-			formatError("Attempted to set 'color' key of class 'CircleBrush' to a value that isn't a table or userdata: %q", value)
-		end
+		Stache.checkSet(key, value, "color", "CircleBrush")
 
 		slf.color = value
 	else
@@ -50,15 +46,11 @@ function LineBrush:__newindex(key, value)
 	local slf = rawget(self, "members")
 
 	if key == "height" then
-		if type(value) ~= "number" then
-			formatError("Attempted to set 'height' key of class 'LineBrush' to a non-numerical value: %q", value)
-		end
+		Stache.checkSet(key, value, "number", "LineBrush")
 
 		slf.height = value
 	elseif key == "color" then
-		if type(value) ~= "table" and type(value) ~= "userdata" then
-			formatError("Attempted to set 'color' key of class 'LineBrush' to a value that isn't a table or userdata: %q", value)
-		end
+		Stache.checkSet(key, value, "color", "LineBrush")
 
 		slf.color = value
 	else

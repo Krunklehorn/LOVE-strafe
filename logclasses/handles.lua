@@ -66,10 +66,10 @@ end
 PointHandle = Handle:extend("PointHandle")
 
 function PointHandle:init(target, key)
-	if type(target) ~= "table" and type(target) ~= "userdata" then
-		formatError("PointHandle:init() called with a 'target' argument that isn't a table or userdata: %q", target)
-	elseif type(key) ~= "string" or not target[key] or not vec2.isVector(target[key]) then
-		formatError("PointHandle:init() called with an invalid 'key' argument: %q", key)
+	Stache.checkArg("target", target, "indexable", "PointHandle:init")
+
+	if type(key) ~= "string" or not target[key] or not vec2.isVector(target[key]) then
+		Stache.formatError("PointHandle:init() called with an invalid 'key' argument: %q", key)
 	end
 
 	self.pos = target[key]
@@ -82,9 +82,9 @@ EdgeHandle = Handle:extend("EdgeHandle")
 
 function EdgeHandle:init(target, key)
 	if not target:instanceOf(Edge) then
-		formatError("EdgeHandle:init() called with an invalid 'target' argument: %q", target)
+		Stache.formatError("EdgeHandle:init() called with an invalid 'target' argument: %q", target)
 	elseif type(key) ~= "string" or not target[key] or not vec2.isVector(target[key]) then
-		formatError("EdgeHandle:init() called with an invalid 'key' argument: %q", key)
+		Stache.formatError("EdgeHandle:init() called with an invalid 'key' argument: %q", key)
 	end
 
 	self.pos = target[key]
@@ -97,9 +97,9 @@ ControlPointHandle = Handle:extend("ControlPointHandle")
 function ControlPointHandle:init(target, key)
 	if not target:instanceOf(BezierGround) or
 	   not target.curve or target.curve:type() ~= "BezierCurve" then
-		formatError("ControlPointHandle:init() called with an invalid 'target' argument: %q", target)
+		Stache.formatError("ControlPointHandle:init() called with an invalid 'target' argument: %q", target)
 	elseif type(key) ~= "number" or key < first(target.curve) or key > last(target.curve) then
-		formatError("ControlPointHandle:init() called with an invalid 'key' argument: %q", key)
+		Stache.formatError("ControlPointHandle:init() called with an invalid 'key' argument: %q", key)
 	end
 
 	self.pos = vec2(target.curve:getControlPoint(key))
