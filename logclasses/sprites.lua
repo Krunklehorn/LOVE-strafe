@@ -18,7 +18,7 @@ function StaticSprite:init(data)
 	self.quad = lg.newQuad(data.x, data.y, data.w, data.h, data.dimw, data.dimh)
 end
 
-function StaticSprite:update(dt)
+function StaticSprite:update(tl)
 end
 
 function StaticSprite:draw(sheet, offset, angRad, scale)
@@ -37,8 +37,8 @@ function AnimatedSprite:init(data)
 	self.duration = data.duration
 end
 
-function AnimatedSprite:update(dt)
-	self.animation:update(60 * dt) -- Durations are stored at 60fps
+function AnimatedSprite:update(tl)
+	self.animation:update(60 * tl) -- Durations are stored at 60fps
 end
 
 function AnimatedSprite:draw(sheet, offset, angRad, scale)

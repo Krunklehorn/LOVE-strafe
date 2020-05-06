@@ -20,10 +20,10 @@ function Prop:__newindex(key, value)
 	end
 end
 
-function Prop:update(dt)
+function Prop:update(tl)
 	local result = false
 
-	Entity.update(self, dt)
+	Entity.update(self, tl)
 	self.collider:update(self.pos, self.ppos, self.vel, self.angRad)
 
 	for a = 1, #playState.agents do

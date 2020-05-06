@@ -152,7 +152,7 @@ function CircleCollider:init(data)
 end
 
 function CircleCollider:draw(color, scale, debug)
-	Stache.checkArg("color", color, "color", "CircleCollider:draw", true)
+	Stache.checkArg("color", color, "asset", "CircleCollider:draw", true)
 	Stache.checkArg("scale", scale, "number", "CircleCollider:draw", true)
 	Stache.checkArg("debug", debug, "boolean", "CircleCollider:draw", true)
 
@@ -402,7 +402,7 @@ function LineCollider:init(data)
 end
 
 function LineCollider:draw(color, scale, debug)
-	Stache.checkArg("color", color, "color", "LineCollider:draw", true)
+	Stache.checkArg("color", color, "asset", "LineCollider:draw", true)
 	Stache.checkArg("scale", scale, "number", "LineCollider:draw", true)
 	Stache.checkArg("debug", debug, "boolean", "LineCollider:draw", true)
 

@@ -57,14 +57,14 @@ function love.load()
 	Stache.load()
 
 	humpstate.registerEvents("prep")
+	humpstate.switch(titleState)
 	--humpstate.switch(debugState)
-	humpstate.switch(editState)
-	humpstate.push(playState)
+	--humpstate.switch(editState)
+	--humpstate.push(playState)
 end
 
 function love.run()
 	local delta_time = 0
-	local total_ticks = 0
 	local accumulator = 0
 
 	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
@@ -92,16 +92,17 @@ function love.run()
 		while accumulator >= Stache.ticklength do
 			if love.update then
 				for p = 1, #Stache.players do
-					Stache.players[p]:input(total_ticks) end
+					Stache.players[p]:input(Stache.ticks) end
 
-				love.update(Stache.ticklength * Stache.timescale, Stache.ticklength, total_ticks)
+				love.update(Stache.ticklength * Stache.timescale)
 
 				for p = 1, #Stache.players do
 					Stache.players[p].boipy:post() end
 			end
 
 			accumulator = accumulator - Stache.ticklength
-			total_ticks = total_ticks + Stache.ticklength
+			Stache.tick_time = Stache.tick_time + Stache.ticklength
+			Stache.total_ticks = Stache.total_ticks + 1
 		end
 
 		if lg and lg.isActive() then
@@ -118,8 +119,8 @@ function love.run()
 	end
 end
 
-function love.update(dt, dtu)
-	flux.update(dtu)
+function love.update(tl)
+	flux.update(Stache.ticklength)
 end
 
 function love.keypressed(key)

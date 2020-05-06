@@ -1,7 +1,17 @@
 Stache = {
 	tickrate = 60,
 	timescale = 1,
+	tick_time = 0,
+	total_ticks = 0,
 	fade = 1,
+	fonts = {
+		[-1] = {},
+		[0] = {},
+		[1] = {},
+		[2] = {},
+		[3] = {},
+		[4] = {}
+	},
 	sfx = {},
 	music = {},
 	colors = {
@@ -67,17 +77,17 @@ function Stache.checkSet(key, value, query, class, nillable)
 			if type(value) ~= query then
 				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a function: %q", key, class, value)
 			end
-		elseif query == "color" then
-			if type(value) ~= "string" and type(value) ~= "table" and type(value) ~= "userdata" then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a string, table or userdata: %q", key, class, value)
+		elseif query == "indexable" then
+			if type(value) ~= "table" and type(value) ~= "userdata" then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a table or userdata: %q", key, class, value)
 			end
 		elseif query == "vector" then
 			if not vec2.isVector(value) then
 				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a vector: %q", key, class, value)
 			end
-		elseif query == "indexable" then
-			if type(value) ~= "table" and type(value) ~= "userdata" then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a table or userdata: %q", key, class, value)
+		elseif query == "asset" then
+			if type(value) ~= "string" and type(value) ~= "table" and type(value) ~= "userdata" then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a string, table or userdata: %q", key, class, value)
 			end
 		elseif type(query) ~= "string" then
 			if not value:instanceOf(query) then
@@ -90,7 +100,7 @@ function Stache.checkSet(key, value, query, class, nillable)
 end
 
 function Stache.checkArg(key, arg, query, func, nillable)
-	if value == nil and nillable == true then
+	if arg == nil and nillable == true then
 		return
 	else
 		if query == "number" then
@@ -109,21 +119,17 @@ function Stache.checkArg(key, arg, query, func, nillable)
 			if type(arg) ~= query then
 				Stache.formatError("%s() called with a '%s' argument that isn't a function: %q", func, key, arg)
 			end
-		elseif query == "color" then
-			if type(arg) ~= "string" and type(arg) ~= "table" and type(arg) ~= "userdata" then
-				Stache.formatError("%s() called with a '%s' argument that isn't a string, table or userdata: %q", func, key, arg)
+		elseif query == "indexable" then
+			if type(arg) ~= "table" and type(arg) ~= "userdata" then
+				Stache.formatError("%s() called with a '%s' argument that isn't a table or userdata: %q", func, key, arg)
 			end
 		elseif query == "vector" then
 			if not vec2.isVector(arg) then
 				Stache.formatError("%s() called with a '%s' argument that isn't a vector: %q", func, key, arg)
 			end
-		elseif query == "indexable" then
-			if type(arg) ~= "table" and type(arg) ~= "userdata" then
-				Stache.formatError("%s() called with a '%s' argument that isn't a table or userdata: %q", func, key, arg)
-			end
-		elseif query == "Image" then
-			if arg:type() ~= "Image" then
-				Stache.formatError("%s() called without a proper '%s' argument: %q", func, key, arg)
+		elseif query == "asset" then
+			if type(arg) ~= "string" and type(arg) ~= "table" and type(arg) ~= "userdata" then
+				Stache.formatError("%s() called with a '%s' argument that isn't a string, table or userdata: %q", func, key, arg)
 			end
 		elseif type(query) ~= "string" then
 			if not arg:instanceOf(query) then
@@ -145,14 +151,24 @@ end
 function Stache.load()
 	local filestrings, subDir, sheet, width, height
 
-	lg.setNewFont(FONT_BLOWUP)
-
 	local makeDir = function(dir, subdir)
 		dir[subdir] = {}
 		return dir[subdir]
 	end
 
 	lg.setDefaultFilter("nearest", "nearest", 1)
+	Stache.fonts.debug = lg.setNewFont(FONT_BLOWUP)
+
+	filestrings = lfs.getDirectoryItems("fonts")
+	for _, fs in ipairs(filestrings) do
+		local name, extension = string.match(fs, "(.+)%.(.+)")
+		Stache.fonts[-1][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", -1)
+		Stache.fonts[0][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 0)
+		Stache.fonts[1][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 1)
+		Stache.fonts[2][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 2)
+		Stache.fonts[3][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 3)
+		Stache.fonts[4][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 4)
+	end
 
 	filestrings = lfs.getDirectoryItems("sounds/sfx")
 	for _, fs in ipairs(filestrings) do
@@ -244,90 +260,25 @@ function Stache.draw()
 	lg.pop()
 end
 
-function Stache.debugCircle(pos, radius, color, alpha)
-	Stache.checkArg("pos", pos, "vector", "Stache.debugCircle")
-	Stache.checkArg("radius", radius, "number", "Stache.debugCircle", true)
-	Stache.checkArg("color", color, "color", "Stache.debugCircle", true)
-	Stache.checkArg("alpha", alpha, "number", "Stache.debugCircle", true)
+function Stache.getAsset(arg, asset, table, func)
+	if type(asset) == "string" then
+		if not table[asset] then
+			Stache.formatError("%s() called with a '%s' argument that does not correspond to a loaded %s in table '%s': %q", func, arg, arg, table, asset)
+		end
 
-	radius = radius or 1
-	color = color or "white"
-	alpha = alpha or 1
+		asset = table[asset]
+	end
 
-	lg.push("all")
-		lg.translate(pos:split())
-		lg.setLineWidth(0.25)
-		Stache.setColor(color, alpha)
-		lg.circle("line", 0, 0, radius)
-		Stache.setColor(color, 0.4 * alpha)
-		lg.circle("fill", 0, 0, radius)
-		Stache.setColor(color, 0.8 * alpha)
-		lg.circle("fill", 0, 0, 1)
-	lg.pop()
+	return asset
 end
 
-function Stache.debugLine(p1, p2, color, alpha)
-	Stache.checkArg("p1", p1, "vector", "Stache.debugLine")
-	Stache.checkArg("p2", p2, "vector", "Stache.debugLine")
-	Stache.checkArg("color", color, "color", "Stache.debugLine", true)
-	Stache.checkArg("alpha", alpha, "number", "Stache.debugLine", true)
+function Stache.setFont(font, spacing)
+	Stache.checkArg("font", font, "asset", "Stache.setFont")
+	Stache.checkArg("spacing", spacing, "number", "Stache.setFont", true)
 
-	color = color or "white"
-	alpha = alpha or 1
+	font = Stache.getAsset("font", font, Stache.fonts[spacing or 0], "Stache.setFont")
 
-	lg.push("all")
-		lg.setLineWidth(0.25)
-		Stache.setColor(color, alpha)
-		lg.line(p1.x, p1.y, p2:split())
-	lg.pop()
-end
-
-function Stache.debugNormal(orig, dir, color, alpha)
-	Stache.checkArg("orig", orig, "vector", "Stache.debugNormal")
-	Stache.checkArg("dir", dir, "vector", "Stache.debugNormal")
-	Stache.checkArg("color", color, "color", "Stache.debugNormal", true)
-	Stache.checkArg("alpha", alpha, "number", "Stache.debugNormal", true)
-
-	color = color or "white"
-	alpha = alpha or 1
-
-	lg.push("all")
-		lg.translate(orig:split())
-		lg.setLineWidth(0.25)
-		Stache.setColor(color, alpha)
-		lg.line(0, 0, dir.x, dir.y)
-	lg.pop()
-end
-
-function Stache.debugTangent(orig, dir, color, alpha)
-	Stache.checkArg("orig", orig, "vector", "Stache.debugTangent")
-	Stache.checkArg("dir", dir, "vector", "Stache.debugTangent")
-	Stache.checkArg("color", color, "color", "Stache.debugTangent", true)
-	Stache.checkArg("alpha", alpha, "number", "Stache.debugTangent", true)
-
-	color = color or "white"
-	alpha = alpha or 1
-
-	lg.push("all")
-		lg.translate(orig:split())
-		lg.setLineWidth(0.25)
-		Stache.setColor(color, alpha)
-		lg.line(0, 0, dir.x, dir.y)
-		lg.line(0, 0, -dir.x, -dir.y)
-	lg.pop()
-end
-
-function Stache.debugBounds(bounds, color, alpha)
-	Stache.checkArg("color", color, "color", "Stache.debugPrintf", true)
-	Stache.checkArg("alpha", alpha, "number", "Stache.debugPrintf", true)
-
-	color = color or "white"
-	alpha = alpha or 1
-
-	lg.push("all")
-		Stache.setColor(color, alpha)
-		lg.rectangle("line", bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top)
-	lg.pop()
+	lg.setFont(font)
 end
 
 function Stache.debugPrintf(size, text, x, y, limit, align, r, sx, sy)
@@ -360,33 +311,8 @@ function Stache.debugPrintf(size, text, x, y, limit, align, r, sx, sy)
 	lg.pop()
 end
 
-function Stache.colorUnpack(color, alpha)
-	Stache.checkArg("color", color, "color", "Stache.colorUnpack")
-	Stache.checkArg("alpha", alpha, "number", "Stache.colorUnpack", true)
-
-	alpha = alpha or 1
-
-	if type(color) == "string" then
-		color = Stache.colors[color] end
-
-	return color[1], color[2], color[3], alpha
-end
-
-function Stache.setColor(color, alpha)
-	Stache.checkArg("color", color, "color", "Stache.setColor")
-	Stache.checkArg("alpha", alpha, "number", "Stache.setColor", true)
-
-	alpha = alpha or 1
-
-	lg.setColor(Stache.colorUnpack(color, alpha))
-end
-
 function Stache.play(sound)
 	Stache.checkArg("sound", sound, "string", "Stache.play")
-
-	if not Stache.sfx[sound] then
-		Stache.formatError("Stache:play() called with a 'sound' argument that does not correspond to a loaded sound: %q", name)
-	end
 
 	if Stache.sfx[sound] then
 		Stache.sfx[sound]:stop()
@@ -394,7 +320,115 @@ function Stache.play(sound)
 	elseif Stache.music[sound] then
 		Stache.music[sound]:stop()
 		Stache.music[sound]:play()
+	else
+		Stache.formatError("Stache.play() called with a 'sound' argument that does not correspond to a loaded sound: %q", sound)
 	end
+end
+
+function Stache.colorUnpack(color, alpha)
+	Stache.checkArg("color", color, "asset", "Stache.colorUnpack")
+	Stache.checkArg("alpha", alpha, "number", "Stache.colorUnpack", true)
+
+	color = Stache.getAsset("color", color, Stache.colors, "Stache.colorUnpack")
+	alpha = alpha or 1
+
+	return color[1], color[2], color[3], alpha
+end
+
+function Stache.setColor(color, alpha)
+	Stache.checkArg("color", color, "asset", "Stache.setColor")
+	Stache.checkArg("alpha", alpha, "number", "Stache.setColor", true)
+
+	color = Stache.getAsset("color", color, Stache.colors, "Stache.setColor")
+	alpha = alpha or 1
+
+	lg.setColor(Stache.colorUnpack(color, alpha))
+end
+
+function Stache.debugCircle(pos, radius, color, alpha)
+	Stache.checkArg("pos", pos, "vector", "Stache.debugCircle")
+	Stache.checkArg("radius", radius, "number", "Stache.debugCircle", true)
+	Stache.checkArg("color", color, "asset", "Stache.debugCircle", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugCircle", true)
+
+	radius = radius or 1
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.translate(pos:split())
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.circle("line", 0, 0, radius)
+		Stache.setColor(color, 0.4 * alpha)
+		lg.circle("fill", 0, 0, radius)
+		Stache.setColor(color, 0.8 * alpha)
+		lg.circle("fill", 0, 0, 1)
+	lg.pop()
+end
+
+function Stache.debugLine(p1, p2, color, alpha)
+	Stache.checkArg("p1", p1, "vector", "Stache.debugLine")
+	Stache.checkArg("p2", p2, "vector", "Stache.debugLine")
+	Stache.checkArg("color", color, "asset", "Stache.debugLine", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugLine", true)
+
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.line(p1.x, p1.y, p2:split())
+	lg.pop()
+end
+
+function Stache.debugNormal(orig, dir, color, alpha)
+	Stache.checkArg("orig", orig, "vector", "Stache.debugNormal")
+	Stache.checkArg("dir", dir, "vector", "Stache.debugNormal")
+	Stache.checkArg("color", color, "asset", "Stache.debugNormal", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugNormal", true)
+
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.translate(orig:split())
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.line(0, 0, dir.x, dir.y)
+	lg.pop()
+end
+
+function Stache.debugTangent(orig, dir, color, alpha)
+	Stache.checkArg("orig", orig, "vector", "Stache.debugTangent")
+	Stache.checkArg("dir", dir, "vector", "Stache.debugTangent")
+	Stache.checkArg("color", color, "asset", "Stache.debugTangent", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugTangent", true)
+
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.translate(orig:split())
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.line(0, 0, dir.x, dir.y)
+		lg.line(0, 0, -dir.x, -dir.y)
+	lg.pop()
+end
+
+function Stache.debugBounds(bounds, color, alpha)
+	Stache.checkArg("color", color, "asset", "Stache.debugPrintf", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugPrintf", true)
+
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		Stache.setColor(color, alpha)
+		lg.rectangle("line", bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top)
+	lg.pop()
 end
 
 function Stache.updateList(table, ...)

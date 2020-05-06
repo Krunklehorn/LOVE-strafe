@@ -65,7 +65,7 @@ function Agent:init(data)
 	self:setPhysMode("VQ3")
 end
 
-function Agent:update(dt)
+function Agent:update(tl)
 	self.angRad = self.angRad + self.aim.x * AIM_SENSITIVITY
 	self.aim = vec2()
 
@@ -105,7 +105,7 @@ function Agent:update(dt)
 
 	if self:isGrounded() then
 		if self.state == "idle" then
-			self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, self.dampmin) * self.dampfact * dt)
+			self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, self.dampmin) * self.dampfact * tl)
 		elseif self.state == "move" then
 			local axis = self.axis:rotated(self.angRad)
 			local acc = self.accmove
@@ -118,8 +118,8 @@ function Agent:update(dt)
 				dampmin = dampmin / 4
 			end
 
-			self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, dampmin) * self.dampfact * dt)
-			self.vel = self.vel + axis * clamp(top - self.vel * axis, 0, acc * dt)
+			self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, dampmin) * self.dampfact * tl)
+			self.vel = self.vel + axis * clamp(top - self.vel * axis, 0, acc * tl)
 		end
 	else
 		if self.state == "air" then
@@ -131,12 +131,12 @@ function Agent:update(dt)
 				local acc = self.accbny
 				if self.airstop and self.vel * axis < 0 then
 					acc = acc * self.airstop end
-				self.vel = self.vel + axis * clamp(30 - self.vel * axis, 0, acc * dt)
+				self.vel = self.vel + axis * clamp(30 - self.vel * axis, 0, acc * tl)
 			else
 				local acc = self.accair
 				if self.airstop and self.vel * axis < 0 then
 					acc = acc * self.airstop end
-				self.vel = self.vel + axis * clamp(self.top - self.vel * axis, 0, acc * dt)
+				self.vel = self.vel + axis * clamp(self.top - self.vel * axis, 0, acc * tl)
 			end
 
 			if self.aircont and control then
@@ -145,7 +145,7 @@ function Agent:update(dt)
 				local dot = dir * axis
 
 				if dot > 0 then
-					local k = 32 * self.aircont * dot * dot * dt
+					local k = 32 * self.aircont * dot * dot * tl
 					dir = dir * speed + axis * k
 					dir = dir.normalized
 				end
@@ -153,15 +153,15 @@ function Agent:update(dt)
 				self.vel = dir * speed
 			end
 
-			self.velz = self.velz + self.grv * dt
+			self.velz = self.velz + self.grv * tl
 			self.pposz = self.posz
-			self.posz = self.posz + self.velz * dt
+			self.posz = self.posz + self.velz * tl
 			self.posz = self.posz > -100 and self.posz or -100
 		end
 	end
 
 	self.ppos = self.pos
-	self.pos = self.pos + self.vel * dt
+	self.pos = self.pos + self.vel * tl
 	self:updateCollider()
 
 	-- Check for ground interactions...
@@ -236,7 +236,7 @@ function Agent:update(dt)
 		if contact then
 			self.ppos = contact.self_pos
 			self.vel = contact.tangent * self.vel * contact.tangent
-			self.pos = self.ppos + self.vel * contact.r * dt
+			self.pos = self.ppos + self.vel * contact.r * tl
 			self:updateCollider()
 
 			table.insert(skip, contact.other)
@@ -256,7 +256,7 @@ function Agent:update(dt)
 
 	-- TODO: Set appearance based on state...
 
-	--self.sprite:update(dt) -- TODO: rework visuals...
+	--self.sprite:update(tl) -- TODO: rework visuals...
 	return false
 end
 

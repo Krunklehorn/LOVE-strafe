@@ -1,5 +1,5 @@
 Background = class("Background", {
-	image = nil,
+	sprite = nil,
 	offset = vec2(),
 	scale = vec2(1),
 	scroll = vec2(1),
@@ -11,26 +11,26 @@ Background = class("Background", {
 	quad = nil
 })
 
-function Background:init(image, offset, scale, scroll, color, alpha)
-	Stache.checkArg("image", image, "Image", "Background:init")
+function Background:init(sprite, offset, scale, scroll, color, alpha)
+	Stache.checkArg("sprite", sprite, "asset", "Background:init")
 	Stache.checkArg("offset", offset, "vector", "Background:init", true)
 	Stache.checkArg("scale", scale, "vector", "Background:init", true)
 	Stache.checkArg("scroll", scroll, "vector", "Background:init", true)
-	Stache.checkArg("color", color, "color", "Background:init", true)
+	Stache.checkArg("color", color, "asset", "Background:init", true)
 	Stache.checkArg("alpha", alpha, "number", "Background:init", true)
 
-	self.image = image
+	self.sprite = Stache.getAsset("sprite", sprite, Stache.sprites, "Background:init")
 	if offset then self.offset = offset end
 	if scale then self.scale = scale end
 	if scroll then self.scroll = scroll end
 	if color then self.color = color end
 	if alpha then self.alpha = alpha end
 
-	self.dimensions = vec2(image:getWidth(), image:getHeight())
+	self.dimensions = vec2(sprite:getWidth(), sprite:getHeight())
 	self.sd = self.dimensions ^ self.scale
 	self.quad = lg.newQuad(0, 0, 0, 0, 0, 0)
 
-	self.image:setWrap("repeat", "repeat")
+	self.sprite:setWrap("repeat", "repeat")
 end
 
 function Background:update(camera)
@@ -64,6 +64,6 @@ function Background:draw(camera)
 		lg.translate(-(width / 2) * BG_OVERDRAW, -(height / 2) * BG_OVERDRAW)
 
 		Stache.setColor(self.color, self.alpha)
-		lg.draw(self.image, self.quad)
+		lg.draw(self.sprite, self.quad)
 	lg.pop()
 end

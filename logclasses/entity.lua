@@ -58,11 +58,11 @@ function Entity:init(data)
 	end
 end
 
-function Entity:update(dt)
+function Entity:update(tl)
 	self.ppos = self.pos
-	self.pos = self.pos + self.vel * dt
-	self.angRad = self.angRad + self.angVelRad * dt
-	self.sprite:update(dt)
+	self.pos = self.pos + self.vel * tl
+	self.angRad = self.angRad + self.angVelRad * tl
+	self.sprite:update(tl)
 
 	return false
 end

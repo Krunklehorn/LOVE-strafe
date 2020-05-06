@@ -32,11 +32,11 @@ end
 
 collision = nil
 
-function Dummy:update(dt)
+function Dummy:update(tl)
 	if self.controlmode == "Current" then
-		self.pos = self.pos + self.axis * 100 * dt
+		self.pos = self.pos + self.axis * 100 * tl
 	elseif self.controlmode == "Previous" then
-		self.ppos = self.ppos + self.axis * 100 * dt
+		self.ppos = self.ppos + self.axis * 100 * tl
 	end
 
 	self.vel = self.pos - self.ppos

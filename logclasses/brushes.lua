@@ -18,7 +18,7 @@ function CircleBrush:__newindex(key, value)
 
 		slf.height = value
 	elseif key == "color" then
-		Stache.checkSet(key, value, "color", "CircleBrush")
+		Stache.checkSet(key, value, "asset", "CircleBrush")
 
 		slf.color = value
 	else
@@ -50,7 +50,7 @@ function LineBrush:__newindex(key, value)
 
 		slf.height = value
 	elseif key == "color" then
-		Stache.checkSet(key, value, "color", "LineBrush")
+		Stache.checkSet(key, value, "asset", "LineBrush")
 
 		slf.color = value
 	else

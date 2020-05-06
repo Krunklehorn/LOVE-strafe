@@ -20,11 +20,11 @@ function Particle:__newindex(key, value)
 	end
 end
 
-function Particle:update(dt)
-	Entity.update(self, dt)
+function Particle:update(tl)
+	Entity.update(self, tl)
 
 	if self.sprite.duration then
-		self.sprite.duration = self.sprite.duration - 60 * dt -- Durations are stored at 60fps
+		self.sprite.duration = self.sprite.duration - 60 * tl -- Durations are stored at 60fps
 		if self.sprite.duration <= 0 then
 			return true end
 	end

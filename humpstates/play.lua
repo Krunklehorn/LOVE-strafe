@@ -43,33 +43,42 @@ function playState:init()
 end
 
 function playState:enter()
+	self.camera.w = lg.getWidth()
+	self.camera.h = lg.getHeight()
+
 	lm.setRelativeMode(true)
+end
+
+function playState:resume()
+	self.camera.w = lg.getWidth()
+	self.camera.h = lg.getHeight()
 end
 
 function playState:leave()
 	lm.setRelativeMode(false)
 end
 
-function playState:update(dt)
+function playState:update(tl)
 	local active_agent = Stache.players.active.agent
 
-	Stache.updateList(self.agents, dt)
-	Stache.updateList(self.props, dt)
-	Stache.updateList(self.particles, dt)
+	Stache.updateList(self.agents, tl)
+	Stache.updateList(self.props, tl)
+	Stache.updateList(self.particles, tl)
 
 	if active_agent.posz <= -100 then
 		active_agent.pos = vec2()
 		active_agent.ppos = vec2()
 		active_agent.vel = vec2()
+		active_agent.angRad = 0
 		active_agent.posz = 20
 		active_agent.pposz = 20
 		active_agent.velz = 20
 		active_agent:changeState("air")
-		end
+	end
 
 	self.camera:follow(active_agent.pos:split())
 	self.camera.rotation = -active_agent.angRad
-	self.camera:update(dt)
+	self.camera:update(tl)
 
 	Stache.updateList(self.backgrounds, self.camera)
 end
@@ -180,11 +189,7 @@ end
 function playState:spawnParticle(name, anchor, params)
 	Stache.checkArg("name", name, "string", "playState:spawnParticle")
 
-	if Stache.particles[name] == nil then
-		Stache.formatError("playState:spawnParticle() called with a 'name' argument that does not correspond to a loaded particle: %q", name)
-	end
-
-	local data = Stache.particles[name]
+	local data = Stache.getAsset("name", name, Stache.particles, "playState:spawnParticle")
 
 	--data.sheet = Stache.sheets.particles[name] TODO: ready to add particles, props and actor sprites...
 	data.anchor = anchor
@@ -199,11 +204,7 @@ function playState:spawnProp(name, params)
 	Stache.checkArg("name", name, "string", "playState:spawnProp")
 	Stache.checkArg("params", params, "indexable", "playState:spawnProp", true)
 
-	if Stache.props[name] == nil then
-		Stache.formatError("playState:spawnProp() called with a 'name' argument that does not correspond to a loaded prop: %q", name)
-	end
-
-	local data = Stache.props[name]
+	local data = Stache.getAsset("name", name, Stache.props, "playState:spawnProp")
 
 	--data.sheet = Stache.sheets.props[name] TODO: ready to add particles, props and actor sprites...
 	if params ~= nil then
@@ -211,7 +212,7 @@ function playState:spawnProp(name, params)
 			data[k] = params[k] end
 	end
 
-	table.insert(self.props, Prop(prop))
+	table.insert(self.props, Prop(data))
 
 	return last(self.props)
 end
@@ -220,11 +221,7 @@ function playState:spawnAgent(name, params)
 	Stache.checkArg("name", name, "string", "playState:spawnAgent")
 	Stache.checkArg("params", params, "indexable", "playState:spawnAgent", true)
 
-	if Stache.actors[name] == nil then
-		Stache.formatError("playState:spawnAgent() called with a 'name' argument that does not correspond to a loaded actor: %q", name)
-	end
-
-	local data = Stache.actors[name]
+	local data = Stache.getAsset("name", name, Stache.actors, "playState:spawnAgent")
 
 	data.actor = name
 	--data.sheet = Stache.sheets.actors[name] TODO: ready to add particles, props and actor sprites...

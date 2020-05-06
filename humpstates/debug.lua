@@ -18,10 +18,15 @@ function debugState:enter()
 	Stache.fade = 0
 end
 
-function debugState:update(dt)
-	Stache.updateList(self.dummies, dt)
+function debugState:resume()
+	self.camera.w = lg.getWidth()
+	self.camera.h = lg.getHeight()
+end
 
-	self.camera:update(dt)
+function debugState:update(tl)
+	Stache.updateList(self.dummies, tl)
+
+	self.camera:update(tl)
 end
 
 function debugState:draw()

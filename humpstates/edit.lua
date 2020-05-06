@@ -31,21 +31,25 @@ function editState:init()
 end
 
 function editState:enter()
+	self.camera.w = lg.getWidth()
+	self.camera.h = lg.getHeight()
+
 	flux.to(Stache, 0.25, { fade = 0 }):ease("quadout")
 end
 
 function editState:resume()
+	self.camera.w = lg.getWidth()
+	self.camera.h = lg.getHeight()
+
 	self.camera.x = playState.camera.x
 	self.camera.y = playState.camera.y
-	self.camera.w = playState.camera.w
-	self.camera.h = playState.camera.h
 	self.camera.scale = playState.camera.scale
 
 	self:refreshHandles()
 end
 
-function editState:update(dt)
-	self.camera:update(dt)
+function editState:update(tl)
+	self.camera:update(tl)
 end
 
 function editState:draw()
