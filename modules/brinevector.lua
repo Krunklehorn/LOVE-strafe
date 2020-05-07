@@ -89,11 +89,11 @@ end
 ---------------------------------------------------------
 -- Krunk: Added getNormal and getTangent for various uses
 function Vector.getNormal(v)
-	return Vector(v.y, -v.x).normalized
+	return Vector(-v.y, v.x).normalized
 end
 
 function Vector.getTangent(v)
-	return Vector(-v.y, v.x).normalized
+	return Vector(v.y, -v.x).normalized
 end
 ---------------------------------------------------------
 

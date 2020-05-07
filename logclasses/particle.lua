@@ -7,17 +7,9 @@ Particle = Entity:extend("Particle", {
 function Particle:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "anchor" then
-		Stache.checkSet(key, value, "indexable", "Particle", true)
-
-		slf.anchor = value
-	elseif key == "params" then
-		Stache.checkSet(key, value, "indexable", "Particle", true)
-
-		slf.params = value
-	else
-		Entity.__newindex(self, key, value)
-	end
+	if key == "anchor" then slf.anchor = Stache.checkSet(key, value, "indexable", "Particle", true)
+	elseif key == "params" then slf.params = Stache.checkSet(key, value, "indexable", "Particle", true)
+	else Entity.__newindex(self, key, value) end
 end
 
 function Particle:update(tl)

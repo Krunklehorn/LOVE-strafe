@@ -1,23 +1,9 @@
 editState = {
 	camera = nil,
 	grid = nil,
-	visuals =
-	{
-		size = 32,
-		subdivisions = 4,
-		color = {0.6, 0.6, 0.6},
-		drawScale = false,
-		xColor = {0, 1, 1},
-		yColor = {1, 0, 1},
-		fadeFactor = 0.5,
-		textFadeFactor = 1,
-		hideOrigin = true,
-		interval = size,
-		style = "rough"
-	},
-	handles = {},
 	mouseWorld = nil,
-	pickHandle = nil
+	pickHandle = nil,
+	handles = {}
 }
 
 function editState:init()
@@ -25,7 +11,18 @@ function editState:init()
 	self.camera:setFollowLerp(1)
 	self.camera:setFollowLead(0)
 
-	self.grid = editgrid.grid(self.camera, self.visuals)
+	self.grid = editgrid.grid(self.camera, {
+		size = 32,
+		subdivisions = 4,
+		color = { 0.5, 0.5, 0.5 },
+		drawScale = false,
+		xColor = { 0, 1, 1 },
+		yColor = { 1, 0, 1 },
+		fadeFactor = 0.5,
+		textFadeFactor = 1,
+		hideOrigin = true,
+		style = "smooth"
+	})
 
 	self:refreshHandles()
 end
@@ -49,6 +46,8 @@ function editState:resume()
 end
 
 function editState:update(tl)
+	Stache.updateList(self.handles, tl)
+
 	self.camera:update(tl)
 end
 
@@ -76,8 +75,7 @@ function editState:mousepressed(x, y, button)
 	local mx, my = self.camera:getMousePosition()
 
 	if button == 1 and not lm.isDown(2) and not lm.isDown(3) and not self.pickHandle then
-		for h = 1, #self.handles do
-			local handle = self.handles[h]
+		for _, handle in ipairs(self.handles) do
 			if not self.pickHandle then
 				self.pickHandle = handle:pick(mx, my, self.camera.scale, "pick")
 			else
@@ -100,22 +98,26 @@ function editState:mousereleased(x, y, button)
 end
 
 function editState:mousemoved(x, y, dx, dy, istouch)
+	local mx, my = self.camera:toWorldCoords(x, y)
+
+	dx = dx / self.camera.scale
+	dy = dy / self.camera.scale
+
 	if lm.isDown(1) and self.pickHandle then
-		self.pickHandle:drag(dx / self.camera.scale, dy / self.camera.scale)
+		self.pickHandle:drag(dx, dy)
 	elseif lm.isDown(3) then
-		local zoomFact = MOUSE_SENSITIVITY / self.camera.scale
-		self.camera:move(-dx * zoomFact, -dy * zoomFact)
+		self.camera:move(-dx * MOUSE_SENSITIVITY, -dy * MOUSE_SENSITIVITY)
 	else
-		for h = 1, #self.handles do
-			self.handles[h]:pick(self.camera.mx, self.camera.my, self.camera.scale, "hover")
+		for _, handle in ipairs(self.handles) do
+			handle:pick(mx, my, self.camera.scale, "hover")
 		end
 	end
 end
 
 function editState:wheelmoved(x, y)
-	if y < 0 and self.camera.scale > 0.001 then
+	if y < 0 and self.camera.scale > 0.1 then
 		self.camera.scale = self.camera.scale * 0.8
-	elseif y > 0 and self.camera.scale < 1000 then
+	elseif y > 0 and self.camera.scale < 10 then
 		self.camera.scale = self.camera.scale * 1.25
 	end
 end
@@ -145,6 +147,10 @@ function editState:refreshHandles()
 
 		if brush:instanceOf(CircleBrush) then
 			table.insert(self.handles, PointHandle(brush, "pos"))
+		elseif brush:instanceOf(BoxBrush) then
+			table.insert(self.handles, PointHandle(brush, "pos"))
+			table.insert(self.handles, VectorHandle(brush, "pos", "bow"))
+			table.insert(self.handles, VectorHandle(brush, "pos", "star"))
 		elseif brush:instanceOf(LineBrush) then
 			table.insert(self.handles, PointHandle(brush, "p1"))
 			table.insert(self.handles, PointHandle(brush, "p2"))

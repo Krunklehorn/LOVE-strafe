@@ -212,36 +212,71 @@ function Agent:update(tl)
 	-- Check for and resolve contacts...
 	local skip = {}
 
-	repeat
-		local contact
+	if DEBUG_COLLISION_FALLBACK then
+		repeat
+			local overlap -- discrete response
 
-		for b, brush in ipairs(playState.brushes) do
-			if self.posz >= brush.height then
-				goto continue end
+			for b, brush in ipairs(playState.brushes) do
+				if self.posz >= brush.height then
+					goto continue end
 
-			for _, skip in pairs(skip) do
-				if brush == skip then
-					goto continue end end
+				for _, skip in pairs(skip) do
+					if brush == skip then
+						goto continue end
+				end
 
-			local result = self.collider:cast(brush)
+				local result = self.collider:overlap(brush)
 
-			if result then
-				if result.t >= 0 and (not contact or result.t < contact.t) then
-					contact = result end
+				if result.depth >= 0 and (not overlap or result.depth > overlap.depth) then
+					overlap = result end
+
+				::continue::
 			end
 
-			::continue::
-		end
+			if overlap then
+				local offset = overlap.normal * overlap.depth
+				local tangent = overlap.normal.tangent
+				self.pos = self.pos + offset
+				self.ppos = self.ppos + offset
+				self.vel = tangent * self.vel * tangent
+				self:updateCollider()
 
-		if contact then
-			self.ppos = contact.self_pos
-			self.vel = contact.tangent * self.vel * contact.tangent
-			self.pos = self.ppos + self.vel * contact.r * tl
-			self:updateCollider()
+				table.insert(skip, overlap.other)
+			end
+		until not overlap
+	else
+		repeat
+			local contact -- continuous response
 
-			table.insert(skip, contact.other)
-		end
-	until not contact
+			for b, brush in ipairs(playState.brushes) do
+				if self.posz >= brush.height then
+					goto continue end
+
+				for _, skip in pairs(skip) do
+					if brush == skip then
+						goto continue end
+				end
+
+				local result = self.collider:cast(brush)
+
+				if result then
+					if result.t >= 0 and (not contact or result.t < contact.t) then
+						contact = result end
+				end
+
+				::continue::
+			end
+
+			if contact then
+				self.ppos = contact.self_pos
+				self.vel = contact.tangent * self.vel * contact.tangent
+				self.pos = self.ppos + self.vel * contact.r * tl
+				self:updateCollider()
+
+				table.insert(skip, contact.other)
+			end
+		until not contact
+	end
 
 	-- Check for state changes based on velocity...
 	if self:isGrounded() then
@@ -333,7 +368,7 @@ function Agent:changeAction(action, jumpTo, play)
 		elseif play == false then
 			self.sprite.animation:pause() end
 	end
-	]]--
+	]]
 
 	self.action = action
 	self:updateCollider()
@@ -375,7 +410,7 @@ function Agent:togglePhysMode()
 end
 
 function Agent:updateCollider()
-	self.collider:update({ pos = self.pos, ppos = self.ppos, angRad = self.angRad })
+	self.collider:update({ pos = self.pos, ppos = self.ppos })
 end
 
 function Agent:isGrounded()

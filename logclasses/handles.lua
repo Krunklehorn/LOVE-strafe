@@ -1,57 +1,96 @@
 Handle = class("Handle", {
-	pos = vec2(),
 	target = nil,
-	key = nil,
 	state = "idle",
 	colors = {
-		idle = {1, 1, 1},
-		hover = {1, 1, 0},
-		pick = {1, 0.5, 0}
+		idle = { 1, 1, 1 },
+		hover = { 1, 1, 0 },
+		pick = { 1, 0.5, 0 }
 	}
 })
 
-Handle.RADIUS = 32
-Handle.SCALE_MIN = 4
-Handle.SCALE_MAX = 32
+HANDLE_RADIUS = 32
+HANDLE_SCALE_MIN = 4
+HANDLE_SCALE_MAX = 32
+
+function Handle:init(data)
+	Stache.formatError("Abstract function Handle:init() called!")
+end
+
+function Handle:update()
+	Stache.formatError("Abstract function Handle:update() called!")
+end
 
 function Handle:draw(scale)
+	Stache.formatError("Abstract function Handle:draw() called!")
+end
+
+function Handle:drag()
+	Stache.formatError("Abstract function Handle:drag() called!")
+end
+
+function Handle:pick()
+	Stache.formatError("Abstract function Handle:pick() called!")
+end
+
+function Handle:getRect(scale)
+	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
+
+	local radius = HANDLE_RADIUS / scale
+
+	return self.pos.x - radius, self.pos.y - radius, 2 * radius, 2 * radius
+end
+
+PointHandle = Handle:extend("PointHandle", {
+	pos = nil,
+	pkey = nil
+})
+
+function PointHandle:init(target, pkey)
+	Stache.checkArg("target", target, "indexable", "PointHandle:init")
+	Stache.checkArg("pkey", pkey, "string", "PointHandle:init")
+
+	if target[pkey] == nil or not vec2.isVector(target[pkey]) then
+		Stache.formatError("PointHandle:init() called with an invalid 'pkey' argument: %q", pkey)
+	end
+
+	self.target = target
+	self.pos = target[pkey]
+	self.pkey = pkey
+end
+
+function PointHandle:update()
+	self.pos = self.target[self.pkey]
+
+	return false
+end
+
+function PointHandle:draw(scale)
 	local r, g, b = unpack(self.colors[self.state])
-	local x, y, w, h = self:getBox(scale)
+	local x, y, w, h = self:getRect(scale)
 
 	lg.push("all")
 		lg.setLineWidth(0.25 / scale)
-		lg.setColor(r, g, b, 0.8)
+		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
 		lg.rectangle("line", x, y, w, h)
-		lg.setColor(r, g, b, 0.6)
+		lg.setColor(r, g, b, self.state == "idle" and 0.25 or 0.5)
 		lg.rectangle("fill", x, y, w, h)
 	lg.pop()
 end
 
-function Handle:drag(dx, dy)
+function PointHandle:drag(dx, dy)
 	self.pos.x = self.pos.x + dx
 	self.pos.y = self.pos.y + dy
 
-	self.target[self.key] = self.pos
+	self.target[self.pkey] = self.pos
 end
 
-function Handle:getBox(scale)
-	scale = clamp(scale, Handle.SCALE_MIN, Handle.SCALE_MAX)
-	return self.pos.x - Handle.RADIUS / scale,
-		  self.pos.y - Handle.RADIUS / scale,
-		  2 * Handle.RADIUS / scale,
-		  2 * Handle.RADIUS / scale
-end
+function PointHandle:pick(x, y, scale, state)
+	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
 
-function Handle:getBounds(scale)
-	scale = clamp(scale, Handle.SCALE_MIN, Handle.SCALE_MAX)
-	return self.pos.x - Handle.RADIUS / scale,
-		  self.pos.y - Handle.RADIUS / scale,
-		  self.pos.x + Handle.RADIUS / scale,
-		  self.pos.y + Handle.RADIUS / scale
-end
-
-function Handle:pick(x, y, scale, state)
-	local left, top, right, bottom = self:getBounds(scale)
+	local left = self.pos.x - HANDLE_RADIUS / scale
+	local right = self.pos.x + HANDLE_RADIUS / scale
+	local top = self.pos.y - HANDLE_RADIUS / scale
+	local bottom = self.pos.y + HANDLE_RADIUS / scale
 
 	if x >= left and x <= right and
 	   y >= top and y <= bottom then
@@ -63,18 +102,72 @@ function Handle:pick(x, y, scale, state)
 	end
 end
 
-PointHandle = Handle:extend("PointHandle")
+VectorHandle = Handle:extend("VectorHandle", {
+	delta = nil,
+	pkey = nil,
+	dkey = nil
+})
 
-function PointHandle:init(target, key)
-	Stache.checkArg("target", target, "indexable", "PointHandle:init")
+function VectorHandle:init(target, pkey, dkey)
+	Stache.checkArg("target", target, "indexable", "VectorHandle:init")
+	Stache.checkArg("pkey", pkey, "string", "VectorHandle:init")
+	Stache.checkArg("dkey", dkey, "string", "VectorHandle:init")
 
-	if type(key) ~= "string" or not target[key] or not vec2.isVector(target[key]) then
-		Stache.formatError("PointHandle:init() called with an invalid 'key' argument: %q", key)
+	if target[pkey] == nil or not vec2.isVector(target[pkey]) then
+		Stache.formatError("PointHandle:init() called with an invalid 'pkey' argument: %q", pkey)
+	elseif target[dkey] == nil or not vec2.isVector(target[dkey]) then
+		Stache.formatError("PointHandle:init() called with an invalid 'dkey' argument: %q", dkey)
 	end
 
-	self.pos = target[key]
 	self.target = target
-	self.key = key
+	self.delta = target[dkey]
+	self.pkey = pkey
+	self.dkey = dkey
+end
+
+function VectorHandle:update()
+	self.delta = self.target[self.dkey]
+
+	return false
+end
+
+function VectorHandle:draw(scale)
+	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
+
+	local r, g, b = unpack(self.colors[self.state])
+	local pos = self.target[self.pkey]
+	local tip = pos + self.delta
+
+	lg.push("all")
+		lg.setLineWidth(0.25 / scale)
+		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
+		lg.circle("line", tip.x, tip.y, HANDLE_RADIUS / scale)
+		lg.line(pos.x, pos.y, tip:split())
+		lg.setColor(r, g, b, self.state == "idle" and 0.25 or 0.5)
+		lg.circle("fill", tip.x, tip.y, HANDLE_RADIUS / scale)
+	lg.pop()
+end
+
+function VectorHandle:drag(dx, dy)
+	self.delta.x = self.delta.x + dx
+	self.delta.y = self.delta.y + dy
+
+	self.target[self.dkey] = self.delta
+end
+
+function VectorHandle:pick(x, y, scale, state)
+	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
+
+	local pos = self.target[self.pkey] + self.delta
+	local radius = HANDLE_RADIUS / scale
+
+	if (pos - vec2(x, y)).length <= radius then
+		if state then self.state = state end
+		return self
+	else
+		self.state = "idle"
+		return nil
+	end
 end
 
 --[[
@@ -106,4 +199,4 @@ function ControlPointHandle:init(target, key)
 	self.target = target
 	self.key = key
 end
-]]--
+]]

@@ -10,33 +10,45 @@ playState = {
 function playState:init()
 	self.camera = stalker()
 
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(32), vec2(1.25), nil, 0.2))
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(4), nil, nil, 0.1))
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_grid, nil, vec2(2), nil, nil, 0.1))
-	table.insert(self.backgrounds, Background(Stache.sprites.parallax_screen, nil, vec2(2), vec2(0.25), nil, 0.2))
+	table.insert(self.backgrounds, Background("parallax_grid", nil, vec2(32), vec2(1.25), nil, 0.2))
+	table.insert(self.backgrounds, Background("parallax_grid", nil, vec2(4), nil, nil, 0.1))
+	table.insert(self.backgrounds, Background("parallax_grid", nil, vec2(2), nil, nil, 0.1))
+	table.insert(self.backgrounds, Background("parallax_screen", nil, vec2(2), vec2(0.25), nil, 0.2))
 
-	table.insert(self.brushes, LineBrush({ p1 = vec2(-1000, 0), p2 = vec2(1000, 0), radius = 300 }))
+	table.insert(self.brushes, LineBrush({ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 }))
+	table.insert(self.brushes, CircleBrush({ pos = vec2(-2000, 0), radius = 200, height = 50 }))
+	table.insert(self.brushes, CircleBrush({ pos = vec2(2000, 0), radius = 200, height = 50 }))
+
+	table.insert(self.brushes, LineBrush({ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 }))
+	table.insert(self.brushes, CircleBrush({ pos = vec2(-3000, -11000), radius = 600, height = 50 }))
+	table.insert(self.brushes, CircleBrush({ pos = vec2(3000, -11000), radius = 600, height = 50 }))
+
+	table.insert(self.brushes, CircleBrush({ pos = vec2(400, 0), radius = 40, height = 40 }))
+	table.insert(self.brushes, BoxBrush({ pos = vec2(200, 0), forward = vec2.dir("up"), hwidth = 100, hheight = 50, height = 40 }))
+	table.insert(self.brushes, LineBrush({ p1 = vec2(-200, -100), p2 = vec2(-400, 100), radius = 40, height = 40 }))
 
 	local lane = -800
 	local hwidth = 200
 	local dist = -600
-	for i = 1, 10 do
+	for i = 1, 16 do
 		table.insert(self.brushes, LineBrush({ p1 = vec2(lane + hwidth, dist), p2 = vec2(lane - hwidth, dist), radius = 80 }))
-		dist = dist - 300 * (1 + i / 7)
+		dist = dist - 320 * (1 + i / 10)
 	end
 
 	lane = 0
 	dist = -700
-	for i = 1, 8 do
+	for i = 1, 13 do
 		table.insert(self.brushes, LineBrush({ p1 = vec2(lane + hwidth, dist), p2 = vec2(lane - hwidth, dist), radius = 80 }))
-		dist = dist - 425 * (1 + i / 7)
+		dist = dist - 450 * (1 + i / 10)
 	end
 
 	lane = 800
 	dist = -600
-	for i = 1, 16 do
-		table.insert(self.brushes, CircleBrush({ pos = vec2(lane + math.sin(math.rad(dist * 0.25)) * 200, dist), radius = 100 }))
-		dist = dist - 300
+	hwidth = 400
+	for i = 1, 27 do
+		local offset = math.sin(math.rad(dist * 0.2)) - math.sin(math.rad(dist * 0.19)) / 2 - math.sin(math.rad(dist * 0.16)) / 3
+		table.insert(self.brushes, CircleBrush({ pos = vec2(lane + offset * hwidth, dist), radius = 100 }))
+		dist = dist - 300 * (1 + i / 80)
 	end
 
 	Stache.players[1].agent = self:spawnAgent("strafer", { posz = 20 })
@@ -93,9 +105,11 @@ function playState:draw()
 	Stache.drawList(self.props)
 	Stache.drawList(self.agents)
 
-	if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
-	if DEBUG_LINE then Stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
-	if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
+	if DEBUG_DRAW then
+		if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
+		if DEBUG_LINE then Stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
+		if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
+	end
 
 	self.camera:detach()
 	lg.push("all")

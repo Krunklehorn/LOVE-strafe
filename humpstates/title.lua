@@ -59,7 +59,7 @@ function titleState:draw()
 		lg.translate(lg.getFont():getWidth(prefix) * 4, 0)
 		Stache.setFont("btnfont_prs", -1)
 		lg.print(pressed, 0, 0, 0, 4, 4)
-	lg.pop()]]--
+	lg.pop()]]
 end
 
 function titleState:keypressed(key)

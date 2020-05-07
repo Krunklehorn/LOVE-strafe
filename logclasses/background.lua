@@ -26,7 +26,7 @@ function Background:init(sprite, offset, scale, scroll, color, alpha)
 	if color then self.color = color end
 	if alpha then self.alpha = alpha end
 
-	self.dimensions = vec2(sprite:getWidth(), sprite:getHeight())
+	self.dimensions = vec2(self.sprite:getWidth(), self.sprite:getHeight())
 	self.sd = self.dimensions ^ self.scale
 	self.quad = lg.newQuad(0, 0, 0, 0, 0, 0)
 

@@ -29,7 +29,7 @@ Stache = {
 	sheets = {},
 	particles = {},
 	props = {},
-	]]--
+	]]
 	actors = {},
 	players = {}
 }
@@ -97,6 +97,8 @@ function Stache.checkSet(key, value, query, class, nillable)
 			Stache.formatError("Stache.checkSet() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
 		end
 	end
+
+	return value
 end
 
 function Stache.checkArg(key, arg, query, func, nillable)
@@ -127,6 +129,10 @@ function Stache.checkArg(key, arg, query, func, nillable)
 			if not vec2.isVector(arg) then
 				Stache.formatError("%s() called with a '%s' argument that isn't a vector: %q", func, key, arg)
 			end
+		elseif query == "scalar/vector" then
+			if type(arg) ~= "number" and not vec2.isVector(arg) then
+				Stache.formatError("%s() called with a '%s' argument that isn't a scalar or vector: %q", func, key, arg)
+			end
 		elseif query == "asset" then
 			if type(arg) ~= "string" and type(arg) ~= "table" and type(arg) ~= "userdata" then
 				Stache.formatError("%s() called with a '%s' argument that isn't a string, table or userdata: %q", func, key, arg)
@@ -142,6 +148,10 @@ function Stache.checkArg(key, arg, query, func, nillable)
 end
 
 function Stache.readOnly(key, queries, class)
+	Stache.checkArg("key", key, "string", "Stache.readOnly")
+	Stache.checkArg("queries", queries, "indexable", "Stache.readOnly")
+	Stache.checkArg("class", class, "string", "Stache.readOnly")
+
 	for _, query in ipairs(queries) do
 		if key == query then
 			Stache.formatError("Attempted to set a key of class '%s' that is read-only: %q", class, key) end
@@ -212,13 +222,13 @@ function Stache.load()
 		collider = nil,
 		onOverlap = function(self, target) end
 	}
-	]]--
+	]]
 
 	subDir = Stache.actors
 	--[[ TODO: ready to add particles, props and actor sprites...
 	sheet = Stache.sheets.actors.strafer
 	width, height = sheet:getDimensions()
-	]]--
+	]]
 	subDir.strafer = {
 		idle = {
 			stand = {},
@@ -367,6 +377,35 @@ function Stache.debugCircle(pos, radius, color, alpha)
 	lg.pop()
 end
 
+function Stache.debugBox(pos, angRad, hwidth, hheight, radius, color, alpha)
+	Stache.checkArg("pos", pos, "vector", "Stache.debugRectangle")
+	Stache.checkArg("angRad", angRad, "number", "Stache.debugRectangle")
+	Stache.checkArg("hwidth", hwidth, "number", "Stache.debugRectangle")
+	Stache.checkArg("hheight", hheight, "number", "Stache.debugRectangle")
+	Stache.checkArg("radius", radius, "number", "Stache.debugRectangle", true)
+	Stache.checkArg("color", color, "asset", "Stache.debugRectangle", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugRectangle", true)
+
+	radius = radius or 0
+	color = color or "white"
+	alpha = alpha or 1
+
+	hwidth = hwidth + radius
+	hheight = hheight + radius
+
+	lg.push("all")
+		lg.translate(pos:split())
+		lg.rotate(angRad)
+		lg.setLineWidth(0.25)
+		Stache.setColor(color, alpha)
+		lg.rectangle("line", -hwidth, -hheight, hwidth * 2, hheight * 2, radius, radius)
+		Stache.setColor(color, 0.4 * alpha)
+		lg.rectangle("fill", -hwidth, -hheight, hwidth * 2, hheight * 2, radius, radius)
+		Stache.setColor(color, 0.8 * alpha)
+		lg.circle("fill", -hwidth, -hheight, 1)
+	lg.pop()
+end
+
 function Stache.debugLine(p1, p2, color, alpha)
 	Stache.checkArg("p1", p1, "vector", "Stache.debugLine")
 	Stache.checkArg("p2", p2, "vector", "Stache.debugLine")
@@ -480,28 +519,34 @@ function Stache.copy(obj, seen)
 	return setmetatable(result, getmetatable(obj))
 end
 
-function floatEquality(a, b)
-	if type(a) ~= "number" or type(b) ~= "number" then
-		Stache.formatError("floatEquality() called with one or more non-numerical arguments: %q %q", a, b)
-	end
+function abs(x)
+	Stache.checkArg("x", x, "scalar/vector", "abs")
 
-	return math.abs(a - b) < FLOAT_EPSILON
+	return type(x) == "number" and
+		math.abs(x) or
+		vec2(math.abs(x.x), math.abs(x.y))
+end
+
+function floatEquality(a, b)
+	Stache.checkArg("a", a, "number", "floatEquality")
+	Stache.checkArg("b", b, "number", "floatEquality")
+
+	return abs(a - b) < FLOAT_EPSILON
 end
 
 function equalsZero(x)
-	if type(x) ~= "number" then
-		Stache.formatError("equalsZero() called with a non-numerial argument: %q", x)
-	end
+	Stache.checkArg("x", x, "number", "floatEquality")
+
 	return floatEquality(x, 0)
 end
 
 function sign(x)
-	if type(x) ~= "number" then
-		Stache.formatError("sign() called with a non-numerial argument: %q", x)
-	end
+	Stache.checkArg("x", x, "scalar/vector", "sign")
 
-	if equalsZero(x) then return 0
-	else return x < 0 and -1 or 1 end
+	return type(x) == "number" and
+		(equalsZero(x) and 0 or (x < 0 and -1 or 1)) or
+		vec2((equalsZero(x.x) and 0 or (x.x < 0 and -1 or 1)),
+			(equalsZero(x.y) and 0 or (x.y < 0 and -1 or 1)))
 end
 
 function uni2bi(theta)
@@ -516,12 +561,42 @@ function uni2bi(theta)
 	return theta
 end
 
-function clamp(value, min, max)
-	if type(value) ~= "number" or type(min) ~= "number" or type(max) ~= "number" then
-		Stache.formatError("clamp() called with one or more non-numerial arguments: %q, %q, %q", value, min, max)
-	end
+function min(a, b)
+	Stache.checkArg("a", a, "scalar/vector", "min")
+	Stache.checkArg("b", b, "scalar/vector", "min")
 
-	return math.min(math.max(min, value), max)
+	if type(a) == "number" then
+		return type(b) == "number" and
+			math.min(a, b) or
+			vec2(math.min(a, b.x), math.min(a, b.y))
+	else
+		return type(b) == "number" and
+			vec2(math.min(a.x, b), math.min(a.y, b)) or
+			vec2(math.min(a.x, b.x), math.min(a.x, b.y))
+	end
+end
+
+function max(a, b)
+	Stache.checkArg("a", a, "scalar/vector", "max")
+	Stache.checkArg("b", b, "scalar/vector", "max")
+
+	if type(a) == "number" then
+		return type(b) == "number" and
+			math.max(a, b) or
+			vec2(math.max(a, b.x), math.max(a, b.y))
+	else
+		return type(b) == "number" and
+			vec2(math.max(a.x, b), math.max(a.y, b)) or
+			vec2(math.max(a.x, b.x), math.max(a.x, b.y))
+	end
+end
+
+function clamp(value, lower, upper)
+	Stache.checkArg("value", value, "scalar/vector", "clamp")
+	Stache.checkArg("lower", lower, "scalar/vector", "clamp")
+	Stache.checkArg("upper", upper, "scalar/vector", "clamp")
+
+	return min(max(lower, value), upper)
 end
 
 function isNaN(x)
@@ -539,11 +614,10 @@ function greater(a, b)
 end
 
 function approach(value, target, rate, callback)
+	Stache.checkArg("value", value, "number", "approach")
+	Stache.checkArg("target", target, "number", "approach")
+	Stache.checkArg("rate", rate, "number", "approach")
 	Stache.checkArg("callback", callback, "function", "approach", true)
-
-	if type(value) ~= "number" or type(target) ~= "number" or type(rate) ~= "number" then
-		Stache.formatError("approach() called with one or more non-numerial arguments: %q, %q, %q", value, target, rate)
-	end
 
 	if value > target then
 		value = value - rate

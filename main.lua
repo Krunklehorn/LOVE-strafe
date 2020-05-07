@@ -5,6 +5,7 @@ lm = love.mouse
 la = love.audio
 
 FLOAT_EPSILON = 0.00001
+MATH_2PI = 2 * math.pi
 
 WINDOW_WIDTH = 720
 WINDOW_HEIGHT = 480
@@ -14,11 +15,12 @@ WINDOW_HEIGHT_HALF = WINDOW_HEIGHT / 2
 FONT_BLOWUP = 100
 FONT_SHRINK = 1 / FONT_BLOWUP
 
-MOUSE_SENSITIVITY = 1/2
-AIM_SENSITIVITY = 1/400
+MOUSE_SENSITIVITY = 1
+AIM_SENSITIVITY = 1 / math.deg(MATH_2PI)
 
 BG_OVERDRAW = 3
 
+DEBUG_COLLISION_FALLBACK = true
 DEBUG_STATECHANGES = false
 DEBUG_DRAW = true
 
@@ -59,8 +61,8 @@ function love.load()
 	humpstate.registerEvents("prep")
 	humpstate.switch(titleState)
 	--humpstate.switch(debugState)
-	--humpstate.switch(editState)
-	--humpstate.push(playState)
+	humpstate.switch(editState)
+	humpstate.push(playState)
 end
 
 function love.run()

@@ -7,17 +7,9 @@ Prop = Entity:extend("Prop", {
 function Prop:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "collider" then
-		Stache.checkSet(key, value, Collider, "Prop", true)
-
-		slf.collider = value
-	elseif key == "onOverlap" then
-		Stache.checkSet(key, value, "function", "Prop", true)
-
-		slf.onOverlap = value
-	else
-		Entity.__newindex(self, key, value)
-	end
+	if key == "collider" then slf.collider = Stache.checkSet(key, value, Collider, "Prop", true)
+	elseif key == "onOverlap" then slf.onOverlap = Stache.checkSet(key, value, "function", "Prop", true)
+	else Entity.__newindex(self, key, value) end
 end
 
 function Prop:update(tl)

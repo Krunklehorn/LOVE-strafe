@@ -28,25 +28,15 @@ end
 function Entity:__newindex(key, value)
 	local slf = rawget(self, "members")
 
-	if key == "sprite" then
-		Stache.checkSet(key, value, Sprite, "Entity", true)
-
-		slf.sprite = value
+	if key == "sprite" then slf.sprite = Stache.checkSet(key, value, Sprite, "Entity", true)
 	elseif key == "angRad" then
-		Stache.checkSet(key, value, "number", "Entity")
-
-		slf.angRad = value
+		slf.angRad = Stache.checkSet(key, value, "number", "Entity")
 		slf.angDeg = nil
 	elseif key == "angVelRad" then
-		Stache.checkSet(key, value, "number", "Entity")
-
-		slf.angVelRad = value
+		slf.angVelRad = Stache.checkSet(key, value, "number", "Entity")
 		slf.angVelDeg = nil
-	elseif key == "angDeg" or key == "angVelDeg" then
-		Stache.readOnly(key, "Entity")
-	else
-		slf[key] = value
-	end
+	elseif key == "angDeg" or key == "angVelDeg" then Stache.readOnly(key, "Entity")
+	else slf[key] = value end
 end
 
 function Entity:init(data)

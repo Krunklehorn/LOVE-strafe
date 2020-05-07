@@ -27,7 +27,7 @@ function Dummy:init(data)
 	Entity.init(self, data)
 
 	self.collider = CircleCollider({ radius = 32 })
-	self:setControlMode("Current")
+	self:setControlMode("Previous")
 end
 
 collision = nil
@@ -79,12 +79,12 @@ function Dummy:draw()
 		lg.pop()
 	lg.pop()
 
-	Stache.debugCircle(self.ppos, self.collider.radius, "green", 1)
-	Stache.debugCircle(self.pos, self.collider.radius, "red", 1)
+	Stache.debugCircle(self.ppos, self.collider.radius, "red", 1)
+	Stache.debugCircle(self.pos, self.collider.radius, "green", 1)
 
 	if collision then
-		Stache.debugCircle(self.tppos, self.collider.radius, "green", 0.5)
-		Stache.debugCircle(self.tpos, self.collider.radius, "red", 0.5)
+		Stache.debugCircle(self.tppos, self.collider.radius, "red", 0.5)
+		Stache.debugCircle(self.tpos, self.collider.radius, "green", 0.5)
 		Stache.debugTangent(self.tppos, collision.tangent * 100, "white", 0.5)
 	end
 

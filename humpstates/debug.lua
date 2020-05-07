@@ -8,7 +8,8 @@ function debugState:init()
 	self.camera = stalker()
 
 	--table.insert(self.brushes, CircleBrush({ pos = vec2(100, -100), ppos = vec2(-100, 100), radius = 64 }))
-	table.insert(self.brushes, LineBrush({ p1 = vec2(0, -100), p2 = vec2(-200, 100), pp1 = vec2(200, -100), pp2 = vec2(0, 100), radius = 64 }))
+	table.insert(self.brushes, BoxBrush({ pos = vec2(100, -100), --[[ppos = vec2(-100, 100),]] forward = vec2.dir("upright"), hwidth = 200, hheight = 100 }))
+	--table.insert(self.brushes, LineBrush({ p1 = vec2(0, -100), p2 = vec2(-200, 100), pp1 = vec2(200, -100), pp2 = vec2(0, 100), radius = 64 }))
 	table.insert(self.dummies, Dummy())
 
 	Stache.players[1].agent = self.dummies[1]
