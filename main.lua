@@ -59,7 +59,7 @@ function love.load()
 	Stache.load()
 
 	humpstate.registerEvents("prep")
-	humpstate.switch(titleState)
+	--humpstate.switch(titleState)
 	--humpstate.switch(debugState)
 	humpstate.switch(editState)
 	humpstate.push(playState)

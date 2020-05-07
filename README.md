@@ -4,28 +4,41 @@ A top-down 2D tech demo of Quake-based strafe jumping physics using the LÖVE en
 
 Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld source codes.
 
-![VQ3 physics in LÖVEstrafe](meta/LÖVEstrafe_200420_1.png)
-![CPM physics in LÖVEstrafe](meta/LÖVEstrafe_200420_2.png)
+![VQ3 physics in LÖVEstrafe](meta/LÖVEstrafe_200507_1.png)
+![CPM physics in LÖVEstrafe](meta/LÖVEstrafe_200507_2.png)
+![CPM physics in LÖVEstrafe](meta/LÖVEstrafe_200507_3.png)
 
 
 # Controls
 
-| Controls ||
+| Play ||
 | :---: | :---: |
 | WASD | Move |
 | Mouse | Aim |
 | Space | Jump |
 | C | Crouch |
-| V | Toggle Physics |
-| M | Toggle Fullscreen |
-| Enter | Next Menu |
-| Backspace | Previous Menu |
+| V | Physics |
+| M | Fullscreen |
+| Backspace | Edit Mode |
+
+| Edit ||
+| :---: | :---: |
+| Mouse 1 | Move |
+| Mouse 2 | Create |
+| Mouse 3 | Pan |
+| MWheel | Zoom |
+| Ctrl + MWheel | Cycle Type |
+| Shift | Snap to Grid |
+| M | Fullscreen |
+| Enter | Play Mode |
 
 
 # Future Plans
 
 - Support for crouch sliding (Quake 4)
-- Drag-and-Draw level editor for floors, walls and pits
+- Stage select with presets for all skill levels
+- Tweakable generator for quickly creating a series of jumps (referred to as a "gamma")
+- Sfx for footsteps and jumps
 - Alternate camera and control styles like world lock or touchscreen mode
 
 

@@ -86,8 +86,7 @@ function PointHandle:drag(mwpos, interval)
 	self.pos = self.ppos + mwpos - self.pmwpos
 
 	if lk.isDown("lshift", "rshift") then
-		self.pos = round(self.pos / interval) * interval
-	end
+		self.pos = snap(self.pos, interval) end
 
 	self.target[self.pkey] = self.pos
 end
@@ -166,8 +165,7 @@ function VectorHandle:drag(mwpos, interval)
 	self.delta = self.pdelta + mwpos - self.pmwpos
 
 	if lk.isDown("lshift", "rshift") then
-		self.delta = round(self.delta / interval) * interval
-	end
+		self.delta = snap(self.delta, interval) end
 
 	self.target[self.dkey] = self.delta
 end

@@ -49,6 +49,46 @@ function Collider:checkCastBounds(other)
 		  b1.bottom > b2.top
 end
 
+function Collider:pick(point)
+	Stache.checkArg("point", point, "vector", "Collider:pick")
+
+	if self:instanceOf(CircleCollider) then
+		-- https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
+		-- make SELF a circle and OTHER a point
+		local offset = point - self.pos
+		local result = {}
+
+		result.distance = offset.length - self.radius
+		result.normal = offset.normalized
+		result.tangent = result.normal.tangent
+
+		return result
+	elseif self:instanceOf(BoxCollider) then
+		-- https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
+		-- make SELF a box and OTHER a point
+		local pos = (point - self.pos):rotated(-self.angRad)
+		local delta = abs(pos) - self.hdims
+		local clip = vec2(math.max(delta.x, 0), math.max(delta.y, 0))
+		local dist = clip.length + min(max(delta.x, delta.y), 0)
+		local result = {}
+
+		result.distance = dist - self.radius
+		result.normal = (clip.normalized ^ sign(pos)):rotated(self.angRad)
+		result.tangent = result.normal.tangent
+
+		return result
+	elseif self:instanceOf(LineCollider) then
+		local determ = self:point_determinant(point)
+		local result = {}
+
+		result.distance = determ.clmpdist - self.radius
+		result.normal = determ.clmpdir
+		result.tangent = result.normal.tangent
+
+		return result
+	end
+end
+
 function Collider:overlap(other)
 	Stache.checkArg("other", other, Collider, "Collider:overlap")
 
@@ -87,7 +127,6 @@ end
 function Collider:circ_box(other)
 	-- https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
 	-- make SELF a point and OTHER a box
-
 	local pos = (self.pos - other.pos):rotated(-other.angRad)
 	local delta = abs(pos) - other.hdims
 	local clip = vec2(math.max(delta.x, 0), math.max(delta.y, 0))
@@ -434,14 +473,14 @@ BoxCollider = Collider:extend("BoxCollider", {
 	pp3 = nil,
 	pp4 = nil,
 	vel = nil,
-	forward = vec2(0, -1),
+	forward = vec2.dir("up"),
 	right = nil,
 	bow = nil,
 	star = nil,
 	angRad = nil,
 	angDeg = nil,
-	hwidth = 32,
-	hheight = 32,
+	hwidth = 0,
+	hheight = 0,
 	hdims = nil,
 	radius = 0
 })
@@ -658,6 +697,7 @@ function LineCollider:draw(color, scale, debug)
 		Stache.setColor(color, 1)
 		lg.circle("fill", self.p1.x, self.p1.y, scale)
 		lg.circle("fill", self.p2.x, self.p2.y, scale)
+		Stache.debugLine(self.p1, self.p2, color, 0.5)
 
 		if debug == true and self.vel ~= vec2() then
 			Stache.setColor(color, 0.5)

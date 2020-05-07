@@ -390,19 +390,23 @@ function Stache.debugBox(pos, angRad, hwidth, hheight, radius, color, alpha)
 	color = color or "white"
 	alpha = alpha or 1
 
-	hwidth = hwidth + radius
-	hheight = hheight + radius
-
 	lg.push("all")
 		lg.translate(pos:split())
 		lg.rotate(angRad)
+
 		lg.setLineWidth(0.25)
+		Stache.setColor(color, 0.5 * alpha)
+		lg.rectangle("line", -hwidth, -hheight, hwidth * 2, hheight * 2)
+
+		hwidth = hwidth + radius
+		hheight = hheight + radius
+
 		Stache.setColor(color, alpha)
 		lg.rectangle("line", -hwidth, -hheight, hwidth * 2, hheight * 2, radius, radius)
 		Stache.setColor(color, 0.4 * alpha)
 		lg.rectangle("fill", -hwidth, -hheight, hwidth * 2, hheight * 2, radius, radius)
 		Stache.setColor(color, 0.8 * alpha)
-		lg.circle("fill", -hwidth, -hheight, 1)
+		lg.circle("fill", 0, 0, 1)
 	lg.pop()
 end
 
@@ -621,6 +625,13 @@ function round(x)
 	return type(x) == "number" and
 		floor(x + 0.5) or
 		vec2(floor(x.x + 0.5), floor(x.y + 0.5))
+end
+
+function snap(value, interval)
+	Stache.checkArg("value", value, "scalar/vector", "snap")
+	Stache.checkArg("interval", interval, "number", "snap")
+
+	return round(value / interval) * interval
 end
 
 function isNaN(x)

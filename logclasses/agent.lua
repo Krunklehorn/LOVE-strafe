@@ -305,7 +305,6 @@ function Agent:draw()
 					 self.action == "tuck") and 2 or 1
 
 	lg.push("all")
-
 		Stache.debugNormal(self.pos, dbgVel, "white", 0.8)
 		Stache.debugNormal(self.pos, dbgAxis, "white", 0.8)
 		lg.translate(self.pos:split())
@@ -320,6 +319,8 @@ function Agent:draw()
 	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...
 
 	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
+	Stache.setColor("white", 0.5)
+	lg.circle("line", self.collider.pos.x, self.collider.pos.y, self.collider.radius)
 end
 
 function Agent:changeState(next)

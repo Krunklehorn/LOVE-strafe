@@ -23,10 +23,6 @@ function playState:init()
 	self:addBrush(CircleBrush({ pos = vec2(-3000, -11000), radius = 600, height = 50 }))
 	self:addBrush(CircleBrush({ pos = vec2(3000, -11000), radius = 600, height = 50 }))
 
-	self:addBrush(CircleBrush({ pos = vec2(400, 0), radius = 40, height = 40 }))
-	self:addBrush(BoxBrush({ pos = vec2(200, 0), forward = vec2.dir("up"), hwidth = 100, hheight = 50, height = 40 }))
-	self:addBrush(LineBrush({ p1 = vec2(-200, -100), p2 = vec2(-400, 100), radius = 40, height = 40 }))
-
 	local lane = -800
 	local hwidth = 200
 	local dist = -600
@@ -203,10 +199,14 @@ end
 
 function playState:addBackground(background)
 	table.insert(self.backgrounds, background)
+
+	return background
 end
 
 function playState:addBrush(brush)
 	table.insert(self.brushes, brush)
+
+	return brush
 end
 
 function playState:spawnParticle(name, anchor, params)
@@ -218,9 +218,10 @@ function playState:spawnParticle(name, anchor, params)
 	data.anchor = anchor
 	data.params = params
 
-	table.insert(self.particles, Particle(data))
+	local particle = Particle(data)
+	table.insert(self.particles, particle)
 
-	return last(self.particles)
+	return particle
 end
 
 function playState:spawnProp(name, params)
@@ -235,9 +236,10 @@ function playState:spawnProp(name, params)
 			data[k] = params[k] end
 	end
 
-	table.insert(self.props, Prop(data))
+	local prop = Prop(data)
+	table.insert(self.props, prop)
 
-	return last(self.props)
+	return prop
 end
 
 function playState:spawnAgent(name, params)
@@ -253,9 +255,10 @@ function playState:spawnAgent(name, params)
 			data[k] = params[k] end
 	end
 
-	table.insert(self.agents, Agent(data))
+	local agent = Agent(data)
+	table.insert(self.agents, agent)
 
-	return last(self.agents)
+	return agent
 end
 
 function playState:removeEntity(ref)
