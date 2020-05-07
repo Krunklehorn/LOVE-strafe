@@ -95,7 +95,7 @@ function Collider:circ_box(other)
 	local result = {}
 
 	result.depth = self.radius + other.radius - dist
-	result.normal = clip.normalized ^ sign(pos)
+	result.normal = (clip.normalized ^ sign(pos)):rotated(other.angRad)
 	result.tangent = result.normal.tangent
 	result.self = self
 	result.other = other
@@ -487,11 +487,15 @@ function BoxCollider:__newindex(key, value)
 		slf.bow = slf.forward * self.hheight
 		slf.right = nil
 		slf.star = nil
+		slf.angRad = nil
+		slf.angDeg = nil
 	elseif key == "right" then
 		slf.right = Stache.checkSet(key, value, "vector", "BoxCollider").normalized
 		slf.star = slf.right * self.hwidth
 		slf.forward = nil
 		slf.bow = nil
+		slf.angRad = nil
+		slf.angDeg = nil
 	elseif key == "bow" then
 		slf.bow = Stache.checkSet(key, value, "vector", "BoxCollider")
 		slf.forward = slf.bow.normalized
@@ -499,6 +503,8 @@ function BoxCollider:__newindex(key, value)
 		slf.star = nil
 		slf.hheight = slf.bow.length
 		slf.hdims = nil
+		slf.angRad = nil
+		slf.angDeg = nil
 	elseif key == "star" then
 		slf.star = Stache.checkSet(key, value, "vector", "BoxCollider")
 		slf.right = slf.star.normalized
@@ -506,6 +512,8 @@ function BoxCollider:__newindex(key, value)
 		slf.bow = nil
 		slf.hwidth = slf.star.length
 		slf.hdims = nil
+		slf.angRad = nil
+		slf.angDeg = nil
 	elseif key == "hwidth" then
 		slf.hwidth = Stache.checkSet(key, value, "number", "BoxCollider")
 		slf.star = nil

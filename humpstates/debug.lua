@@ -38,6 +38,7 @@ function debugState:draw()
 
 	if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
 	if DEBUG_LINE then Stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
+	if DEBUG_NORM then Stache.debugNormal(DEBUG_NORM.pos, DEBUG_NORM.normal, "yellow", 1) end
 	if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
 
 	self.camera:detach()

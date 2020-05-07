@@ -11,20 +11,17 @@ Background = class("Background", {
 	quad = nil
 })
 
-function Background:init(sprite, offset, scale, scroll, color, alpha)
-	Stache.checkArg("sprite", sprite, "asset", "Background:init")
-	Stache.checkArg("offset", offset, "vector", "Background:init", true)
-	Stache.checkArg("scale", scale, "vector", "Background:init", true)
-	Stache.checkArg("scroll", scroll, "vector", "Background:init", true)
-	Stache.checkArg("color", color, "asset", "Background:init", true)
-	Stache.checkArg("alpha", alpha, "number", "Background:init", true)
+function Background:init(data)
+	Stache.checkArg("data.sprite", data.sprite, "asset", "Background:init")
+	Stache.checkArg("data.offset", data.offset, "vector", "Background:init", true)
+	Stache.checkArg("data.scale", data.scale, "vector", "Background:init", true)
+	Stache.checkArg("data.scroll", data.scroll, "vector", "Background:init", true)
+	Stache.checkArg("data.color", data.color, "asset", "Background:init", true)
+	Stache.checkArg("data.alpha", data.alpha, "number", "Background:init", true)
 
-	self.sprite = Stache.getAsset("sprite", sprite, Stache.sprites, "Background:init")
-	if offset then self.offset = offset end
-	if scale then self.scale = scale end
-	if scroll then self.scroll = scroll end
-	if color then self.color = color end
-	if alpha then self.alpha = alpha end
+	data.sprite = Stache.getAsset("sprite", data.sprite, Stache.sprites, "Background:init")
+	for k, v in pairs(data) do
+		self[k] = v end
 
 	self.dimensions = vec2(self.sprite:getWidth(), self.sprite:getHeight())
 	self.sd = self.dimensions ^ self.scale
