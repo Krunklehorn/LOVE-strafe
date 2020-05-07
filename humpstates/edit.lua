@@ -23,8 +23,6 @@ function editState:init()
 		hideOrigin = true,
 		style = "smooth"
 	})
-
-	self:refreshHandles()
 end
 
 function editState:enter()
@@ -32,6 +30,8 @@ function editState:enter()
 	self.camera.h = lg.getHeight()
 
 	flux.to(Stache, 0.25, { fade = 0 }):ease("quadout")
+
+	self:refreshHandles()
 end
 
 function editState:resume()
@@ -72,17 +72,17 @@ function editState:draw()
 end
 
 function editState:mousepressed(x, y, button)
-	local mx, my = self.camera:getMousePosition()
+	local scale = self.camera.scale
+	local wpos = vec2(self.camera:toWorldCoords(x, y))
 
 	if button == 1 and not lm.isDown(2) and not lm.isDown(3) and not self.pickHandle then
 		for _, handle in ipairs(self.handles) do
 			if not self.pickHandle then
-				self.pickHandle = handle:pick(mx, my, self.camera.scale, "pick")
-			else
-				handle:pick(mx, my, self.camera.scale, "idle") end
+				self.pickHandle = handle:pick(wpos, scale, "pick")
+			else handle:pick(wpos, scale, "idle") end
 		end
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
-		self.mouseWorld = vec2(self.camera:getMousePosition())
+		self.mouseWorld = wpos
 		lm.setRelativeMode(true)
 	end
 end
@@ -98,19 +98,19 @@ function editState:mousereleased(x, y, button)
 end
 
 function editState:mousemoved(x, y, dx, dy, istouch)
-	local mx, my = self.camera:toWorldCoords(x, y)
+	local scale = self.camera.scale
+	local wpos = vec2(self.camera:toWorldCoords(x, y))
 
-	dx = dx / self.camera.scale
-	dy = dy / self.camera.scale
+	dx = dx / scale
+	dy = dy / scale
 
 	if lm.isDown(1) and self.pickHandle then
-		self.pickHandle:drag(dx, dy)
+		self.pickHandle:drag(wpos, self.grid:minorInterval() / scale)
 	elseif lm.isDown(3) then
 		self.camera:move(-dx * MOUSE_SENSITIVITY, -dy * MOUSE_SENSITIVITY)
 	else
 		for _, handle in ipairs(self.handles) do
-			handle:pick(mx, my, self.camera.scale, "hover")
-		end
+			handle:pick(wpos, scale, "hover") end
 	end
 end
 

@@ -571,7 +571,7 @@ function min(a, b)
 			vec2(math.min(a, b.x), math.min(a, b.y))
 	else
 		return type(b) == "number" and
-			vec2(math.min(a.x, b), math.min(a.y, b)) or
+			vec2(math.min(a.x, b),math.min(a.y, b)) or
 			vec2(math.min(a.x, b.x), math.min(a.x, b.y))
 	end
 end
@@ -597,6 +597,30 @@ function clamp(value, lower, upper)
 	Stache.checkArg("upper", upper, "scalar/vector", "clamp")
 
 	return min(max(lower, value), upper)
+end
+
+function floor(x)
+	Stache.checkArg("x", x, "scalar/vector", "floor")
+
+	return type(x) == "number" and
+		math.floor(x) or
+		vec2(math.floor(x.x), math.floor(x.y))
+end
+
+function ceil(x)
+	Stache.checkArg("x", x, "scalar/vector", "ceil")
+
+	return type(x) == "number" and
+		math.ceil(x) or
+		vec2(math.ceil(x.x), math.ceil(x.y))
+end
+
+function round(x)
+	Stache.checkArg("x", x, "scalar/vector", "round")
+
+	return type(x) == "number" and
+		floor(x + 0.5) or
+		vec2(floor(x.x + 0.5), floor(x.y + 0.5))
 end
 
 function isNaN(x)

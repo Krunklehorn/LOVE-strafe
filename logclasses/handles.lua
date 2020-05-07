@@ -5,7 +5,8 @@ Handle = class("Handle", {
 		idle = { 1, 1, 1 },
 		hover = { 1, 1, 0 },
 		pick = { 1, 0.5, 0 }
-	}
+	},
+	pmwpos = nil
 })
 
 HANDLE_RADIUS = 32
@@ -37,11 +38,15 @@ function Handle:getRect(scale)
 
 	local radius = HANDLE_RADIUS / scale
 
-	return self.pos.x - radius, self.pos.y - radius, 2 * radius, 2 * radius
+	return self.pos.x - radius,
+		  self.pos.y - radius,
+		  2 * radius,
+		  2 * radius
 end
 
 PointHandle = Handle:extend("PointHandle", {
 	pos = nil,
+	ppos = nil,
 	pkey = nil
 })
 
@@ -77,14 +82,17 @@ function PointHandle:draw(scale)
 	lg.pop()
 end
 
-function PointHandle:drag(dx, dy)
-	self.pos.x = self.pos.x + dx
-	self.pos.y = self.pos.y + dy
+function PointHandle:drag(mwpos, interval)
+	self.pos = self.ppos + mwpos - self.pmwpos
+
+	if lk.isDown("lshift", "rshift") then
+		self.pos = round(self.pos / interval) * interval
+	end
 
 	self.target[self.pkey] = self.pos
 end
 
-function PointHandle:pick(x, y, scale, state)
+function PointHandle:pick(mwpos, scale, state)
 	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
 
 	local left = self.pos.x - HANDLE_RADIUS / scale
@@ -92,11 +100,17 @@ function PointHandle:pick(x, y, scale, state)
 	local top = self.pos.y - HANDLE_RADIUS / scale
 	local bottom = self.pos.y + HANDLE_RADIUS / scale
 
-	if x >= left and x <= right and
-	   y >= top and y <= bottom then
-		if state then self.state = state end
+	if mwpos.x >= left and mwpos.x <= right and
+	   mwpos.y >= top and mwpos.y <= bottom then
+		if state then
+			if state == "pick" then
+				self.ppos = self.pos
+				self.pmwpos = mwpos
+			end
+			self.state = state end
 		return self
 	else
+		self.pmwpos = nil
 		self.state = "idle"
 		return nil
 	end
@@ -104,6 +118,7 @@ end
 
 VectorHandle = Handle:extend("VectorHandle", {
 	delta = nil,
+	pdelta = nil,
 	pkey = nil,
 	dkey = nil
 })
@@ -148,23 +163,32 @@ function VectorHandle:draw(scale)
 	lg.pop()
 end
 
-function VectorHandle:drag(dx, dy)
-	self.delta.x = self.delta.x + dx
-	self.delta.y = self.delta.y + dy
+function VectorHandle:drag(mwpos, interval)
+	self.delta = self.pdelta + mwpos - self.pmwpos
+
+	if lk.isDown("lshift", "rshift") then
+		self.delta = round(self.delta / interval) * interval
+	end
 
 	self.target[self.dkey] = self.delta
 end
 
-function VectorHandle:pick(x, y, scale, state)
+function VectorHandle:pick(mwpos, scale, state)
 	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
 
 	local pos = self.target[self.pkey] + self.delta
 	local radius = HANDLE_RADIUS / scale
 
-	if (pos - vec2(x, y)).length <= radius then
-		if state then self.state = state end
+	if (pos - mwpos).length <= radius then
+		if state then
+			if state == "pick" then
+				self.pdelta = self.delta
+				self.pmwpos = mwpos
+			end
+			self.state = state end
 		return self
 	else
+		self.pmwpos = nil
 		self.state = "idle"
 		return nil
 	end
