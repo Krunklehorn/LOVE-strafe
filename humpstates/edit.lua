@@ -1,9 +1,9 @@
 editState = {
 	camera = nil,
 	grid = nil,
-	mouseWorld = nil,
+	handles = {},
 	pickHandle = nil,
-	handles = {}
+	pmwpos = nil
 }
 
 function editState:init()
@@ -81,8 +81,10 @@ function editState:mousepressed(x, y, button)
 				self.pickHandle = handle:pick(wpos, scale, "pick")
 			else handle:pick(wpos, scale, "idle") end
 		end
+	elseif button == 2 and not lm.isDown(1) and not lm.isDown(3) then
+		-- TODO: enter create mode
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
-		self.mouseWorld = wpos
+		self.pmwpos = wpos
 		lm.setRelativeMode(true)
 	end
 end
@@ -91,9 +93,11 @@ function editState:mousereleased(x, y, button)
 	if button == 1 and not lm.isDown(2) and not lm.isDown(3) and self.pickHandle then
 		self.pickHandle.state = "idle"
 		self.pickHandle = nil
+	elseif button == 2 and not lm.isDown(1) and not lm.isDown(3) then
+		-- TODO: exit create mode
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
 		lm.setRelativeMode(false)
-		lm.setPosition(self.grid:toScreen(self.mouseWorld:split()))
+		lm.setPosition(self.grid:toScreen(self.pmwpos:split()))
 	end
 end
 
@@ -104,9 +108,11 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 	dx = dx / scale
 	dy = dy / scale
 
-	if lm.isDown(1) and self.pickHandle then
+	if lm.isDown(1) and not lm.isDown(2) and not lm.isDown(3) and self.pickHandle then
 		self.pickHandle:drag(wpos, self.grid:minorInterval() / scale)
-	elseif lm.isDown(3) then
+	elseif lm.isDown(2) and not lm.isDown(1) and not lm.isDown(3) then
+		-- TODO: call drag on new object?
+	elseif lm.isDown(3) and not lm.isDown(1) and not lm.isDown(2) then
 		self.camera:move(-dx * MOUSE_SENSITIVITY, -dy * MOUSE_SENSITIVITY)
 	else
 		for _, handle in ipairs(self.handles) do
@@ -115,10 +121,14 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 end
 
 function editState:wheelmoved(x, y)
-	if y < 0 and self.camera.scale > 0.1 then
-		self.camera.scale = self.camera.scale * 0.8
-	elseif y > 0 and self.camera.scale < 10 then
-		self.camera.scale = self.camera.scale * 1.25
+	if lk.isDown("lctrl") or lk.isDown("rctrl") then
+		-- TODO: cycle tool
+	else
+		if y < 0 and self.camera.scale > 0.1 then
+			self.camera.scale = self.camera.scale * 0.8
+		elseif y > 0 and self.camera.scale < 10 then
+			self.camera.scale = self.camera.scale * 1.25
+		end
 	end
 end
 

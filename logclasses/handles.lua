@@ -110,7 +110,6 @@ function PointHandle:pick(mwpos, scale, state)
 			self.state = state end
 		return self
 	else
-		self.pmwpos = nil
 		self.state = "idle"
 		return nil
 	end
@@ -188,7 +187,6 @@ function VectorHandle:pick(mwpos, scale, state)
 			self.state = state end
 		return self
 	else
-		self.pmwpos = nil
 		self.state = "idle"
 		return nil
 	end
