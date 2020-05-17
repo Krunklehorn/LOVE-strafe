@@ -106,7 +106,10 @@ function PointHandle:pick(mwpos, scale, state)
 				self.ppos = self.pos
 				self.pmwpos = mwpos
 			end
-			self.state = state end
+
+			self.state = state
+		end
+
 		return self
 	else
 		self.state = "idle"
@@ -182,7 +185,10 @@ function VectorHandle:pick(mwpos, scale, state)
 				self.pdelta = self.delta
 				self.pmwpos = mwpos
 			end
-			self.state = state end
+			
+			self.state = state
+		end
+
 		return self
 	else
 		self.state = "idle"

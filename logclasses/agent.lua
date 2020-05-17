@@ -182,7 +182,7 @@ function Agent:update(tl)
 		end
 	else
 		for b, brush in ipairs(playState.brushes) do
-			if self.posz <= brush.height and self.posz - self.velz > brush.height then
+			if self.posz <= brush.height and self.posz - self.velz * tl > brush.height then
 				local result = self.collider:overlap(brush)
 
 				if result.depth > 0 then

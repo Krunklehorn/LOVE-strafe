@@ -109,6 +109,10 @@ function Stache.checkArg(key, arg, query, func, nillable)
 			if type(arg) ~= "string" and type(arg) ~= "table" and type(arg) ~= "userdata" then
 				Stache.formatError("%s() called with a '%s' argument that isn't a string, table or userdata: %q", func, key, arg)
 			end
+		elseif query == "index/reference" then
+			if type(arg) ~= "number" and not class.isInstance(arg) then
+				Stache.formatError("%s() called with a '%s' argument that isn't an index or reference: %q", func, key, arg)
+			end
 		elseif type(query) ~= "string" then
 			if not arg:instanceOf(query) then
 				Stache.formatError("%s() called with a '%s' argument that isn't of type '%s': %q", func, key, query, arg)

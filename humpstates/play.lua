@@ -235,21 +235,48 @@ function playState:spawnAgent(name, params)
 	return agent
 end
 
-function playState:removeEntity(ref)
-	Stache.checkArg("ref", ref, Entity, "playState:removeEntity")
+function playState:removeBrush(brush)
+	Stache.checkArg("brush", brush, "index/reference", "playState:removeBrush")
+
+	if type(brush) == "number" then
+		return table.remove(self.brushes, brush)
+	else
+		--[[if not brush:instanceOf(Brush) then -- TODO: merge brushes into a common class
+			Stache.formatError("playState:removeBrush() called with a 'brush' argument that isn't of type 'Brush': %q", brush)
+		end]]
+
+		for b = 1, #self.brushes do
+			if self.brushes[b] == brush then
+				return table.remove(self.brushes, b) end end
+
+		Stache.formatError("playState:removeBrush() called with a reference that should not exist: %q", brush)
+	end
+end
+
+function playState:removeEntity(entity, class)
+	Stache.checkArg("entity", entity, "index/reference", "playState:removeEntity")
 
 	local list
 
-	if ref.class == Particle then list = self.particles
-	elseif ref.class == Prop then list = self.props
-	elseif ref.class == Agent then list = self.agents end
+	if type(entity) == "number" then
+		Stache.checkArg("class", class, "class", "playState:removeEntity")
 
-	for e = 1, #list do
-		if list[e] == ref then
-			table.remove(list, e)
-			return
-		end
+		if class == Particle then list = self.particles
+		elseif class == Prop then list = self.props
+		elseif class == Agent then list = self.agents end
+
+		return table.remove(list, entity)
+	else
+		Stache.checkArg("entity", entity, Entity, "playState:removeEntity")
+
+		if entity:instanceOf(Particle) then list = self.particles
+		elseif entity:instanceOf(Prop) then list = self.props
+		elseif entity:instanceOf(Agent) then list = self.agents end
+
+		for e = 1, #list do
+			if list[e] == entity then
+				return table.remove(list, e) end end
+
+		Stache.formatError("playState:removeEntity() called with a reference that should not exist: %q", entity)
 	end
-
-	Stache.formatError("playState:removeEntity() called with a reference that should not exist: %q", ref)
 end

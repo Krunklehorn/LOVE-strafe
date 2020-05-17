@@ -3,6 +3,7 @@ lg = love.graphics
 lk = love.keyboard
 lm = love.mouse
 la = love.audio
+lw = love.window
 
 FLOAT_EPSILON = 0.00001
 MATH_2PI = 2 * math.pi
@@ -82,6 +83,8 @@ require "logclasses.dummy"
 function love.load()
 	Stache.load()
 
+	love.resize(lg.getDimensions())
+
 	humpstate.registerEvents("prep")
 	--humpstate.switch(titleState)
 	--humpstate.switch(debugState)
@@ -151,11 +154,17 @@ end
 
 function love.keypressed(key)
 	if key == "m" then
-		love.window.setFullscreen(not love.window.getFullscreen())
+		lw.setFullscreen(not lw.getFullscreen())
 		love.resize(lg.getDimensions()) -- Force the resize callback
 	--elseif key == "lshift" then
 		--lg.captureScreenshot("screenshot_" .. os.time() .. ".png")
 	elseif key == "escape" then
 		love.event.quit()
 	end
+end
+
+function love.resize(w, h)
+	if not lw.getFullscreen() then
+		local dw, dh = lw.getDesktopDimensions()
+		lw.setPosition(dw - w - 40, 40) end
 end

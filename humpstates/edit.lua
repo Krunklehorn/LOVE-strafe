@@ -107,28 +107,47 @@ function editState:mousepressed(x, y, button)
 			else handle:pick(mwpos, scale, "idle") end
 		end
 	elseif button == 2 and not lm.isDown(1) and not lm.isDown(3) and not self.toolState then
-		local height = nil -- TODO: pick height from brush at point
-		local brush = nil
+		local delHandle = nil
 
-		if not lk.isDown("lctrl", "rctrl") then
-			mwpos = snap(mwpos, self.grid:minorInterval()) end
+		for h, handle in ipairs(self.handles) do
+			if not handle:instanceOf(PointHandle) then
+				goto continue end
 
-		for b, brush in ipairs(playState.brushes) do
-			local result = brush:pick(mwpos)
+			if not delHandle then
+				if handle:pick(mwpos, scale, "delete") then
+					delHandle = h end
+			else handle:pick(mwpos, scale, "idle") end
 
-			if result.distance <= 0 and (not height or brush.height > height) then
-				height = brush.height end
+			::continue::
 		end
 
-		height = height and height + 40 or 0
+		if delHandle then
+			playState:removeBrush(self.handles[delHandle].target)
+			self:refreshHandles()
+		else
+			local height = nil
+			local brush = nil
 
-		if self.activeTool == "Circle" then brush = playState:addBrush(CircleBrush{ pos = mwpos, height = height })
-		elseif self.activeTool == "Box" then brush = playState:addBrush(BoxBrush{ pos = mwpos, right = vec2.dir("right"), hwidth = 32, hheight = 32, radius = 32, height = height })
-		elseif self.activeTool == "Line" then brush = playState:addBrush(LineBrush{ p1 = mwpos, p2 = mwpos, radius = 32, height = height }) end
+			if not lk.isDown("lctrl", "rctrl") then
+				mwpos = snap(mwpos, self.grid:minorInterval()) end
 
-		self.toolState = { type = self.activeTool, brush = brush  }
-		self:addHandle(brush)
-		self.pmwpos = mwpos
+			for _, brush in ipairs(playState.brushes) do
+				local result = brush:pick(mwpos)
+
+				if result.distance <= 0 and (not height or brush.height > height) then
+					height = brush.height end
+			end
+
+			height = height and height + 40 or 0
+
+			if self.activeTool == "Circle" then brush = playState:addBrush(CircleBrush{ pos = mwpos, height = height })
+			elseif self.activeTool == "Box" then brush = playState:addBrush(BoxBrush{ pos = mwpos, right = vec2.dir("right"), hwidth = 32, hheight = 32, radius = 32, height = height })
+			elseif self.activeTool == "Line" then brush = playState:addBrush(LineBrush{ p1 = mwpos, p2 = mwpos, radius = 32, height = height }) end
+
+			self.toolState = { type = self.activeTool, brush = brush  }
+			self:addHandle(brush)
+			self.pmwpos = mwpos
+		end
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
 		self.pmwpos = mwpos
 		lm.setRelativeMode(true)
