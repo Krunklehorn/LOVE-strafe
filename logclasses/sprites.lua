@@ -1,19 +1,13 @@
-Sprite = class("Sprite", {
+Sprite = Base:extend("Sprite", {
 	origin = nil
 })
-
-function Sprite:init(origin)
-	Stache.checkArg("origin", origin, "vector", "Sprite:init")
-
-	self.origin = origin
-end
 
 StaticSprite = Sprite:extend("StaticSprite", {
 	quad = nil
 })
 
 function StaticSprite:init(data)
-	Sprite.init(self, data.origin)
+	Base.init(self, data)
 
 	self.quad = lg.newQuad(data.x, data.y, data.w, data.h, data.dimw, data.dimh)
 end
@@ -26,15 +20,13 @@ function StaticSprite:draw(sheet, offset, angRad, scale)
 end
 
 AnimatedSprite = Sprite:extend("AnimatedSprite", {
-	animation = nil,
-	duration = nil
+	animation = nil
 })
 
 function AnimatedSprite:init(data)
-	Sprite.init(self, data.origin)
+	Base.init(self, data)
 
 	self.animation = anim8.newAnimation(anim8.newGrid(unpack(data.grid)):getFrames(unpack(data.frames)), data.durations, data.onLoop)
-	self.duration = data.duration
 end
 
 function AnimatedSprite:update(tl)

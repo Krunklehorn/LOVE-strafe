@@ -51,6 +51,7 @@ local function instantiate(call_init, self, ...)
 	instance.mixins = nil
 	instance.__subclasses = nil
 	instance.__instances = nil
+	instance.private = self.private and {} or nil -- Krunk: Added for get and set functionality
 	setmetatable(instance,self)
 	if call_init and self.init then
 		if type(self.init) == 'table' then
@@ -70,9 +71,10 @@ local function extend(self, name, extra_params)
 	deep_copy(extra_params, deep_copy(self, heir))
 	heir.name    = extra_params and extra_params.name or name
 	heir.__index = self.__index == self and heir or self.__index -- Krunk: Modified for get and set functionality
-	heir.__newindex = self.__newindex and self.__newindex or nil -- Krunk: Added for get and set functionality
+	heir.__newindex = self.__newindex -- Krunk: Added for get and set functionality
 	heir.super   = self
 	heir.mixins = {}
+	heir.private = self.private and {} or nil -- Krunk: Added for get and set functionality
 	return setmetatable(heir,self)
 end
 
@@ -201,6 +203,7 @@ _class = function(name, attr)
 		end
 		return self
 	end
+
 	return setmetatable(c, baseMt)
 end
 

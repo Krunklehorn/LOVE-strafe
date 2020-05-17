@@ -3,6 +3,34 @@ Stache = {
 	timescale = 1,
 	tick_time = 0,
 	total_ticks = 0,
+	exclude = {
+		"__call",
+		"__index",
+		"__newindex",
+		"__instances",
+		"__subclasses",
+		"__tostring",
+		"cast",
+		"class",
+		"classOf",
+		"create",
+		"checkSet",
+		"extend",
+		"includes",
+		"init",
+		"instances",
+		"instanceOf",
+		"mixins",
+		"name",
+		"new",
+		"private",
+		"readOnly",
+		"subclasses",
+		"subclassOf",
+		"super",
+		"with",
+		"without"
+	},
 	fade = 1,
 	fonts = {
 		[-1] = {},
@@ -51,75 +79,19 @@ function Stache.formatError(msg, ...)
 	local strings = {}
 
 	for i = 1, args.n do
-		if args[i] then table.insert(strings, tostring(args[i]))
-		else table.insert(strings, "nil") end
+		table.insert(strings, tostring(args[i] or "nil"))
 	end
+
 	error(msg:format(unpack(strings)), 2)
-end
-
-function Stache.checkSet(key, value, query, class, nillable)
-	if value == nil and nillable == true then
-		return
-	else
-		if query == "number" then
-			if type(value) ~= query then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a number: %q", key, class, value)
-			end
-		elseif query == "string" then
-			if type(value) ~= query then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a string: %q", key, class, value)
-			end
-		elseif query == "boolean" then
-			if type(value) ~= query then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a boolean: %q", key, class, value)
-			end
-		elseif query == "function" then
-			if type(value) ~= query then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a function: %q", key, class, value)
-			end
-		elseif query == "indexable" then
-			if type(value) ~= "table" and type(value) ~= "userdata" then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a table or userdata: %q", key, class, value)
-			end
-		elseif query == "vector" then
-			if not vec2.isVector(value) then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a vector: %q", key, class, value)
-			end
-		elseif query == "asset" then
-			if type(value) ~= "string" and type(value) ~= "table" and type(value) ~= "userdata" then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a string, table or userdata: %q", key, class, value)
-			end
-		elseif type(query) ~= "string" then
-			if not value:instanceOf(query) then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't of type '%s': %q", key, class, query--[[.class]], value)
-			end
-		else
-			Stache.formatError("Stache.checkSet() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
-		end
-	end
-
-	return value
 end
 
 function Stache.checkArg(key, arg, query, func, nillable)
 	if arg == nil and nillable == true then
 		return
 	else
-		if query == "number" then
+		if query == "number" or query == "string" or query == "boolean" or query == "function" then
 			if type(arg) ~= query then
-				Stache.formatError("%s() called with a '%s' argument that isn't a number: %q", func, key, arg)
-			end
-		elseif query == "string" then
-			if type(arg) ~= query then
-				Stache.formatError("%s() called with a '%s' argument that isn't a string: %q", func, key, arg)
-			end
-		elseif query == "boolean" then
-			if type(arg) ~= query then
-				Stache.formatError("%s() called with a '%s' argument that isn't a boolean: %q", func, key, arg)
-			end
-		elseif query == "function" then
-			if type(arg) ~= query then
-				Stache.formatError("%s() called with a '%s' argument that isn't a function: %q", func, key, arg)
+				Stache.formatError("%s() called with a '%s' argument that isn't a %s: %q", func, key, query, arg)
 			end
 		elseif query == "indexable" then
 			if type(arg) ~= "table" and type(arg) ~= "userdata" then
@@ -131,7 +103,7 @@ function Stache.checkArg(key, arg, query, func, nillable)
 			end
 		elseif query == "scalar/vector" then
 			if type(arg) ~= "number" and not vec2.isVector(arg) then
-				Stache.formatError("%s() called with a '%s' argument that isn't a scalar or vector: %q", func, key, arg)
+				Stache.formatError("%s() called with a '%s' argument that isn't a scalar or a vector: %q", func, key, arg)
 			end
 		elseif query == "asset" then
 			if type(arg) ~= "string" and type(arg) ~= "table" and type(arg) ~= "userdata" then
@@ -147,14 +119,72 @@ function Stache.checkArg(key, arg, query, func, nillable)
 	end
 end
 
-function Stache.readOnly(key, queries, class)
-	Stache.checkArg("key", key, "string", "Stache.readOnly")
-	Stache.checkArg("queries", queries, "indexable", "Stache.readOnly")
-	Stache.checkArg("class", class, "string", "Stache.readOnly")
+local function deep_copy(obj, seen)
+	seen = seen or {}
 
-	for _, query in ipairs(queries) do
-		if key == query then
-			Stache.formatError("Attempted to set a key of class '%s' that is read-only: %q", class, key) end
+	if vec2.isVector(obj) then
+		return obj.copy
+	elseif class.isInstance(obj) then
+		return obj.class(obj)
+	elseif class.isClass(obj) then
+		return obj
+	elseif type(obj) == "table" then
+		if seen[obj] then
+			return seen[obj]
+		else
+			local copy = {}
+			seen[obj] = copy
+
+			for k, v in next, obj, nil do
+				copy[deep_copy(k, seen)] = deep_copy(v, seen) end
+
+			return setmetatable(copy, deep_copy(getmetatable(obj), seen))
+		end
+	end
+
+	return obj
+end
+
+function Stache.copy(...)
+	local args = { n = select('#', ...), ...}
+	local results = {}
+
+	for i, v in ipairs(args) do
+		table.insert(results, deep_copy(v))
+	end
+
+	return unpack(results)
+end
+
+function Stache.privatize(table)
+	local private = rawget(table, "private") or {}
+
+	for k, _ in pairs(table) do
+		for _, v in ipairs(Stache.exclude) do
+			if k == v then
+				goto continue end end
+
+		private[k] = rawget(table, k)
+		rawset(table, k, nil)
+
+		::continue::
+	end
+
+	return rawset(table, "private", private)
+end
+
+function Stache.iter(t)
+	local i = 0
+
+	return function(lookahead)
+		if type(lookahead) == "number" then
+			return t[i + lookahead]
+		else
+			i = i + 1
+			local v = t[i]
+
+			return v
+		end
 	end
 end
 
@@ -166,8 +196,22 @@ function Stache.load()
 		return dir[subdir]
 	end
 
+	bitser.registerClass("vec2", vec2, "VECTORTYPE", function(obj, class) return class(obj.x or 0, obj.y or obj.x or 0) end)
+
+	bitser.registerClass("Entity", Entity, "name", setmetatable)
+	bitser.registerClass("Agent", Agent, "name", setmetatable)
+	bitser.registerClass("Background", Background, "name", setmetatable)
+	bitser.registerClass("Collider", Collider, "name", setmetatable)
+	bitser.registerClass("CircleCollider", CircleCollider, "name", setmetatable)
+	bitser.registerClass("BoxCollider", BoxCollider, "name", setmetatable)
+	bitser.registerClass("LineCollider", LineCollider, "name", setmetatable)
+	bitser.registerClass("CircleBrush", CircleBrush, "name", setmetatable)
+	bitser.registerClass("BoxBrush", BoxBrush, "name", setmetatable)
+	bitser.registerClass("LineBrush", LineBrush, "name", setmetatable)
+
 	lg.setDefaultFilter("nearest", "nearest", 1)
 	Stache.fonts.debug = lg.setNewFont(FONT_BLOWUP)
+	bitser.register("fonts.debug", Stache.fonts.debug)
 
 	filestrings = lfs.getDirectoryItems("fonts")
 	for _, fs in ipairs(filestrings) do
@@ -178,24 +222,33 @@ function Stache.load()
 		Stache.fonts[2][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 2)
 		Stache.fonts[3][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 3)
 		Stache.fonts[4][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 4)
+		bitser.register("fonts.-1."..fs, Stache.fonts[-1][name])
+		bitser.register("fonts.0."..fs, Stache.fonts[0][name])
+		bitser.register("fonts.1."..fs, Stache.fonts[1][name])
+		bitser.register("fonts.2."..fs, Stache.fonts[2][name])
+		bitser.register("fonts.3."..fs, Stache.fonts[3][name])
+		bitser.register("fonts.4."..fs, Stache.fonts[4][name])
 	end
 
 	filestrings = lfs.getDirectoryItems("sounds/sfx")
 	for _, fs in ipairs(filestrings) do
 		local name, extension = string.match(fs, "(.+)%.(.+)")
 		Stache.sfx[name] = la.newSource("sounds/sfx/"..fs, "static")
+		bitser.register("sfx."..fs, Stache.sfx[name])
 	end
 
 	filestrings = lfs.getDirectoryItems("sounds/music")
 	for _, fs in ipairs(filestrings) do
 		local name, extension = string.match(fs, "(.+)%.(.+)")
 		Stache.music[name] = la.newSource("sounds/music/"..fs, "stream")
+		bitser.register("music."..fs, Stache.music[name])
 	end
 
 	filestrings = lfs.getDirectoryItems("sprites")
 	for _, fs in ipairs(filestrings) do
 		local name, extension = string.match(fs, "(.+)%.(.+)")
 		Stache.sprites[name] = lg.newImage("sprites/"..fs)
+		bitser.register("sprites."..fs, Stache.sprites[name])
 	end
 
 	--[[ TODO: ready to add particles, props and actor sprites...
@@ -229,38 +282,32 @@ function Stache.load()
 	sheet = Stache.sheets.actors.strafer
 	width, height = sheet:getDimensions()
 	]]
+
+	-- TODO: use filepath from lg.getDirectoryItems() like above
 	subDir.strafer = {
-		idle = {
-			stand = {},
-			squat = {},
-			collider = CircleCollider({ radius = 32 }),
-			default = "stand"
-		},
-		move = {
-			run = {},
-			crouch = {},
-			collider = CircleCollider({ radius = 32 }),
-			default = "run"
-		},
-		air = {
-			upright = {},
-			tuck = {},
-			collider = CircleCollider({ radius = 32 }),
-			default = "upright"
+		collider = CircleCollider{ radius = 32 },
+		states = {
+			idle = {
+				stand = {},
+				squat = {},
+				default = "stand"
+			},
+			move = {
+				run = {},
+				crouch = {},
+				default = "run"
+			},
+			air = {
+				upright = {},
+				tuck = {},
+				default = "upright"
+			}
 		}
 	}
+	bitser.register("actors.strafer", Stache.actors.strafer)
 
 	table.insert(Stache.players, Player())
 	Stache.players.active = first(Stache.players)
-end
-
-function Stache.hideMembers(inst)
-	for k, v in pairs(inst) do
-		if k ~= "members" then
-			inst.members[k] = v
-			rawset(inst, k, nil)
-		end
-	end
 end
 
 function Stache.draw()
@@ -270,7 +317,7 @@ function Stache.draw()
 	lg.pop()
 end
 
-function Stache.getAsset(arg, asset, table, func)
+function Stache.getAsset(arg, asset, table, func, copy)
 	if type(asset) == "string" then
 		if not table[asset] then
 			Stache.formatError("%s() called with a '%s' argument that does not correspond to a loaded %s in table '%s': %q", func, arg, arg, table, asset)
@@ -279,7 +326,7 @@ function Stache.getAsset(arg, asset, table, func)
 		asset = table[asset]
 	end
 
-	return asset
+	return copy and Stache.copy(asset) or asset
 end
 
 function Stache.setFont(font, spacing)
@@ -477,16 +524,17 @@ end
 function Stache.updateList(table, ...)
 	local n = #table
 	local j = 0
-	local b = true
+	local pass = true
 
 	for i = 1, n do
 		if table[i]:update(...) then
 			table[i] = nil
-			b = false
+			pass = false
 		end
 	end
 
-	if b then return end
+	if pass then
+		return end
 
 	for i = 1, n do
 		if table[i] ~= nil then
@@ -504,25 +552,6 @@ function Stache.drawList(table, ...)
 		table[t]:draw(...) end
 end
 
-function Stache.copy(obj, seen)
-	if type(obj) ~= "table" then
-		return obj end
-
-	if seen and seen[obj] then
-		return seen[obj] end
-
-	local s = seen or {}
-	local result = {}
-
-	s[obj] = result
-
-	for k, v in pairs(obj) do
-		result[Stache.copy(k, s)] = Stache.copy(v, s)
-	end
-
-	return setmetatable(result, getmetatable(obj))
-end
-
 function abs(x)
 	Stache.checkArg("x", x, "scalar/vector", "abs")
 
@@ -538,8 +567,8 @@ function floatEquality(a, b)
 	return abs(a - b) < FLOAT_EPSILON
 end
 
-function equalsZero(x)
-	Stache.checkArg("x", x, "number", "floatEquality")
+function nearZero(x)
+	Stache.checkArg("x", x, "number", "equalsZero")
 
 	return floatEquality(x, 0)
 end
@@ -548,9 +577,9 @@ function sign(x)
 	Stache.checkArg("x", x, "scalar/vector", "sign")
 
 	return type(x) == "number" and
-		(equalsZero(x) and 0 or (x < 0 and -1 or 1)) or
-		vec2((equalsZero(x.x) and 0 or (x.x < 0 and -1 or 1)),
-			(equalsZero(x.y) and 0 or (x.y < 0 and -1 or 1)))
+		(nearZero(x) and 0 or (x < 0 and -1 or 1)) or
+		vec2((nearZero(x.x) and 0 or (x.x < 0 and -1 or 1)),
+			(nearZero(x.y) and 0 or (x.y < 0 and -1 or 1)))
 end
 
 function uni2bi(theta)
@@ -636,6 +665,20 @@ end
 
 function isNaN(x)
 	return x ~= x
+end
+
+function XOR(a, b)
+	a = a and true or false
+	b = b and true or false
+
+	return a ~= b
+end
+
+function XNOR(a, b)
+	a = a and true or false
+	b = b and true or false
+
+	return a == b
 end
 
 function lesser(a, b)

@@ -1,15 +1,13 @@
 Particle = Entity:extend("Particle", {
 	anchor = nil,
-	params = nil,
-	members = {}
+	params = nil
 })
 
-function Particle:__newindex(key, value)
-	local slf = rawget(self, "members")
+function Particle:proccess(key, value)
+	local slf = rawget(self, "private")
 
-	if key == "anchor" then slf.anchor = Stache.checkSet(key, value, "indexable", "Particle", true)
-	elseif key == "params" then slf.params = Stache.checkSet(key, value, "indexable", "Particle", true)
-	else Entity.__newindex(self, key, value) end
+	if key == "anchor" then return self:checkSet(key, value, "indexable")
+	elseif key == "params" then return self:checkSet(key, value, "indexable", true) end
 end
 
 function Particle:update(tl)
@@ -31,7 +29,7 @@ function Particle:draw()
 	local angRad = 0
 	local scale = vec2(1)
 
-	for p = 1, self.params and #self.params or 0 do
+	for p = 1, self.params and #self.params or 0 do -- TODO: we can do better, try something like how we did it in the Handles class
 		if self.params[p] == "pos" then
 			pos = self.anchor.pos
 		elseif self.params[p] == "angRad" then

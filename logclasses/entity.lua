@@ -1,58 +1,59 @@
-Entity = class("Entity", {
+Entity = Base:extend("Entity", {
 	sheet = nil,
 	sprite = nil,
-	pos = vec2(),
-	ppos = vec2(),
-	vel = vec2(),
-	angRad = 0,
+	collider = nil,
+	pos = nil,
+	vel = nil,
+	angRad = nil,
 	angDeg = nil,
-	angVelRad = 0,
+	angVelRad = nil,
 	angVelDeg = nil,
 	scale = vec2(1),
-	visible = true,
-	members = {}
+	visible = true
 })
 
-function Entity:__index(key)
-	local slf = rawget(self, "members")
-
-	if slf[key] == nil then
-		if key == "angDeg" then slf[key] = math.deg(self.angRad)
-		elseif key == "angVelDeg" then slf[key] = math.deg(self.angVelRad) end
-	end
-
-	if slf[key] ~= nil then return slf[key]
-	else return rawget(self.class, key) end
-end
-
-function Entity:__newindex(key, value)
-	local slf = rawget(self, "members")
-
-	if key == "sprite" then slf.sprite = Stache.checkSet(key, value, Sprite, "Entity", true)
-	elseif key == "angRad" then
-		slf.angRad = Stache.checkSet(key, value, "number", "Entity")
-		slf.angDeg = nil
-	elseif key == "angVelRad" then
-		slf.angVelRad = Stache.checkSet(key, value, "number", "Entity")
-		slf.angVelDeg = nil
-	elseif key == "angDeg" or key == "angVelDeg" then Stache.readOnly(key, "Entity")
-	else slf[key] = value end
-end
-
 function Entity:init(data)
-	Stache.hideMembers(self)
+	Stache.checkArg("pos", data.pos, "vector", "Entity:init", true)
+	Stache.checkArg("vel", data.vel, "vector", "Entity:init", true)
+	Stache.checkArg("angRad", data.angRad, "number", "Entity:init", true)
+	Stache.checkArg("angVelRad", data.angVelRad, "number", "Entity:init", true)
 
-	if data then
-		for k, v in pairs(data) do
-			self[k] = v end
+	data.pos = data.pos or vec2()
+	data.vel = data.vel or vec2()
+	data.angRad = data.angRad or 0
+	data.angVelRad = data.angVelRad or 0
+
+	Base.init(self, data)
+end
+
+function Entity:construct(key)
+	if key == "angDeg" then return math.deg(self.angRad)
+	elseif key == "angVelDeg" then return math.deg(self.angVelRad) end
+end
+
+function Entity:proccess(key, value)
+	local slf = rawget(self, "private")
+
+	self:readOnly(key, { "angDeg", "angVelDeg" })
+
+	if key == "sprite" then return self:checkSet(key, value, "asset", true)
+	elseif key == "collider" then return self:checkSet(key, value, Collider, true, true)
+	elseif key == "pos" or key == "vel" then
+		return self:checkSet(key, value, "vector")
+	elseif key == "angRad" then
+		slf.angDeg = nil
+		return self:checkSet(key, value, "number")
+	elseif key == "angVelRad" then
+		slf.angVelDeg = nil
+		return self:checkSet(key, value, "number")
 	end
 end
 
 function Entity:update(tl)
-	self.ppos = self.pos
 	self.pos = self.pos + self.vel * tl
 	self.angRad = self.angRad + self.angVelRad * tl
-	self.sprite:update(tl)
+	if self.sprite then self.sprite:update(tl) end
+	if self.collider then self.collider:update(self.pos, self.vel, self.angRad) end
 
 	return false
 end

@@ -83,6 +83,19 @@ function editState:draw()
 	self.camera:draw()
 end
 
+function editState:keypressed(key)
+	if key == "1" then self.activeTool = "Circle"
+	elseif key == "2" then self.activeTool = "Box"
+	elseif key == "3" then self.activeTool = "Line"
+	elseif key == "backspace" then
+		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
+			humpstate.switch(titleState)
+		end)
+	elseif key == "return" then
+		humpstate.push(playState)
+	end
+end
+
 function editState:mousepressed(x, y, button)
 	local scale = self.camera.scale
 	local mwpos = vec2(self.camera:toWorldCoords(x, y))
@@ -97,7 +110,7 @@ function editState:mousepressed(x, y, button)
 		local height = nil -- TODO: pick height from brush at point
 		local brush = nil
 
-		if lk.isDown("lshift", "rshift") then
+		if not lk.isDown("lctrl", "rctrl") then
 			mwpos = snap(mwpos, self.grid:minorInterval()) end
 
 		for b, brush in ipairs(playState.brushes) do
@@ -109,9 +122,9 @@ function editState:mousepressed(x, y, button)
 
 		height = height and height + 40 or 0
 
-		if self.activeTool == "Circle" then brush = playState:addBrush(CircleBrush({ pos = mwpos, height = height }))
-		elseif self.activeTool == "Capsule" then brush = playState:addBrush(LineBrush({ p1 = mwpos, p2 = mwpos, radius = 32, height = height }))
-		elseif self.activeTool == "Box" then brush = playState:addBrush(BoxBrush({ pos = mwpos, forward = vec2.dir("up"), hheight = 32, radius = 32, height = height })) end
+		if self.activeTool == "Circle" then brush = playState:addBrush(CircleBrush{ pos = mwpos, height = height })
+		elseif self.activeTool == "Box" then brush = playState:addBrush(BoxBrush{ pos = mwpos, right = vec2.dir("right"), hwidth = 32, hheight = 32, radius = 32, height = height })
+		elseif self.activeTool == "Line" then brush = playState:addBrush(LineBrush{ p1 = mwpos, p2 = mwpos, radius = 32, height = height }) end
 
 		self.toolState = { type = self.activeTool, brush = brush  }
 		self:addHandle(brush)
@@ -130,7 +143,7 @@ function editState:mousereleased(x, y, button)
 		self.toolState = nil
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
 		lm.setRelativeMode(false)
-		lm.setPosition(self.grid:toScreen(self.pmwpos:split()))
+		lm.setPosition(self.camera:toCameraCoords(self.pmwpos:split()))
 	end
 end
 
@@ -146,11 +159,11 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 	elseif lm.isDown(2) and not lm.isDown(1) and not lm.isDown(3) and self.toolState then
 		local delta = mwpos - self.pmwpos
 
-		if lk.isDown("lshift", "rshift") then
+		if not lk.isDown("lctrl", "rctrl") then
 			delta = snap(delta, self.grid:minorInterval()) end
 
 		if self.toolState.type == "Circle" then self.toolState.brush.radius = delta.length
-		elseif self.toolState.type == "Capsule" then self.toolState.brush.p2 = self.pmwpos + delta
+		elseif self.toolState.type == "Line" then self.toolState.brush.p2 = self.pmwpos + delta
 		elseif self.toolState.type == "Box" then self.toolState.brush.star = delta end
 	elseif lm.isDown(3) and not lm.isDown(1) and not lm.isDown(2) then
 		self.camera:move(-dx * MOUSE_SENSITIVITY, -dy * MOUSE_SENSITIVITY)
@@ -161,39 +174,17 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 end
 
 function editState:wheelmoved(x, y)
-	if lk.isDown("lctrl") or lk.isDown("rctrl") then
-		if y < 0 then
-			if self.activeTool == "Circle" then self.activeTool = "Capsule"
-			elseif self.activeTool == "Capsule" then self.activeTool = "Box"
-			elseif self.activeTool == "Box" then self.activeTool = "Circle" end
-		elseif y > 0 then
-			if self.activeTool == "Circle" then self.activeTool = "Box"
-			elseif self.activeTool == "Capsule" then self.activeTool = "Circle"
-			elseif self.activeTool == "Box" then self.activeTool = "Capsule" end
-		end
-	else
-		local mpposx, mpposy, mposx, mposy = lm.getPosition()
+	local mpposx, mpposy, mposx, mposy = lm.getPosition()
 
-		if y < 0 and self.camera.scale > 0.1 then
-			self.camera.scale = self.camera.scale * 0.8
-		elseif y > 0 and self.camera.scale < 10 then
-			self.camera.scale = self.camera.scale * 1.25
-		end
-
-		mposx, mposy = lm.getPosition()
-
-		self:mousemoved(mposx, mposy, mposx - mpposx, mposy - mpposy, false)
+	if y < 0 and self.camera.scale > 0.1 then
+		self.camera.scale = self.camera.scale * 0.8
+	elseif y > 0 and self.camera.scale < 10 then
+		self.camera.scale = self.camera.scale * 1.25
 	end
-end
 
-function editState:keypressed(key)
-	if key == "backspace" then
-		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
-			humpstate.switch(titleState)
-		end)
-	elseif key == "return" then
-		humpstate.push(playState)
-	end
+	mposx, mposy = lm.getPosition()
+
+	self:mousemoved(mposx, mposy, mposx - mpposx, mposy - mpposy, false)
 end
 
 function editState:resize(w, h)

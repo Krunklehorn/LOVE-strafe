@@ -1,34 +1,20 @@
-Collider = class("Collider", {
-	members = {}
+Collider = Base:extend("Collider", {
+	vel = nil,
+	radius = 0
 })
 
-function Collider:__index(key)
-	local slf = rawget(self, "members")
-
-	if slf[key] ~= nil then return slf[key]
-	else return rawget(self.class, key) end
-end
-
-function Collider:__newindex(key, value)
-	local slf = rawget(self, "members")
-
-	slf[key] = value
-end
-
 function Collider:init(data)
-	Stache.hideMembers(self)
+	Stache.checkArg("vel", data.vel, "vector", "Collider:init", true)
+	Stache.checkArg("radius", data.radius, "number", "Collider:init", true)
 
-	if data then
-		for k, v in pairs(data) do
-			self[k] = v end
-	end
+	data.vel = data.vel or vec2()
+
+	Base.init(self, data)
 end
 
-function Collider:update(data)
-	if data then
-		for k, v in pairs(data) do
-			self[k] = v end
-	end
+function Collider:update(pos, vel)
+	self.pos = pos
+	self.vel = vel
 end
 
 function Collider:draw()
@@ -180,38 +166,33 @@ function Collider:line_line(other)
 end
 
 CircleCollider = Collider:extend("CircleCollider", {
-	pos = vec2(),
-	ppos = nil,
-	vel = nil,
-	radius = 0
+	pos = nil,
+	ppos = nil
 })
 
-function CircleCollider:__index(key)
-	local slf = rawget(self, "members")
+function CircleCollider:init(data)
+	Stache.checkArg("pos", data.pos, "vector", "CircleCollider:init", true)
 
-	if slf[key] == nil then
-		if key == "ppos" then return slf.ppos or slf.pos
-		elseif key == "vel" then slf[key] = slf.pos - self.ppos end
-	end
+	data.pos = data.pos or vec2()
 
-	if slf[key] ~= nil then return slf[key]
-	else return Collider.__index(self, key) end
+	Collider.init(self, data)
 end
 
-function CircleCollider:__newindex(key, value)
-	local slf = rawget(self, "members")
+function CircleCollider:construct(key)
+	if key == "ppos" then
+		return self.pos - self.vel end
+end
 
-	if key == "pos" then
-		slf.pos = Stache.checkSet(key, value, "vector", "CircleCollider")
-		slf.vel = nil
-	elseif key == "ppos" then
-		slf.ppos = Stache.checkSet(key, value, "vector", "CircleCollider")
-		slf.vel = nil
-	elseif key == "radius" then slf.radius = Stache.checkSet(key, value, "number", "CircleCollider")
-	else
-		Stache.readOnly(key, { "vel" }, "CircleCollider")
-		Collider.__newindex(self, key, value)
-	end
+function CircleCollider:proccess(key, value)
+	local slf = rawget(self, "private")
+
+	self:readOnly(key, { "ppos" })
+
+	if key == "pos" or key == "vel" then
+		slf.ppos = nil
+		return self:checkSet(key, value, "vector")
+	elseif key == "radius" then
+		return self:checkSet(key, value, "number") end
 end
 
 function CircleCollider:draw(color, scale, debug)
@@ -385,7 +366,7 @@ function CircleCollider:box_contact(other)
 	--return vec2(sign(pos.x), sign(pos.y) * vec2(max(abs(pos.x) - size.x, 0), max(abs(pos.y) - size.y, 0)).normalized
 
 	contact.t = t / (vel.length ~= 0 and vel.length or 1)
-	if equalsZero(contact.t) then contact.t = 0 end -- patch for miniscule negative ts when pushing on the sides
+	if nearZero(contact.t) then contact.t = 0 end -- patch for miniscule negative ts when pushing on the sides
 	contact.r = 1 - contact.t
 	contact.self_pos = self.ppos + self.vel * contact.t
 	contact.other_pos = other.ppos + other.vel * contact.t
@@ -444,12 +425,12 @@ function CircleCollider:line_contact(other)
 	end
 
 	contact.t = t / (vel.length ~= 0 and vel.length or 1)
-	if equalsZero(contact.t) then contact.t = 0 end -- patch for miniscule negative ts when pushing on the sides
+	if nearZero(contact.t) then contact.t = 0 end -- patch for miniscule negative ts when pushing on the sides
 	contact.r = 1 - contact.t
 	contact.self_pos = self.ppos + self.vel * contact.t
 	contact.other_p1 = other.pp1 + other.vel * contact.t
 	contact.other_p2 = other.pp2 + other.vel * contact.t
-	contact.delta = contact.self_pos - LineCollider({ p1 = contact.other_p1, p2 = contact.other_p2 }):point_determinant(contact.self_pos).clamped
+	contact.delta = contact.self_pos - LineCollider{ p1 = contact.other_p1, p2 = contact.other_p2 }:point_determinant(contact.self_pos).clamped
 	contact.normal = contact.delta.normalized
 	contact.tangent = contact.delta.tangent
 
@@ -462,7 +443,7 @@ function CircleCollider:line_contact(other)
 end
 
 BoxCollider = Collider:extend("BoxCollider", {
-	pos = vec2(),
+	pos = nil,
 	ppos = nil,
 	p1 = nil,
 	p2 = nil,
@@ -472,102 +453,123 @@ BoxCollider = Collider:extend("BoxCollider", {
 	pp2 = nil,
 	pp3 = nil,
 	pp4 = nil,
-	vel = nil,
-	forward = vec2.dir("up"),
+	forward = nil,
 	right = nil,
 	bow = nil,
 	star = nil,
 	angRad = nil,
 	angDeg = nil,
-	hwidth = 0,
-	hheight = 0,
-	hdims = nil,
-	radius = 0
+	hwidth = nil,
+	hheight = nil,
+	hdims = nil
 })
 
-function BoxCollider:__index(key)
-	local slf = rawget(self, "members")
+function BoxCollider:init(data)
+	Stache.checkArg("pos", data.pos, "vector", "BoxCollider:init", true)
+	Stache.checkArg("forward", data.forward, "vector", "BoxCollider:init", true)
+	Stache.checkArg("right", data.right, "vector", "BoxCollider:init", true)
+	Stache.checkArg("hwidth", data.hwidth, "number", "BoxCollider:init")
+	Stache.checkArg("hheight", data.hheight, "number", "BoxCollider:init")
 
-	if slf[key] == nil then
-		if key == "ppos" then return slf.ppos or slf.pos
-		elseif key == "p1" then slf[key] = self.pos + vec2(self.hwidth, self.hheight)
-		elseif key == "p2" then slf[key] = self.pos + vec2(self.hwidth, -self.hheight)
-		elseif key == "p3" then slf[key] = self.pos + vec2(-self.hwidth, -self.hheight)
-		elseif key == "p4" then slf[key] = self.pos + vec2(-self.hwidth, self.hheight)
-		elseif key == "pp1" then slf[key] = self.ppos + vec2(self.hwidth, self.hheight)
-		elseif key == "pp2" then slf[key] = self.ppos + vec2(self.hwidth, -self.hheight)
-		elseif key == "pp3" then slf[key] = self.ppos + vec2(-self.hwidth, -self.hheight)
-		elseif key == "pp4" then slf[key] = self.ppos + vec2(-self.hwidth, self.hheight)
-		elseif key == "vel" then slf[key] = slf.pos - self.ppos
-		elseif key == "forward" then slf[key] = slf.forward or self.right.tangent
-		elseif key == "right" then slf[key] = slf.right or self.forward.normal
-		elseif key == "bow" then slf[key] = self.forward * self.hheight
-		elseif key == "star" then slf[key] = self.right * self.hwidth
-		elseif key == "angRad" then slf[key] = self.right.angle
-		elseif key == "angDeg" then slf[key] = math.deg(self.angRad)
-		elseif key == "hdims" then slf[key] = vec2(self.hwidth, self.hheight) end
-	end
+	data.pos = data.pos or vec2()
 
-	if slf[key] ~= nil then return slf[key]
-	else return Collider.__index(self, key) end
+	if XNOR(data.forward, data.right) then
+		Stache.formatError("BoxCollider:init() must be called with a 'forward' or a 'right' argument exclusively!") end
+
+	self.hwidth = data.hwidth
+	self.hheight = data.hheight
+
+	Collider.init(self, data)
 end
 
-function BoxCollider:__newindex(key, value)
-	local slf = rawget(self, "members")
+function BoxCollider:construct(key)
+	if key == "ppos" then return self.pos - self.vel
+	elseif key == "p1" then return self.pos + vec2(self.hwidth, self.hheight)
+	elseif key == "p2" then return self.pos + vec2(self.hwidth, -self.hheight)
+	elseif key == "p3" then return self.pos + vec2(-self.hwidth, -self.hheight)
+	elseif key == "p4" then return self.pos + vec2(-self.hwidth, self.hheight)
+	elseif key == "pp1" then return self.ppos + vec2(self.hwidth, self.hheight)
+	elseif key == "pp2" then return self.ppos + vec2(self.hwidth, -self.hheight)
+	elseif key == "pp3" then return self.ppos + vec2(-self.hwidth, -self.hheight)
+	elseif key == "pp4" then return self.ppos + vec2(-self.hwidth, self.hheight)
+	elseif key == "forward" then return self.right.tangent
+	elseif key == "right" then return self.forward.normal
+	elseif key == "bow" then return self.forward * self.hheight
+	elseif key == "star" then return self.right * self.hwidth
+	elseif key == "angRad" then return self.right.angle
+	elseif key == "angDeg" then return math.deg(self.angRad)
+	elseif key == "hdims" then return vec2(self.hwidth, self.hheight) end
+end
+
+function BoxCollider:proccess(key, value)
+	local slf = rawget(self, "private")
+	local result
+
+	self:readOnly(key, { "ppos", "p1", "p2", "p3", "p4",
+								 "pp1", "pp2", "pp3", "pp4",
+								 "angRad", "angDeg" })
 
 	if key == "pos" then
-		slf.pos = Stache.checkSet(key, value, "vector", "BoxCollider")
-		slf.vel = nil
-	elseif key == "ppos" then
-		slf.ppos = Stache.checkSet(key, value, "vector", "BoxCollider")
-		slf.vel = nil
+		result = self:checkSet(key, value, "vector")
+		slf.p1 = nil
+		slf.p2 = nil
+		slf.p3 = nil
+		slf.p4 = nil
+		slf.pp1 = nil
+		slf.pp2 = nil
+		slf.pp3 = nil
+		slf.pp4 = nil
+	elseif key == "vel" then
+		result = self:checkSet(key, value, "vector")
+		slf.pp1 = nil
+		slf.pp2 = nil
+		slf.pp3 = nil
+		slf.pp4 = nil
 	elseif key == "forward" then
-		slf.forward = Stache.checkSet(key, value, "vector", "BoxCollider").normalized
-		slf.bow = slf.forward * self.hheight
+		result = self:checkSet(key, value, "vector").normalized
+		slf.bow = result * self.hheight
 		slf.right = nil
 		slf.star = nil
 		slf.angRad = nil
 		slf.angDeg = nil
 	elseif key == "right" then
-		slf.right = Stache.checkSet(key, value, "vector", "BoxCollider").normalized
-		slf.star = slf.right * self.hwidth
+		result = self:checkSet(key, value, "vector").normalized
+		slf.star = result * self.hwidth
 		slf.forward = nil
 		slf.bow = nil
 		slf.angRad = nil
 		slf.angDeg = nil
 	elseif key == "bow" then
-		slf.bow = Stache.checkSet(key, value, "vector", "BoxCollider")
-		slf.forward = slf.bow.normalized
+		result = self:checkSet(key, value, "vector")
+		slf.hheight = result.length
+		slf.forward = result.normalized
 		slf.right = nil
 		slf.star = nil
-		slf.hheight = slf.bow.length
 		slf.hdims = nil
 		slf.angRad = nil
 		slf.angDeg = nil
 	elseif key == "star" then
-		slf.star = Stache.checkSet(key, value, "vector", "BoxCollider")
-		slf.right = slf.star.normalized
+		result = self:checkSet(key, value, "vector")
+		slf.hwidth = result.length
+		slf.right = result.normalized
 		slf.forward = nil
 		slf.bow = nil
-		slf.hwidth = slf.star.length
 		slf.hdims = nil
 		slf.angRad = nil
 		slf.angDeg = nil
 	elseif key == "hwidth" then
-		slf.hwidth = Stache.checkSet(key, value, "number", "BoxCollider")
+		result = self:checkSet(key, value, "number")
 		slf.star = nil
 		slf.hdims = nil
 	elseif key == "hheight" then
-		slf.hheight = Stache.checkSet(key, value, "number", "BoxCollider")
+		result = self:checkSet(key, value, "number")
 		slf.bow = nil
 		slf.hdims = nil
-	elseif key == "radius" then slf.radius = Stache.checkSet(key, value, "number", "BoxCollider")
-	else
-		Stache.readOnly(key, { "p1", "p2", "p3", "p4",
-						   "pp1", "pp2", "pp3", "pp4",
-						   "vel", "angRad", "angDeg" }, "BoxCollider")
-		Collider.__newindex(self, key, value)
+	elseif key == "radius" then
+		result = self:checkSet(key, value, "number")
 	end
+
+	return result
 end
 
 function BoxCollider:draw(color, scale, debug)
@@ -606,8 +608,8 @@ function BoxCollider:getCastBounds()
 end
 
 LineCollider = Collider:extend("LineCollider", {
-	p1 = vec2(),
-	p2 = vec2(),
+	p1 = nil,
+	p2 = nil,
 	pp1 = nil,
 	pp2 = nil,
 	vel = nil,
@@ -615,73 +617,53 @@ LineCollider = Collider:extend("LineCollider", {
 	direction = nil,
 	normal = nil,
 	angRad = nil,
-	angDeg = nil,
-	radius = 0
+	angDeg = nil
 })
 
-function LineCollider:__index(key)
-	local slf = rawget(self, "members")
+function LineCollider:init(data)
+	Stache.checkArg("p1", data.p1, "vector", "LineCollider:init")
+	Stache.checkArg("p2", data.p2, "vector", "LineCollider:init")
 
-	if slf[key] == nil then
-		if key == "pp1" then return slf.pp1 or slf.p1
-		elseif key == "pp2" then return slf.pp2 or slf.p2
-		elseif key == "vel" then
-			local v1 = slf.p1 - self.pp1
-			local v2 = slf.p2 - self.pp2
-
-			if v1 ~= v2 then
-				Stache.formatError("Attempted to get 'vel' key of class LineCollider but could not agree on a value: %q, %q", v1, v2) end
-
-			slf[key] = v1
-		elseif key == "delta" then
-			local dpp = self.pp2 - self.pp1
-			local dp = slf.p2 - slf.p1
-
-			if dpp ~= dp then
-				Stache.formatError("Attempted to get 'delta' key of class LineCollider but could not agree on a value: %q, %q", dpp, dp) end
-
-			slf[key] = dpp
-		elseif key == "direction" then slf[key] = self.delta.normalized
-		elseif key == "normal" then slf[key] = self.delta.normal
-		elseif key == "angRad" then slf[key] = self.delta.angle
-		elseif key == "angDeg" then slf[key] = math.deg(self.angRad) end
-	end
-
-	if slf[key] ~= nil then return slf[key]
-	else return Collider.__index(self, key) end
+	Collider.init(self, data)
 end
 
-function LineCollider:__newindex(key, value)
-	local slf = rawget(self, "members")
+function LineCollider:construct(key)
+	if key == "pp1" then return self.p1 - self.vel
+	elseif key == "pp2" then return self.p2 - self.vel
+	elseif key == "delta" then
+		local dp = self.p2 - self.p1
+		local dpp = self.pp2 - self.pp1
 
-	if key == "p1" then
-		slf.p1 = Stache.checkSet(key, value, "vector", "LineCollider")
-		self:dirty()
-	elseif key == "p2" then
-		slf.p2 = Stache.checkSet(key, value, "vector", "LineCollider")
-		self:dirty()
-	elseif key == "pp1" then
-		slf.pp1 = Stache.checkSet(key, value, "vector", "LineCollider")
-		self:dirty()
-	elseif key == "pp2" then
-		slf.pp2 = Stache.checkSet(key, value, "vector", "LineCollider")
-		self:dirty()
-	elseif key == "radius" then slf.radius = Stache.checkSet(key, value, "number", "LineCollider")
-	else
-		Stache.readOnly(key, { "vel", "delta", "direction", "normal", "angRad", "angDeg" },  "LineCollider")
-		Collider.__newindex(self, key, value)
-	end
+		if dpp ~= dp then
+			Stache.formatError("Attempted to get 'delta' key of class LineCollider but could not agree on a value: %q, %q", dpp, dp) end
+
+		return dp
+	elseif key == "direction" then return self.delta.normalized
+	elseif key == "normal" then return self.delta.normal
+	elseif key == "angRad" then return self.delta.angle
+	elseif key == "angDeg" then return math.deg(self.angRad) end
 end
 
-function LineCollider:dirty()
-	local slf = rawget(self, "members")
+function LineCollider:proccess(key, value)
+	local slf = rawget(self, "private")
 
-	slf.vel = nil
-	slf.delta = nil
-	slf.direction = nil
-	slf.normal = nil
-	slf.angRad = nil
-	slf.angDeg = nil
+	self:readOnly(key, { "pp1", "pp2", "delta", "direction", "normal", "angRad", "angDeg" })
+
+	if key == "p1" or key == "p2" then
+		slf.pp1 = nil
+		slf.pp2 = nil
+		slf.delta = nil
+		slf.direction = nil
+		slf.normal = nil
+		slf.angRad = nil
+		slf.angDeg = nil
+		return self:checkSet(key, value, "vector")
+	elseif key == "vel" then
+		slf.pp1 = nil
+		slf.pp2 = nil
+		return self:checkSet(key, value, "vector")
+	elseif key == "radius" then
+		return self:checkSet(key, value, "number") end
 end
 
 function LineCollider:draw(color, scale, debug)
@@ -813,7 +795,7 @@ function LineCollider:line_contact(arg1, arg2)
 	local result = {}
 
 	result.deno = deno
-	result.parallel = equalsZero(deno)
+	result.parallel = nearZero(deno)
 
 	if result.parallel == false then
 		result.scalar1 = (self.delta / offset) / deno

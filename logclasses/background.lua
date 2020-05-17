@@ -1,27 +1,26 @@
-Background = class("Background", {
+Background = Base:extend("Background", {
 	sprite = nil,
 	offset = vec2(),
 	scale = vec2(1),
 	scroll = vec2(1),
 	color = "white",
 	alpha = 1,
-	dimensions = vec2(),
-	sd = vec2(),
-	origin = vec2(),
+	dimensions = nil,
+	sd = nil,
 	quad = nil
 })
 
 function Background:init(data)
-	Stache.checkArg("data.sprite", data.sprite, "asset", "Background:init")
-	Stache.checkArg("data.offset", data.offset, "vector", "Background:init", true)
-	Stache.checkArg("data.scale", data.scale, "vector", "Background:init", true)
-	Stache.checkArg("data.scroll", data.scroll, "vector", "Background:init", true)
-	Stache.checkArg("data.color", data.color, "asset", "Background:init", true)
-	Stache.checkArg("data.alpha", data.alpha, "number", "Background:init", true)
+	Stache.checkArg("sprite", data.sprite, "asset", "Background:init")
+	Stache.checkArg("offset", data.offset, "vector", "Background:init", true)
+	Stache.checkArg("scale", data.scale, "vector", "Background:init", true)
+	Stache.checkArg("scroll", data.scroll, "vector", "Background:init", true)
+	Stache.checkArg("color", data.color, "asset", "Background:init", true)
+	Stache.checkArg("alpha", data.alpha, "number", "Background:init", true)
 
 	data.sprite = Stache.getAsset("sprite", data.sprite, Stache.sprites, "Background:init")
-	for k, v in pairs(data) do
-		self[k] = v end
+
+	Base.init(self, data)
 
 	self.dimensions = vec2(self.sprite:getWidth(), self.sprite:getHeight())
 	self.sd = self.dimensions ^ self.scale
@@ -49,6 +48,8 @@ function Background:update(camera)
 					  pos.y - (height / 2) * BG_OVERDRAW + self.sd.y / 2,
 					  width * BG_OVERDRAW, height * BG_OVERDRAW,
 					  self.sd.x, self.sd.y)
+
+	return false
 end
 
 function Background:draw(camera)

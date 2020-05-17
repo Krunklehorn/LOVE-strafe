@@ -1,9 +1,8 @@
-Ground = class("Ground", {
+Ground = Base:extend("Ground", {
 	edges = {},
 	coords = {},
 	prev = nil,
-	next = nil,
-	members = {}
+	next = nil
 })
 
 Ground.SHALLOW = math.deg(math.atan(0.5))
@@ -230,8 +229,6 @@ end
 LineGround = Ground:extend("LineGround")
 
 function LineGround:init(...)
-	Stache.hideMembers(self)
-
 	self:addPoints(...)
 end
 
@@ -268,7 +265,6 @@ BezierGround = Ground:extend("BezierGround", {
 })
 
 function BezierGround:init(...)
-	Stache.hideMembers(self)
 	self.curve = love.math.newBezierCurve()
 
 	self:addPoints(...)

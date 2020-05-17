@@ -10,23 +10,10 @@ Dummy = Entity:extend("Dummy", {
 	controlmode = nil
 })
 
-function Dummy:__index(key)
-	local slf = rawget(self, "members")
-
-	if slf[key] ~= nil then return slf[key]
-	else return Entity.__index(self, key) end
-end
-
-function Dummy:__newindex(key, value)
-	local slf = rawget(self, "members")
-
-	Entity.__newindex(self, key, value)
-end
-
 function Dummy:init(data)
-	Entity.init(self, data)
+	Base.init(self, data)
 
-	self.collider = CircleCollider({ radius = 32 })
+	self.collider = CircleCollider{ radius = 32 }
 	self:setControlMode("Previous")
 end
 
@@ -114,5 +101,5 @@ function Dummy:toggleControlMode()
 end
 
 function Dummy:updateCollider()
-	self.collider:update({ pos = self.pos, ppos = self.ppos, angRad = self.angRad })
+	self.collider:update(self.pos, self.ppos)
 end

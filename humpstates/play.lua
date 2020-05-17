@@ -10,42 +10,18 @@ playState = {
 function playState:init()
 	self.camera = stalker()
 
-	self:addBackground(Background({ sprite = "parallax_grid", scale = vec2(32), scroll = vec2(1.25), alpha = 0.2 }))
-	self:addBackground(Background({ sprite = "parallax_grid", scale = vec2(4), alpha = 0.1 }))
-	self:addBackground(Background({ sprite = "parallax_grid", scale = vec2(2), alpha = 0.1 }))
-	self:addBackground(Background({ sprite = "parallax_screen", scale = vec2(2), scroll = vec2(0.25), alpha = 0.2 }))
+	self:addBackground(Background{ sprite = "parallax_grid", scale = vec2(32), scroll = vec2(1.25), alpha = 0.2 })
+	self:addBackground(Background{ sprite = "parallax_grid", scale = vec2(4), alpha = 0.1 })
+	self:addBackground(Background{ sprite = "parallax_grid", scale = vec2(2), alpha = 0.1 })
+	self:addBackground(Background{ sprite = "parallax_screen", scale = vec2(2), scroll = vec2(0.25), alpha = 0.2 })
 
-	self:addBrush(LineBrush({ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 }))
-	self:addBrush(CircleBrush({ pos = vec2(-2000, 0), radius = 200, height = 50 }))
-	self:addBrush(CircleBrush({ pos = vec2(2000, 0), radius = 200, height = 50 }))
+	self:addBrush(LineBrush{ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 })
+	self:addBrush(CircleBrush{ pos = vec2(-2000, 0), radius = 200, height = 50 })
+	self:addBrush(CircleBrush{ pos = vec2(2000, 0), radius = 200, height = 50 })
 
-	self:addBrush(LineBrush({ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 }))
-	self:addBrush(CircleBrush({ pos = vec2(-3000, -11000), radius = 600, height = 50 }))
-	self:addBrush(CircleBrush({ pos = vec2(3000, -11000), radius = 600, height = 50 }))
-
-	local lane = -800
-	local hwidth = 200
-	local dist = -600
-	for i = 1, 16 do
-		self:addBrush(LineBrush({ p1 = vec2(lane + hwidth, dist), p2 = vec2(lane - hwidth, dist), radius = 80 }))
-		dist = dist - 320 * (1 + i / 10)
-	end
-
-	lane = 0
-	dist = -700
-	for i = 1, 13 do
-		self:addBrush(LineBrush({ p1 = vec2(lane + hwidth, dist), p2 = vec2(lane - hwidth, dist), radius = 80 }))
-		dist = dist - 450 * (1 + i / 10)
-	end
-
-	lane = 800
-	dist = -600
-	hwidth = 400
-	for i = 1, 27 do
-		local offset = math.sin(math.rad(dist * 0.2)) - math.sin(math.rad(dist * 0.19)) / 2 - math.sin(math.rad(dist * 0.16)) / 3
-		self:addBrush(CircleBrush({ pos = vec2(lane + offset * hwidth, dist), radius = 100 }))
-		dist = dist - 300 * (1 + i / 80)
-	end
+	self:addBrush(LineBrush{ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 })
+	self:addBrush(CircleBrush{ pos = vec2(-3000, -11000), radius = 600, height = 50 })
+	self:addBrush(CircleBrush{ pos = vec2(3000, -11000), radius = 600, height = 50 })
 
 	Stache.players[1].agent = self:spawnAgent("strafer", { posz = 20 })
 end
@@ -75,11 +51,9 @@ function playState:update(tl)
 
 	if active_agent.posz <= -100 then
 		active_agent.pos = vec2()
-		active_agent.ppos = vec2()
 		active_agent.vel = vec2()
 		active_agent.angRad = 0
 		active_agent.posz = 20
-		active_agent.pposz = 20
 		active_agent.velz = 20
 		active_agent:changeState("air")
 	end
@@ -97,9 +71,9 @@ function playState:draw()
 	self.camera:attach()
 
 	Stache.drawList(self.brushes)
-	Stache.drawList(self.particles)
-	Stache.drawList(self.props)
 	Stache.drawList(self.agents)
+	Stache.drawList(self.props)
+	Stache.drawList(self.particles)
 
 	if DEBUG_DRAW then
 		if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
@@ -231,7 +205,7 @@ function playState:spawnProp(name, params)
 	local data = Stache.getAsset("name", name, Stache.props, "playState:spawnProp")
 
 	--data.sheet = Stache.sheets.props[name] TODO: ready to add particles, props and actor sprites...
-	if params ~= nil then
+	if params then
 		for k, v in pairs(params) do
 			data[k] = params[k] end
 	end
@@ -250,7 +224,7 @@ function playState:spawnAgent(name, params)
 
 	data.actor = name
 	--data.sheet = Stache.sheets.actors[name] TODO: ready to add particles, props and actor sprites...
-	if params ~= nil then
+	if params then
 		for k, v in pairs(params) do
 			data[k] = params[k] end
 	end

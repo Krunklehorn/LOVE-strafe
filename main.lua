@@ -7,6 +7,8 @@ la = love.audio
 FLOAT_EPSILON = 0.00001
 MATH_2PI = 2 * math.pi
 
+NULL_FUNC = function() end
+
 WINDOW_WIDTH = 720
 WINDOW_HEIGHT = 480
 WINDOW_WIDTH_HALF = WINDOW_WIDTH / 2
@@ -24,12 +26,35 @@ DEBUG_COLLISION_FALLBACK = true
 DEBUG_STATECHANGES = false
 DEBUG_DRAW = true
 
+DEBUG_PRINT_TABLE = function(table)
+	print("---------------------", table, "---------------------------------------------")
+	for k, v in pairs(table) do
+		print("", k, "	", rawget(table, k))
+	end
+
+	local private = rawget(table, "private")
+	local header = false
+
+	if private then
+		for k, v in pairs(private) do
+			if not header then
+				print("Private --- " .. tostring(private) .. " ---------------------------------------------")
+				header = true
+			end
+
+			print("", k, "	", rawget(private, k))
+		end
+	end
+	print("	")
+end
+
 vec2 = require "modules.brinevector"
 stalker = require "modules.stalker-x"
 anim8 = require "modules.anim8"
 flux = require "modules.flux"
 editgrid = require "modules.editgrid"
 boipushy = require "modules.boipushy"
+bitser = require "modules.bitser"
 
 humpstate = require "modules.humpstate"
 require "humpstates.title"
@@ -41,12 +66,11 @@ require "humpstates.debug"
 Stache = require "stache"
 
 class = require "modules.30log"
+require "logclasses.base"
 require "logclasses.player"
 require "logclasses.background"
-require "logclasses.grounds"
 require "logclasses.colliders"
 require "logclasses.brushes"
-require "logclasses.edge"
 require "logclasses.sprites"
 require "logclasses.entity"
 require "logclasses.particle"

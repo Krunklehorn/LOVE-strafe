@@ -2,15 +2,13 @@ Agent = Entity:extend("Agent", {
 	actor = nil,
 	state = nil,
 	action = nil,
-	collider = nil,
-	posz = 0, -- TODO: BRINEVEC3?
-	pposz = 0, -- TODO: BRINEVEC3?
-	velz = 0, -- TODO: BRINEVEC3?
+	posz = nil, -- TODO: BRINEVEC3?
+	velz = nil, -- TODO: BRINEVEC3?
 
-	aim = vec2(),
-	axis = vec2(),
-	jump = false,
-	crouch = false,
+	aim = nil,
+	axis = nil,
+	jump = nil,
+	crouch = nil,
 
 	physmode = nil,
 	VQ3 = {
@@ -45,22 +43,17 @@ Agent = Entity:extend("Agent", {
 	grndRef = nil
 })
 
-function Agent:__index(key)
-	local slf = rawget(self, "members")
-
-	if slf[key] ~= nil then return slf[key]
-	else return Entity.__index(self, key) end
-end
-
-function Agent:__newindex(key, value)
-	local slf = rawget(self, "members")
-
-	Entity.__newindex(self, key, value)
-end
-
 function Agent:init(data)
+	Stache.checkArg("posz", data.posz, "number", "Agent:init", true)
+	Stache.checkArg("velz", data.velz, "number", "Agent:init", true)
+
+	data.posz = data.posz or 0
+	data.velz = data.velz or 0
+
 	Entity.init(self, data)
 
+	self.aim = vec2()
+	self.axis = vec2()
 	self:changeState("air")
 	self:setPhysMode("VQ3")
 end
@@ -77,7 +70,7 @@ function Agent:update(tl)
 		end
 
 		if self.state == "idle" then
-			if not equalsZero(self.axis.length) then
+			if not nearZero(self.axis.length) then
 				self:changeState("move")
 			else
 				if self.action == "stand" and self.crouch then
@@ -124,8 +117,8 @@ function Agent:update(tl)
 	else
 		if self.state == "air" then
 			local axis = self.axis:rotated(self.angRad)
-			local bunny = not equalsZero(math.abs(self.axis.x)) and equalsZero(math.abs(self.axis.y))
-			local control = equalsZero(math.abs(self.axis.x)) and not equalsZero(math.abs(self.axis.y))
+			local bunny = not nearZero(math.abs(self.axis.x)) and nearZero(math.abs(self.axis.y))
+			local control = nearZero(math.abs(self.axis.x)) and not nearZero(math.abs(self.axis.y))
 
 			if self.accbny and bunny then
 				local acc = self.accbny
@@ -154,13 +147,11 @@ function Agent:update(tl)
 			end
 
 			self.velz = self.velz + self.grv * tl
-			self.pposz = self.posz
 			self.posz = self.posz + self.velz * tl
 			self.posz = self.posz > -100 and self.posz or -100
 		end
 	end
 
-	self.ppos = self.pos
 	self.pos = self.pos + self.vel * tl
 	self:updateCollider()
 
@@ -191,15 +182,14 @@ function Agent:update(tl)
 		end
 	else
 		for b, brush in ipairs(playState.brushes) do
-			if self.posz <= brush.height and self.pposz > brush.height then
+			if self.posz <= brush.height and self.posz - self.velz > brush.height then
 				local result = self.collider:overlap(brush)
 
 				if result.depth > 0 then
 					self.posz = brush.height
-					self.pposz = brush.height
 					self.velz = 0
 					self:setGround(brush)
-					self:changeState(equalsZero(self.vel.length) and "idle" or "move")
+					self:changeState(nearZero(self.vel.length) and "idle" or "move")
 
 					break
 				end
@@ -236,9 +226,8 @@ function Agent:update(tl)
 			if overlap then
 				local offset = overlap.normal * overlap.depth
 				local tangent = overlap.normal.tangent
-				self.pos = self.pos + offset
-				self.ppos = self.ppos + offset
 				self.vel = tangent * self.vel * tangent
+				self.pos = self.pos + offset
 				self:updateCollider()
 
 				table.insert(skip, overlap.other)
@@ -268,9 +257,8 @@ function Agent:update(tl)
 			end
 
 			if contact then
-				self.ppos = contact.self_pos
 				self.vel = contact.tangent * self.vel * contact.tangent
-				self.pos = self.ppos + self.vel * contact.r * tl
+				self.pos = contact.self_pos + self.vel * contact.r * tl
 				self:updateCollider()
 
 				table.insert(skip, contact.other)
@@ -280,9 +268,9 @@ function Agent:update(tl)
 
 	-- Check for state changes based on velocity...
 	if self:isGrounded() then
-		if self.state == "idle" and not equalsZero(self.vel.length) then
+		if self.state == "idle" and not nearZero(self.vel.length) then
 			self:changeState("move")
-		elseif self.state == "move" and equalsZero(self.vel.length) then
+		elseif self.state == "move" and nearZero(self.vel.length) then
 			self:changeState("idle")
 		end
 	end
@@ -345,13 +333,17 @@ function Agent:changeState(next)
 end
 
 function Agent:changeAction(action, jumpTo, play)
-	local subDir = Stache.actors[self.actor][self.state]
+	local subDir = Stache.actors[self.actor]
 
 	self.sprite = subDir.sprite
 	self.collider = subDir.collider
 
-	if not action then
-		action = subDir.default end
+	subDir = subDir.states[self.state]
+
+	if subDir.sprite then self.sprite = subDir.sprite end
+	if subDir.collider then self.collider = subDir.collider end
+
+	action = action or subDir.default
 
 	if action then
 		subDir = subDir[action]
@@ -411,7 +403,7 @@ function Agent:togglePhysMode()
 end
 
 function Agent:updateCollider()
-	self.collider:update({ pos = self.pos, ppos = self.ppos })
+	self.collider:update(self.pos, self.vel * Stache.ticklength)
 end
 
 function Agent:isGrounded()

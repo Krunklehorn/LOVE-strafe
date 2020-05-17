@@ -13,7 +13,7 @@ HANDLE_RADIUS = 32
 HANDLE_SCALE_MIN = 4
 HANDLE_SCALE_MAX = 32
 
-function Handle:init(data)
+function Handle:init(target, ...)
 	Stache.formatError("Abstract function Handle:init() called!")
 end
 
@@ -85,7 +85,7 @@ end
 function PointHandle:drag(mwpos, interval)
 	self.pos = self.ppos + mwpos - self.pmwpos
 
-	if lk.isDown("lshift", "rshift") then
+	if not lk.isDown("lctrl", "rctrl") then
 		self.pos = snap(self.pos, interval) end
 
 	self.target[self.pkey] = self.pos
@@ -164,7 +164,7 @@ end
 function VectorHandle:drag(mwpos, interval)
 	self.delta = self.pdelta + mwpos - self.pmwpos
 
-	if lk.isDown("lshift", "rshift") then
+	if not lk.isDown("lctrl", "rctrl") then
 		self.delta = snap(self.delta, interval) end
 
 	self.target[self.dkey] = self.delta

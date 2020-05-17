@@ -50,7 +50,7 @@ local special_properties = {
 	normal = "getNormal", -- Krunk: Added getNormal and getTangent for various uses
 	tangent = "getTangent",
 	floor = "getFloor",
-	ceil = "getCeil",
+	ceil = "getCeil"
 }
 
 function Vector.__index(t, k)
@@ -105,6 +105,10 @@ function Vector.getCeil(v)
 	return Vector(math.ceil(v.x), math.ceil(v.y))
 end
 
+function Vector.split(v)
+	return v.x, v.y
+end
+
 function Vector.__newindex(t, k, v)
 	if k == "length" then
 		local res = t.normalized * v
@@ -133,10 +137,6 @@ end
 function Vector.trim(v, mag)
 	if v.length < mag then return v end
 	return v.normalized * mag
-end
-
-function Vector.split(v)
-	return v.x, v.y
 end
 
 local function clamp(x, min, max)

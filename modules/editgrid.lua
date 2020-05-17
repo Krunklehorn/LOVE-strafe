@@ -100,7 +100,7 @@ local function visible(camera)
     camera = checkType(camera or EMPTY, "table", "camera")
     local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
     local w, h = sw / zoom, sh / zoom
-    if not equalsZero(angle) then -- Added float equality hook...
+    if not nearZero(angle) then -- Added float equality hook...
 	   local sin, cos = math.abs(math.sin(angle)), math.abs(math.cos(angle))
 	   w, h = cos * w + sin * h, sin * w + cos * h
     end
@@ -210,7 +210,7 @@ local function intersect(x1, y1, x2, y2, x3, y3, x4, y4)
     local x21, x43 = x2 - x1, x4 - x3
     local y21, y43 = y2 - y1, y4 - y3
     local d = x21 * y43 - y21 * x43
-    if equalsZero(d) then return false end -- Added float equality hook...
+    if nearZero(d) then return false end -- Added float equality hook...
     local xy34 = x3 * y4 - y3 * x4
     local xy12 = x1 * y2 - y1 * x2
     local a = xy34 * x21 - xy12 * x43
