@@ -85,7 +85,7 @@ function love.load()
 
 	love.resize(lg.getDimensions())
 
-	humpstate.registerEvents("prep")
+	humpstate.registerEvents()
 	--humpstate.switch(titleState)
 	--humpstate.switch(debugState)
 	humpstate.switch(editState)
@@ -110,9 +110,6 @@ function love.run()
 				love.handlers[name](a,b,c,d,e,f)
 			end
 		end
-
-		if love.prep then
-			love.prep() end
 
 		if love.timer then
 			delta_time = love.timer.step() end

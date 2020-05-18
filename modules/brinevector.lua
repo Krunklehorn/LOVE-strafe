@@ -27,12 +27,15 @@ local VECTORTYPE = "cdata"
 
 if jit and jit.status() then
 	ffi = require "ffi"
+	------------------------------------------------------------------------------
+	-- Krunk: Modified to fix compatibility with serializer modules like bitser...
 	ffi.cdef[[
-	typedef struct {
+	typedef struct _brinevector {
 		double x;
 		double y;
 	} brinevector;
 	]]
+	------------------------------------------------------------------------------
 else
 	VECTORTYPE = "table"
 end
@@ -165,7 +168,7 @@ function Vector.rotated(v, param1, param2)
 		return Vector(math.cos(new_angle) * length, math.sin(new_angle) * length)
 	else -- Krunk: Params1 and 2 are precalculated cosine and sine values for a rotation matrix
 		return Vector(v.x * param1 - v.y * param2,
-				    v.y * param1 + v.x * param2)
+					  v.y * param1 + v.x * param2)
 	end
 end
 ----------------------------------------------------------------------------------------------

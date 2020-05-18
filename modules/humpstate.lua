@@ -88,6 +88,7 @@ function GS.registerEvents(add_callbacks)
 	local callbacks = def_callbacks -- Changed to use "default" callbacks instead...
 
 	-- Also added single string option and error checking...
+	add_callbacks = add_callbacks or {}
 	if type(add_callbacks) == "string" then add_callbacks = { add_callbacks }
 	elseif type(add_callbacks) ~= "table" then error("Cannot register event from parameter of type: ", type(add_callbacks)) end
 

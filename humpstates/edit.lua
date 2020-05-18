@@ -87,6 +87,8 @@ function editState:keypressed(key)
 	if key == "1" then self.activeTool = "Circle"
 	elseif key == "2" then self.activeTool = "Box"
 	elseif key == "3" then self.activeTool = "Line"
+	elseif key == "j" then self:save()
+	elseif key == "k" then self:load()
 	elseif key == "backspace" then
 		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
 			humpstate.switch(titleState)
@@ -211,6 +213,26 @@ function editState:resize(w, h)
 	self.camera.h = h
 	playState.camera.w = w
 	playState.camera.h = h
+end
+
+function editState:save()
+	local string = bitser.dumps(playState.brushes)
+	local success, msg = lfs.write("brushes.dat", string)
+
+	if not success then
+		error(msg) end
+end
+
+function editState:load()
+	if lfs.getInfo("brushes.dat") then
+		local string, msg = lfs.read("brushes.dat")
+
+		if not string then
+			error(msg) end
+
+		playState.brushes = bitser.loads(string)
+		self:refreshHandles()
+	end
 end
 
 function editState:addHandle(brush)

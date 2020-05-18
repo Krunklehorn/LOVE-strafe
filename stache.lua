@@ -163,7 +163,7 @@ end
 function Stache.privatize(table)
 	local private = rawget(table, "private") or {}
 
-	for k, _ in pairs(table) do
+	for k in pairs(table) do
 		for _, v in ipairs(Stache.exclude) do
 			if k == v then
 				goto continue end end
@@ -195,23 +195,26 @@ end
 function Stache.load()
 	local filestrings, subDir, sheet, width, height
 
-	local makeDir = function(dir, subdir)
+	local function deserialize_30log(instance, class)
+		local result = class:create()
+
+		for k in pairs(instance) do
+			rawset(result, k, instance[k]) end
+
+		return result
+	end
+
+	for class in pairs(class._classes) do
+		local name = class.name or "?"
+
+		bitser.registerClass(name, class, "class", deserialize_30log)
+		bitser.register(name, class)
+	end
+
+	local function makeDir(dir, subdir)
 		dir[subdir] = {}
 		return dir[subdir]
 	end
-
-	bitser.registerClass("vec2", vec2, "VECTORTYPE", function(obj, class) return class(obj.x or 0, obj.y or obj.x or 0) end)
-
-	bitser.registerClass("Entity", Entity, "name", setmetatable)
-	bitser.registerClass("Agent", Agent, "name", setmetatable)
-	bitser.registerClass("Background", Background, "name", setmetatable)
-	bitser.registerClass("Collider", Collider, "name", setmetatable)
-	bitser.registerClass("CircleCollider", CircleCollider, "name", setmetatable)
-	bitser.registerClass("BoxCollider", BoxCollider, "name", setmetatable)
-	bitser.registerClass("LineCollider", LineCollider, "name", setmetatable)
-	bitser.registerClass("CircleBrush", CircleBrush, "name", setmetatable)
-	bitser.registerClass("BoxBrush", BoxBrush, "name", setmetatable)
-	bitser.registerClass("LineBrush", LineBrush, "name", setmetatable)
 
 	lg.setDefaultFilter("nearest", "nearest", 1)
 	Stache.fonts.debug = lg.setNewFont(FONT_BLOWUP)
@@ -565,10 +568,11 @@ function abs(x)
 end
 
 function floatEquality(a, b)
-	Stache.checkArg("a", a, "number", "floatEquality")
-	Stache.checkArg("b", b, "number", "floatEquality")
+	Stache.checkArg("a", a, "number", "floatEquality", true)
+	Stache.checkArg("b", b, "number", "floatEquality", true)
 
-	return abs(a - b) < FLOAT_EPSILON
+	if not a or not b then return false
+	else return abs(a - b) < FLOAT_EPSILON end
 end
 
 function nearZero(x)

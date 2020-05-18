@@ -24,11 +24,15 @@ Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld
 | Edit ||
 | :---: | :---: |
 | Mouse 1 | Move |
-| Mouse 2 | Create |
+| Mouse 2 | Create / Delete |
 | Mouse 3 | Pan |
-| MWheel | Zoom |
-| Ctrl + MWheel | Cycle Type |
-| Shift | Snap to Grid |
+| Wheel | Zoom |
+| 1 | Circle |
+| 2 | Box |
+| 3 | Line |
+| J | Save |
+| K | Load |
+| Ctrl | Disable Snap |
 | M | Fullscreen |
 | Enter | Play Mode |
 
@@ -48,10 +52,11 @@ These amazing modules helped me build it! ...
 
 [30log](https://github.com/Yonaba/30log)  
 [anim8](https://github.com/kikito/anim8) (planned)  
+[bitser](https://github.com/gvx/bitser)  
 [boipushy](https://github.com/adnzzzzZ/boipushy)  
 [brinevector](https://github.com/novemberisms/brinevector)  
-[Editgrid](https://github.com/bakpakin/Editgrid) (planned)  
-[flux](https://github.com/rxi/flux) (planned)  
+[Editgrid](https://github.com/bakpakin/Editgrid)  
+[flux](https://github.com/rxi/flux)  
 [hump](https://github.com/vrld/hump)  
 [STALKER-X](https://github.com/adnzzzzZ/STALKER-X)  
 

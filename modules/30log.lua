@@ -211,5 +211,7 @@ class._DESCRIPTION = '30 lines library for object orientation in Lua'
 class._VERSION     = '30log v1.3.0'
 class._URL         = 'http://github.com/Yonaba/30log'
 class._LICENSE     = 'MIT LICENSE <http://www.opensource.org/licenses/mit-license.php>'
+class._classes     = _classes -- Krunk: exposed to allow iteration
+class._instances   = _instances -- Krunk: exposed to allow iteration
 
 return setmetatable(class,{__call = function(_,...) return _class(...) end })
