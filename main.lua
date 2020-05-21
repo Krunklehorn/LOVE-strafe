@@ -21,6 +21,8 @@ FONT_SHRINK = 1 / FONT_BLOWUP
 MOUSE_SENSITIVITY = 1
 AIM_SENSITIVITY = 1 / math.deg(MATH_2PI)
 
+EDIT_ZOOM_ON_CURSOR = true
+
 BG_OVERDRAW = 3
 
 DEBUG_COLLISION_FALLBACK = true
@@ -71,7 +73,8 @@ require "logclasses.base"
 require "logclasses.player"
 require "logclasses.background"
 require "logclasses.colliders"
-require "logclasses.brushes"
+require "logclasses.brush"
+require "logclasses.trigger"
 require "logclasses.sprites"
 require "logclasses.entity"
 require "logclasses.particle"
@@ -153,6 +156,8 @@ function love.keypressed(key)
 	if key == "m" then
 		lw.setFullscreen(not lw.getFullscreen())
 		love.resize(lg.getDimensions()) -- Force the resize callback
+	elseif key == "n" then
+		DEBUG_DRAW = not DEBUG_DRAW
 	--elseif key == "lshift" then
 		--lg.captureScreenshot("screenshot_" .. os.time() .. ".png")
 	elseif key == "escape" then

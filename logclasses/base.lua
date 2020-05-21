@@ -42,20 +42,13 @@ function Base:__newindex(key, value, subverted)
 		local cntxt = rawget(context, "private")
 		local class = rawget(context, "class")
 		local cls = class and rawget(class, "private")
-		local proccess = rawget(cntxt, "proccess") or (class and rawget(cls, "proccess")) or NULL_FUNC
+		local assign = rawget(cntxt, "assign") or (class and rawget(cls, "assign")) or NULL_FUNC
 
-		result = proccess(self, key, value)
+		result = assign(self, key, value)
 		context = context ~= Base and rawget(context, "super")
 	end
 
 	slf[key] = result or value
-end
-
-function Base:init(data)
-	if data then
-		for k, v in pairs(data) do
-			self[k] = Stache.copy(v) end
-	end
 end
 
 function Base:checkSet(key, value, query, nillable, copy)
@@ -88,11 +81,23 @@ function Base:checkSet(key, value, query, nillable, copy)
 			if type(value) ~= "string" and type(value) ~= "table" and type(value) ~= "userdata" then
 				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a string, table or userdata: %q", key, thisClass, value)
 			end
+		elseif query == "class" then
+			if not class.isClass(value) then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't a class: %q", key, thisClass, value)
+			end
+		elseif query == "instance" then
+			if not class.isInstance(value) then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't an instance: %q", key, thisClass, value)
+			end
+		elseif query == "index/reference" then
+			if type(value) ~= "number" and not class.isInstance(value) then
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't an index or instance: %q", key, thisClass, value)
+			end
 		elseif class.isClass(query) or class.isClass(instance) then
 			query = class.isClass(query) and query or query.class
 
 			if not value:instanceOf(query) then
-				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't of type '%s': %q", key, thisClass, query, value)
+				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't of type '%s': %q", key, thisClass, query.name, value)
 			end
 		else
 			Stache.formatError("self:checkSet() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
@@ -116,5 +121,12 @@ function Base:readOnly(key, queries)
 	for _, query in ipairs(queries) do
 		if key == query then
 			Stache.formatError("Attempted to set a key of class '%s' that is read-only: %q", class, key) end
+	end
+end
+
+function Base:init(data)
+	if data then
+		for k, v in pairs(data) do
+			self[k] = Stache.copy(v) end
 	end
 end

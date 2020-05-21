@@ -1,8 +1,8 @@
 Background = Base:extend("Background", {
 	sprite = nil,
-	offset = vec2(),
-	scale = vec2(1),
-	scroll = vec2(1),
+	offset = nil,
+	scale = nil,
+	scroll = nil,
 	color = "white",
 	alpha = 1,
 	dimensions = nil,
@@ -19,6 +19,9 @@ function Background:init(data)
 	Stache.checkArg("alpha", data.alpha, "number", "Background:init", true)
 
 	data.sprite = Stache.getAsset("sprite", data.sprite, Stache.sprites, "Background:init")
+	data.offset = data.offset or vec2()
+	data.scale = data.scale or vec2(1)
+	data.scroll = data.scroll or vec2(1)
 
 	Base.init(self, data)
 

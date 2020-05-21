@@ -15,6 +15,7 @@ Stache = {
 		"classOf",
 		"create",
 		"checkSet",
+		"exclude",
 		"extend",
 		"includes",
 		"init",
@@ -50,7 +51,8 @@ Stache = {
 		blue = { 0, 0, 1 },
 		cyan = { 0, 1, 1 },
 		magenta = { 1, 0, 1 },
-		yellow = { 1, 1, 0 }
+		yellow = { 1, 1, 0 },
+		trigger = { 1, 1, 0, 0.25 }
 	},
 	sprites = {},
 	--[[
@@ -109,13 +111,23 @@ function Stache.checkArg(key, arg, query, func, nillable)
 			if type(arg) ~= "string" and type(arg) ~= "table" and type(arg) ~= "userdata" then
 				Stache.formatError("%s() called with a '%s' argument that isn't a string, table or userdata: %q", func, key, arg)
 			end
+		elseif query == "class" then
+			if not class.isClass(arg) then
+				Stache.formatError("%s() called with a '%s' argument that isn't a class: %q", func, key, arg)
+			end
+		elseif query == "instance" then
+			if not class.isInstance(arg) then
+				Stache.formatError("%s() called with a '%s' argument that isn't an instance: %q", func, key, arg)
+			end
 		elseif query == "index/reference" then
 			if type(arg) ~= "number" and not class.isInstance(arg) then
-				Stache.formatError("%s() called with a '%s' argument that isn't an index or reference: %q", func, key, arg)
+				Stache.formatError("%s() called with a '%s' argument that isn't an index or instance: %q", func, key, arg)
 			end
-		elseif type(query) ~= "string" then
+		elseif class.isClass(query) or class.isClass(instance) then
+			query = class.isClass(query) and query or query.class
+
 			if not arg:instanceOf(query) then
-				Stache.formatError("%s() called with a '%s' argument that isn't of type '%s': %q", func, key, query, arg)
+				Stache.formatError("%s() called with a '%s' argument that isn't of type '%s': %q", func, key, query.name, arg)
 			end
 		else
 			Stache.formatError("Stache.checkArg() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
@@ -129,7 +141,12 @@ local function deep_copy(obj, seen)
 	if vec2.isVector(obj) then
 		return obj.copy
 	elseif class.isInstance(obj) then
-		return obj.class(obj)
+		local result = obj.class:create()
+
+		for k, v in pairs(obj) do
+			rawset(result, k, v) end
+
+		return result
 	elseif class.isClass(obj) then
 		return obj
 	elseif type(obj) == "table" then
@@ -198,8 +215,8 @@ function Stache.load()
 	local function deserialize_30log(instance, class)
 		local result = class:create()
 
-		for k in pairs(instance) do
-			rawset(result, k, instance[k]) end
+		for k, v in pairs(instance) do
+			rawset(result, k, v) end
 
 		return result
 	end
@@ -396,7 +413,7 @@ function Stache.colorUnpack(color, alpha)
 	color = Stache.getAsset("color", color, Stache.colors, "Stache.colorUnpack")
 	alpha = alpha or 1
 
-	return color[1], color[2], color[3], alpha
+	return color[1], color[2], color[3], (color[4] or 1) * alpha
 end
 
 function Stache.setColor(color, alpha)

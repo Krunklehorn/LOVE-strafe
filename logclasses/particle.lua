@@ -3,7 +3,7 @@ Particle = Entity:extend("Particle", {
 	params = nil
 })
 
-function Particle:proccess(key, value)
+function Particle:assign(key, value)
 	local slf = rawget(self, "private")
 
 	if key == "anchor" then return self:checkSet(key, value, "indexable")

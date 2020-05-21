@@ -1,6 +1,6 @@
 Collider = Base:extend("Collider", {
 	vel = nil,
-	radius = 0
+	radius = nil
 })
 
 function Collider:init(data)
@@ -8,6 +8,7 @@ function Collider:init(data)
 	Stache.checkArg("radius", data.radius, "number", "Collider:init", true)
 
 	data.vel = data.vel or vec2()
+	data.radius = data.radius or 0
 
 	Base.init(self, data)
 end
@@ -170,20 +171,12 @@ CircleCollider = Collider:extend("CircleCollider", {
 	ppos = nil
 })
 
-function CircleCollider:init(data)
-	Stache.checkArg("pos", data.pos, "vector", "CircleCollider:init", true)
-
-	data.pos = data.pos or vec2()
-
-	Collider.init(self, data)
-end
-
 function CircleCollider:construct(key)
 	if key == "ppos" then
 		return self.pos - self.vel end
 end
 
-function CircleCollider:proccess(key, value)
+function CircleCollider:assign(key, value)
 	local slf = rawget(self, "private")
 
 	self:readOnly(key, { "ppos" })
@@ -193,6 +186,14 @@ function CircleCollider:proccess(key, value)
 		return self:checkSet(key, value, "vector")
 	elseif key == "radius" then
 		return self:checkSet(key, value, "number") end
+end
+
+function CircleCollider:init(data)
+	Stache.checkArg("pos", data.pos, "vector", "CircleCollider:init", true)
+
+	data.pos = data.pos or vec2()
+
+	Collider.init(self, data)
 end
 
 function CircleCollider:draw(color, scale, debug)
@@ -464,24 +465,6 @@ BoxCollider = Collider:extend("BoxCollider", {
 	hdims = nil
 })
 
-function BoxCollider:init(data)
-	Stache.checkArg("pos", data.pos, "vector", "BoxCollider:init", true)
-	Stache.checkArg("forward", data.forward, "vector", "BoxCollider:init", true)
-	Stache.checkArg("right", data.right, "vector", "BoxCollider:init", true)
-	Stache.checkArg("hwidth", data.hwidth, "number", "BoxCollider:init")
-	Stache.checkArg("hheight", data.hheight, "number", "BoxCollider:init")
-
-	data.pos = data.pos or vec2()
-
-	if XNOR(data.forward, data.right) then
-		Stache.formatError("BoxCollider:init() must be called with a 'forward' or a 'right' argument exclusively!") end
-
-	self.hwidth = data.hwidth
-	self.hheight = data.hheight
-
-	Collider.init(self, data)
-end
-
 function BoxCollider:construct(key)
 	if key == "ppos" then return self.pos - self.vel
 	elseif key == "p1" then return self.pos + vec2(self.hwidth, self.hheight)
@@ -501,7 +484,7 @@ function BoxCollider:construct(key)
 	elseif key == "hdims" then return vec2(self.hwidth, self.hheight) end
 end
 
-function BoxCollider:proccess(key, value)
+function BoxCollider:assign(key, value)
 	local slf = rawget(self, "private")
 	local result
 
@@ -572,6 +555,27 @@ function BoxCollider:proccess(key, value)
 	return result
 end
 
+function BoxCollider:init(data)
+	Stache.checkArg("pos", data.pos, "vector", "BoxCollider:init", true)
+	Stache.checkArg("forward", data.forward, "vector", "BoxCollider:init", true)
+	Stache.checkArg("right", data.right, "vector", "BoxCollider:init", true)
+	Stache.checkArg("hwidth", data.hwidth, "number", "BoxCollider:init")
+	Stache.checkArg("hheight", data.hheight, "number", "BoxCollider:init", true)
+
+	if data.forward and data.right then
+		Stache.formatError("BoxCollider:init() cannot be called with both a 'forward' and 'right' argument: %q, %q", data.forward, data.right) end
+
+	data.pos = data.pos or vec2()
+	data.forward = data.forward or (not data.right and vec2.dir("up") or nil)
+	data.right = not data.forward and data.right or nil
+	data.hheight = data.hheight or data.hwidth
+
+	self.hwidth = data.hwidth
+	self.hheight = data.hheight
+
+	Collider.init(self, data)
+end
+
 function BoxCollider:draw(color, scale, debug)
 	Stache.checkArg("color", color, "asset", "BoxCollider:draw", true)
 	Stache.checkArg("scale", scale, "number", "BoxCollider:draw", true)
@@ -620,13 +624,6 @@ LineCollider = Collider:extend("LineCollider", {
 	angDeg = nil
 })
 
-function LineCollider:init(data)
-	Stache.checkArg("p1", data.p1, "vector", "LineCollider:init")
-	Stache.checkArg("p2", data.p2, "vector", "LineCollider:init")
-
-	Collider.init(self, data)
-end
-
 function LineCollider:construct(key)
 	if key == "pp1" then return self.p1 - self.vel
 	elseif key == "pp2" then return self.p2 - self.vel
@@ -644,7 +641,7 @@ function LineCollider:construct(key)
 	elseif key == "angDeg" then return math.deg(self.angRad) end
 end
 
-function LineCollider:proccess(key, value)
+function LineCollider:assign(key, value)
 	local slf = rawget(self, "private")
 
 	self:readOnly(key, { "pp1", "pp2", "delta", "direction", "normal", "angRad", "angDeg" })
@@ -664,6 +661,13 @@ function LineCollider:proccess(key, value)
 		return self:checkSet(key, value, "vector")
 	elseif key == "radius" then
 		return self:checkSet(key, value, "number") end
+end
+
+function LineCollider:init(data)
+	Stache.checkArg("p1", data.p1, "vector", "LineCollider:init")
+	Stache.checkArg("p2", data.p2, "vector", "LineCollider:init")
+
+	Collider.init(self, data)
 end
 
 function LineCollider:draw(color, scale, debug)

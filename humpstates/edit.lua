@@ -59,9 +59,10 @@ function editState:draw()
 	self.grid:push("all")
 
 	Stache.drawList(playState.brushes)
-	Stache.drawList(playState.props)
 	Stache.drawList(playState.agents)
+	Stache.drawList(playState.props)
 	Stache.drawList(playState.particles)
+	Stache.drawList(playState.triggers)
 
 	Stache.setColor("red", 1)
 	lg.rectangle("line", self.grid.visible(playState))
@@ -134,7 +135,7 @@ function editState:mousepressed(x, y, button)
 				mwpos = snap(mwpos, self.grid:minorInterval()) end
 
 			for _, brush in ipairs(playState.brushes) do
-				local result = brush:pick(mwpos)
+				local result = brush.collider:pick(mwpos)
 
 				if result.distance <= 0 and (not height or brush.height > height) then
 					height = brush.height end
@@ -142,9 +143,9 @@ function editState:mousepressed(x, y, button)
 
 			height = height and height + 40 or 0
 
-			if self.activeTool == "Circle" then brush = playState:addBrush(CircleBrush{ pos = mwpos, height = height })
-			elseif self.activeTool == "Box" then brush = playState:addBrush(BoxBrush{ pos = mwpos, right = vec2.dir("right"), hwidth = 32, hheight = 32, radius = 32, height = height })
-			elseif self.activeTool == "Line" then brush = playState:addBrush(LineBrush{ p1 = mwpos, p2 = mwpos, radius = 32, height = height }) end
+			if self.activeTool == "Circle" then brush = playState:addBrush(Brush{collider = CircleCollider{ pos = mwpos }, height = height})
+			elseif self.activeTool == "Box" then brush = playState:addBrush(Brush{collider = BoxCollider{ pos = mwpos, hwidth = 32, radius = 32 }, height = height})
+			elseif self.activeTool == "Line" then brush = playState:addBrush(Brush{collider = LineCollider{ p1 = mwpos, p2 = mwpos, radius = 32 }, height = height}) end
 
 			self.toolState = { type = self.activeTool, brush = brush  }
 			self:addHandle(brush)
@@ -183,9 +184,9 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 		if not lk.isDown("lctrl", "rctrl") then
 			delta = snap(delta, self.grid:minorInterval()) end
 
-		if self.toolState.type == "Circle" then self.toolState.brush.radius = delta.length
-		elseif self.toolState.type == "Line" then self.toolState.brush.p2 = self.pmwpos + delta
-		elseif self.toolState.type == "Box" then self.toolState.brush.star = delta end
+		if self.toolState.type == "Circle" then self.toolState.brush.collider.radius = delta.length
+		elseif self.toolState.type == "Line" then self.toolState.brush.collider.p2 = self.pmwpos + delta
+		elseif self.toolState.type == "Box" then self.toolState.brush.collider.star = delta end
 	elseif lm.isDown(3) and not lm.isDown(1) and not lm.isDown(2) then
 		self.camera:move(-dx * MOUSE_SENSITIVITY, -dy * MOUSE_SENSITIVITY)
 	else
@@ -195,17 +196,21 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 end
 
 function editState:wheelmoved(x, y)
-	local mpposx, mpposy, mposx, mposy = lm.getPosition()
+	local mwpos = vec2(self.camera:getMousePosition())
 
-	if y < 0 and self.camera.scale > 0.1 then
+	if y < 0 and self.camera.scale > 0.01 then
 		self.camera.scale = self.camera.scale * 0.8
 	elseif y > 0 and self.camera.scale < 10 then
 		self.camera.scale = self.camera.scale * 1.25
 	end
 
-	mposx, mposy = lm.getPosition()
-
-	self:mousemoved(mposx, mposy, mposx - mpposx, mposy - mpposy, false)
+	if EDIT_ZOOM_ON_CURSOR then
+		mwpos = vec2(self.camera:getMousePosition()) - mwpos
+		self.camera.x = self.camera.x - mwpos.x
+		self.camera.y = self.camera.y - mwpos.y
+	else
+		self:mousemoved(lm.getX(), lm.getY(), 0, 0, false)
+	end
 end
 
 function editState:resize(w, h)
@@ -236,13 +241,13 @@ function editState:load()
 end
 
 function editState:addHandle(brush)
-	if brush:instanceOf(CircleBrush) then
+	if brush.collider:instanceOf(CircleCollider) then
 		table.insert(self.handles, PointHandle(brush, "pos"))
-	elseif brush:instanceOf(BoxBrush) then
-		table.insert(self.handles, PointHandle(brush, "pos"))
+	elseif brush.collider:instanceOf(BoxCollider) then
 		table.insert(self.handles, VectorHandle(brush, "pos", "bow"))
 		table.insert(self.handles, VectorHandle(brush, "pos", "star"))
-	elseif brush:instanceOf(LineBrush) then
+		table.insert(self.handles, PointHandle(brush, "pos"))
+	elseif brush.collider:instanceOf(LineCollider) then
 		table.insert(self.handles, PointHandle(brush, "p1"))
 		table.insert(self.handles, PointHandle(brush, "p2"))
 	end

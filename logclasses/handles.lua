@@ -54,17 +54,17 @@ function PointHandle:init(target, pkey)
 	Stache.checkArg("target", target, "indexable", "PointHandle:init")
 	Stache.checkArg("pkey", pkey, "string", "PointHandle:init")
 
-	if target[pkey] == nil or not vec2.isVector(target[pkey]) then
+	if target.collider[pkey] == nil or not vec2.isVector(target.collider[pkey]) then
 		Stache.formatError("PointHandle:init() called with an invalid 'pkey' argument: %q", pkey)
 	end
 
 	self.target = target
-	self.pos = target[pkey]
+	self.pos = target.collider[pkey]
 	self.pkey = pkey
 end
 
 function PointHandle:update()
-	self.pos = self.target[self.pkey]
+	self.pos = self.target.collider[self.pkey]
 
 	return false
 end
@@ -88,7 +88,7 @@ function PointHandle:drag(mwpos, interval)
 	if not lk.isDown("lctrl", "rctrl") then
 		self.pos = snap(self.pos, interval) end
 
-	self.target[self.pkey] = self.pos
+	self.target.collider[self.pkey] = self.pos
 end
 
 function PointHandle:pick(mwpos, scale, state)
@@ -129,20 +129,20 @@ function VectorHandle:init(target, pkey, dkey)
 	Stache.checkArg("pkey", pkey, "string", "VectorHandle:init")
 	Stache.checkArg("dkey", dkey, "string", "VectorHandle:init")
 
-	if target[pkey] == nil or not vec2.isVector(target[pkey]) then
+	if target.collider[pkey] == nil or not vec2.isVector(target.collider[pkey]) then
 		Stache.formatError("PointHandle:init() called with an invalid 'pkey' argument: %q", pkey)
-	elseif target[dkey] == nil or not vec2.isVector(target[dkey]) then
+	elseif target.collider[dkey] == nil or not vec2.isVector(target.collider[dkey]) then
 		Stache.formatError("PointHandle:init() called with an invalid 'dkey' argument: %q", dkey)
 	end
 
 	self.target = target
-	self.delta = target[dkey]
+	self.delta = target.collider[dkey]
 	self.pkey = pkey
 	self.dkey = dkey
 end
 
 function VectorHandle:update()
-	self.delta = self.target[self.dkey]
+	self.delta = self.target.collider[self.dkey]
 
 	return false
 end
@@ -151,7 +151,7 @@ function VectorHandle:draw(scale)
 	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
 
 	local r, g, b = unpack(self.colors[self.state])
-	local pos = self.target[self.pkey]
+	local pos = self.target.collider[self.pkey]
 	local tip = pos + self.delta
 
 	lg.push("all")
@@ -170,13 +170,13 @@ function VectorHandle:drag(mwpos, interval)
 	if not lk.isDown("lctrl", "rctrl") then
 		self.delta = snap(self.delta, interval) end
 
-	self.target[self.dkey] = self.delta
+	self.target.collider[self.dkey] = self.delta
 end
 
 function VectorHandle:pick(mwpos, scale, state)
 	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
 
-	local pos = self.target[self.pkey] + self.delta
+	local pos = self.target.collider[self.pkey] + self.delta
 	local radius = HANDLE_RADIUS / scale
 
 	if (pos - mwpos).length <= radius then
@@ -185,7 +185,7 @@ function VectorHandle:pick(mwpos, scale, state)
 				self.pdelta = self.delta
 				self.pmwpos = mwpos
 			end
-			
+
 			self.state = state
 		end
 
@@ -202,11 +202,11 @@ EdgeHandle = Handle:extend("EdgeHandle")
 function EdgeHandle:init(target, key)
 	if not target:instanceOf(Edge) then
 		Stache.formatError("EdgeHandle:init() called with an invalid 'target' argument: %q", target)
-	elseif type(key) ~= "string" or not target[key] or not vec2.isVector(target[key]) then
+	elseif type(key) ~= "string" or not target.collider[key] or not vec2.isVector(target.collider[key]) then
 		Stache.formatError("EdgeHandle:init() called with an invalid 'key' argument: %q", key)
 	end
 
-	self.pos = target[key]
+	self.pos = target.collider[key]
 	self.target = target
 	self.key = key
 end

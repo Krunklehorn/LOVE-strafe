@@ -12,26 +12,12 @@ Entity = Base:extend("Entity", {
 	visible = true
 })
 
-function Entity:init(data)
-	Stache.checkArg("pos", data.pos, "vector", "Entity:init", true)
-	Stache.checkArg("vel", data.vel, "vector", "Entity:init", true)
-	Stache.checkArg("angRad", data.angRad, "number", "Entity:init", true)
-	Stache.checkArg("angVelRad", data.angVelRad, "number", "Entity:init", true)
-
-	data.pos = data.pos or vec2()
-	data.vel = data.vel or vec2()
-	data.angRad = data.angRad or 0
-	data.angVelRad = data.angVelRad or 0
-
-	Base.init(self, data)
-end
-
 function Entity:construct(key)
 	if key == "angDeg" then return math.deg(self.angRad)
 	elseif key == "angVelDeg" then return math.deg(self.angVelRad) end
 end
 
-function Entity:proccess(key, value)
+function Entity:assign(key, value)
 	local slf = rawget(self, "private")
 
 	self:readOnly(key, { "angDeg", "angVelDeg" })
@@ -49,11 +35,25 @@ function Entity:proccess(key, value)
 	end
 end
 
+function Entity:init(data)
+	Stache.checkArg("pos", data.pos, "vector", "Entity:init", true)
+	Stache.checkArg("vel", data.vel, "vector", "Entity:init", true)
+	Stache.checkArg("angRad", data.angRad, "number", "Entity:init", true)
+	Stache.checkArg("angVelRad", data.angVelRad, "number", "Entity:init", true)
+
+	data.pos = data.pos or vec2()
+	data.vel = data.vel or vec2()
+	data.angRad = data.angRad or 0
+	data.angVelRad = data.angVelRad or 0
+
+	Base.init(self, data)
+end
+
 function Entity:update(tl)
 	self.pos = self.pos + self.vel * tl
 	self.angRad = self.angRad + self.angVelRad * tl
 	if self.sprite then self.sprite:update(tl) end
-	if self.collider then self.collider:update(self.pos, self.vel, self.angRad) end
+	if self.collider then self.collider:update(self.pos, self.vel) end
 
 	return false
 end

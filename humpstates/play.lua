@@ -2,6 +2,7 @@ playState = {
 	camera = nil,
 	backgrounds = {},
 	brushes = {},
+	triggers = {},
 	particles = {},
 	props = {},
 	agents = {}
@@ -15,13 +16,25 @@ function playState:init()
 	self:addBackground(Background{ sprite = "parallax_grid", scale = vec2(2), alpha = 0.1 })
 	self:addBackground(Background{ sprite = "parallax_screen", scale = vec2(2), scroll = vec2(0.25), alpha = 0.2 })
 
-	self:addBrush(LineBrush{ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 })
-	self:addBrush(CircleBrush{ pos = vec2(-2000, 0), radius = 200, height = 50 })
-	self:addBrush(CircleBrush{ pos = vec2(2000, 0), radius = 200, height = 50 })
+	self:addBrush(Brush{ collider = LineCollider{ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 }})
+	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(-2000, 0), radius = 200 }, height = 50 })
+	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(2000, 0), radius = 200 }, height = 50 })
 
-	self:addBrush(LineBrush{ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 })
-	self:addBrush(CircleBrush{ pos = vec2(-3000, -11000), radius = 600, height = 50 })
-	self:addBrush(CircleBrush{ pos = vec2(3000, -11000), radius = 600, height = 50 })
+	self:addBrush(Brush{ collider = LineCollider{ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 }})
+	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(-3000, -11000), radius = 800 }, height = 50 })
+	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(3000, -11000), radius = 800 }, height = 50 })
+
+	local function respawnAgent(agent)
+		agent.pos.x = clamp(agent.pos.x, -1600, 1600)
+		agent.pos.y = 0
+		agent.vel = vec2()
+		agent.angRad = 0
+		agent.posz = 20
+		agent.velz = 20
+		agent:changeState("air")
+	end
+
+	self:addTrigger(Trigger{ collider = BoxCollider{ pos = vec2(0, -6000), hwidth = 8000 }, height = -100, onOverlap = respawnAgent })
 
 	Stache.players[1].agent = self:spawnAgent("strafer", { posz = 20 })
 end
@@ -48,15 +61,7 @@ function playState:update(tl)
 	Stache.updateList(self.agents, tl)
 	Stache.updateList(self.props, tl)
 	Stache.updateList(self.particles, tl)
-
-	if active_agent.posz <= -100 then
-		active_agent.pos = vec2()
-		active_agent.vel = vec2()
-		active_agent.angRad = 0
-		active_agent.posz = 20
-		active_agent.velz = 20
-		active_agent:changeState("air")
-	end
+	Stache.updateList(self.triggers, tl)
 
 	self.camera:follow(active_agent.pos:split())
 	self.camera.rotation = -active_agent.angRad
@@ -74,6 +79,7 @@ function playState:draw()
 	Stache.drawList(self.agents)
 	Stache.drawList(self.props)
 	Stache.drawList(self.particles)
+	Stache.drawList(self.triggers)
 
 	if DEBUG_DRAW then
 		if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
@@ -161,8 +167,6 @@ function playState:keypressed(key)
 		Stache.timescale = Stache.timescale / 2
 	elseif key == "v" then
 		self.agents[1]:togglePhysMode()
-	elseif key == "n" then
-		DEBUG_DRAW = not DEBUG_DRAW
 	end
 end
 
@@ -181,6 +185,12 @@ function playState:addBrush(brush)
 	table.insert(self.brushes, brush)
 
 	return brush
+end
+
+function playState:addTrigger(trigger)
+	table.insert(self.triggers, trigger)
+
+	return trigger
 end
 
 function playState:spawnParticle(name, anchor, params)
@@ -241,15 +251,31 @@ function playState:removeBrush(brush)
 	if type(brush) == "number" then
 		return table.remove(self.brushes, brush)
 	else
-		--[[if not brush:instanceOf(Brush) then -- TODO: merge brushes into a common class
-			Stache.formatError("playState:removeBrush() called with a 'brush' argument that isn't of type 'Brush': %q", brush)
-		end]]
+		if not brush:instanceOf(Brush) then
+			Stache.formatError("playState:removeBrush() called with a 'brush' argument that isn't of type 'Brush': %q", brush) end
 
 		for b = 1, #self.brushes do
 			if self.brushes[b] == brush then
 				return table.remove(self.brushes, b) end end
 
 		Stache.formatError("playState:removeBrush() called with a reference that should not exist: %q", brush)
+	end
+end
+
+function playState:removeTrigger(trigger)
+	Stache.checkArg("trigger", trigger, "index/reference", "playState:removeTrigger")
+
+	if type(trigger) == "number" then
+		return table.remove(self.triggers, trigger)
+	else
+		if not trigger:instanceOf(Trigger) then
+			Stache.formatError("playState:removeTrigger() called with a 'trigger' argument that isn't of type 'Trigger': %q", trigger) end
+
+		for t = 1, #self.triggers do
+			if self.triggers[t] == trigger then
+				return table.remove(self.triggers, t) end end
+
+		Stache.formatError("playState:removeTrigger() called with a reference that should not exist: %q", trigger)
 	end
 end
 
