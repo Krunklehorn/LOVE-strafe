@@ -124,6 +124,55 @@ function Base:readOnly(key, queries)
 	end
 end
 
+function Base:proxy(member)
+	Stache.checkArg("self", self, "class", "Stache.proxy")
+	Stache.checkArg("member", member, "string", "Stache.proxy")
+
+	for _, v in ipairs(Stache.exclude) do
+		table.insert(self.exclude, v) end
+
+	self.__index = function(this, key, subverted)
+		if class.isClass(this) and not subverted then
+			return this.__index(this, key, true) end
+
+		for k, v in pairs(self.exclude) do
+			if v == key then
+				return this.super.__index(this, key, true) end
+		end
+
+		local result = this[member] and this[member][key]
+
+		if type(result) == "function" then
+			return function(t, ...)
+				return result(t[member], ...) end
+		end
+
+		return result
+	end
+
+	self.__newindex = function(this, key, value, subverted)
+		if class.isClass(this) and not subverted then
+			this.__newindex(this, key, true) end
+
+		for k, v in pairs(self.exclude) do
+			if v == key then
+				this.super.__newindex(this, key, value, true) end
+		end
+
+		if this[member] then
+			this[member][key] = value end
+	end
+
+	self.instanceOf = function(this, fromclass)
+		assert(class._instances[this], ('Wrong method call. Expected instance:%s.'):format('instanceOf(class)'))
+		assert(class.isClass(fromclass), 'Wrong argument given to method "instanceOf()". Expected a class.')
+		return ((this.class == fromclass or this[member].class == fromclass) or
+				(this.class:subclassOf(fromclass) or this[member].class:subclassOf(fromclass)))
+	end
+
+	return self
+end
+
 function Base:init(data)
 	if data then
 		for k, v in pairs(data) do

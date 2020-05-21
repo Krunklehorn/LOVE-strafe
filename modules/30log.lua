@@ -52,6 +52,7 @@ local function instantiate(call_init, self, ...)
 	instance.__subclasses = nil
 	instance.__instances = nil
 	instance.private = self.private and {} or nil -- Krunk: Added for get and set functionality
+	instance.exclude = nil -- Krunk: added for proxy functionality
 	setmetatable(instance,self)
 	if call_init and self.init then
 		if type(self.init) == 'table' then

@@ -164,7 +164,7 @@ function Agent:update(tl)
 
 			for b, brush in ipairs(playState.brushes) do
 				if brush ~= self.grndRef and self.posz == brush.height then
-					local result = self.collider:overlap(brush.collider)
+					local result = self.collider:overlap(brush)
 
 					if result.depth > 0 then
 						floor = brush
@@ -183,7 +183,7 @@ function Agent:update(tl)
 	else
 		for b, brush in ipairs(playState.brushes) do
 			if self.posz <= brush.height and self.posz - self.velz * tl > brush.height then
-				local result = self.collider:overlap(brush.collider)
+				local result = self.collider:overlap(brush)
 
 				if result.depth > 0 then
 					self.posz = brush.height
@@ -211,11 +211,11 @@ function Agent:update(tl)
 					goto continue end
 
 				for _, skip in pairs(skip) do
-					if brush.collider == skip then
+					if brush == skip then
 						goto continue end
 				end
 
-				local result = self.collider:overlap(brush.collider)
+				local result = self.collider:overlap(brush)
 
 				if result.depth >= 0 and (not overlap or result.depth > overlap.depth) then
 					overlap = result end
@@ -242,11 +242,11 @@ function Agent:update(tl)
 					goto continue end
 
 				for _, skip in pairs(skip) do
-					if brush.collider == skip then
+					if brush == skip then
 						goto continue end
 				end
 
-				local result = self.collider:cast(brush.collider)
+				local result = self.collider:cast(brush)
 
 				if result then
 					if result.t >= 0 and (not contact or result.t < contact.t) then

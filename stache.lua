@@ -25,6 +25,7 @@ Stache = {
 		"name",
 		"new",
 		"private",
+		"proxy",
 		"readOnly",
 		"subclasses",
 		"subclassOf",
@@ -177,21 +178,23 @@ function Stache.copy(...)
 	return unpack(results)
 end
 
-function Stache.privatize(table)
-	local private = rawget(table, "private") or {}
+function Stache.privatize(class)
+	Stache.checkArg("class", class, "class", "Stache.privatize")
 
-	for k in pairs(table) do
+	local private = rawget(class, "private") or {}
+
+	for k in pairs(class) do
 		for _, v in ipairs(Stache.exclude) do
 			if k == v then
 				goto continue end end
 
-		private[k] = rawget(table, k)
-		rawset(table, k, nil)
+		private[k] = rawget(class, k)
+		rawset(class, k, nil)
 
 		::continue::
 	end
 
-	return rawset(table, "private", private)
+	return rawset(class, "private", private)
 end
 
 function Stache.iter(t)

@@ -200,7 +200,10 @@ function playState:spawnParticle(name, anchor, params)
 
 	--data.sheet = Stache.sheets.particles[name] TODO: ready to add particles, props and actor sprites...
 	data.anchor = anchor
-	data.params = params
+	if params then
+		for k, v in pairs(params) do
+			data[k] = v end
+	end
 
 	local particle = Particle(data)
 	table.insert(self.particles, particle)
@@ -217,7 +220,7 @@ function playState:spawnProp(name, params)
 	--data.sheet = Stache.sheets.props[name] TODO: ready to add particles, props and actor sprites...
 	if params then
 		for k, v in pairs(params) do
-			data[k] = params[k] end
+			data[k] = v end
 	end
 
 	local prop = Prop(data)
@@ -236,7 +239,7 @@ function playState:spawnAgent(name, params)
 	--data.sheet = Stache.sheets.actors[name] TODO: ready to add particles, props and actor sprites...
 	if params then
 		for k, v in pairs(params) do
-			data[k] = params[k] end
+			data[k] = v end
 	end
 
 	local agent = Agent(data)

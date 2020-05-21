@@ -135,7 +135,7 @@ function editState:mousepressed(x, y, button)
 				mwpos = snap(mwpos, self.grid:minorInterval()) end
 
 			for _, brush in ipairs(playState.brushes) do
-				local result = brush.collider:pick(mwpos)
+				local result = brush:pick(mwpos)
 
 				if result.distance <= 0 and (not height or brush.height > height) then
 					height = brush.height end
@@ -184,9 +184,9 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 		if not lk.isDown("lctrl", "rctrl") then
 			delta = snap(delta, self.grid:minorInterval()) end
 
-		if self.toolState.type == "Circle" then self.toolState.brush.collider.radius = delta.length
-		elseif self.toolState.type == "Line" then self.toolState.brush.collider.p2 = self.pmwpos + delta
-		elseif self.toolState.type == "Box" then self.toolState.brush.collider.star = delta end
+		if self.toolState.type == "Circle" then self.toolState.brush.radius = delta.length
+		elseif self.toolState.type == "Line" then self.toolState.brush.p2 = self.pmwpos + delta
+		elseif self.toolState.type == "Box" then self.toolState.brush.star = delta end
 	elseif lm.isDown(3) and not lm.isDown(1) and not lm.isDown(2) then
 		self.camera:move(-dx * MOUSE_SENSITIVITY, -dy * MOUSE_SENSITIVITY)
 	else
@@ -241,13 +241,13 @@ function editState:load()
 end
 
 function editState:addHandle(brush)
-	if brush.collider:instanceOf(CircleCollider) then
+	if brush:instanceOf(CircleCollider) then
 		table.insert(self.handles, PointHandle(brush, "pos"))
-	elseif brush.collider:instanceOf(BoxCollider) then
+	elseif brush:instanceOf(BoxCollider) then
 		table.insert(self.handles, VectorHandle(brush, "pos", "bow"))
 		table.insert(self.handles, VectorHandle(brush, "pos", "star"))
 		table.insert(self.handles, PointHandle(brush, "pos"))
-	elseif brush.collider:instanceOf(LineCollider) then
+	elseif brush:instanceOf(LineCollider) then
 		table.insert(self.handles, PointHandle(brush, "p1"))
 		table.insert(self.handles, PointHandle(brush, "p2"))
 	end

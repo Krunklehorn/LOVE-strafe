@@ -1,8 +1,16 @@
 Trigger = Base:extend("Trigger", {
 	collider = nil,
 	height = nil,
-	onOverlap = nil
-})
+	onOverlap = nil,
+	exclude = {
+		"collider",
+		"height",
+		"onOverlap",
+		"assign",
+		"update",
+		"draw"
+	}
+}):proxy("collider")
 
 function Trigger:assign(key, value)
 	local slf = rawget(self, "private")

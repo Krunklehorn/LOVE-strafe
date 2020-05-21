@@ -1,8 +1,15 @@
 Brush = Base:extend("Brush", {
 	collider = nil,
 	height = nil,
-	color = "white"
-})
+	color = "white",
+	exclude = {
+		"collider",
+		"height",
+		"color",
+		"assign",
+		"draw"
+	}
+}):proxy("collider")
 
 function Brush:assign(key, value)
 	local slf = rawget(self, "private")
