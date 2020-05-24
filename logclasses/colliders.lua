@@ -45,14 +45,14 @@ function Collider:pick(point)
 	elseif self:instanceOf(BoxCollider) then
 		-- https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
 		-- make SELF a box and OTHER a point
-		local pos = (point - self.pos):rotated(-self.angRad)
+		local pos = (point - self.pos):rotated(-self.angle)
 		local delta = abs(pos) - self.hdims
 		local clip = vec2(math.max(delta.x, 0), math.max(delta.y, 0))
 		local dist = clip.length + min(max(delta.x, delta.y), 0)
 		local result = {}
 
 		result.distance = dist - self.radius
-		result.normal = (clip.normalized ^ sign(pos)):rotated(self.angRad)
+		result.normal = (clip.normalized ^ sign(pos)):rotated(self.angle)
 		result.tangent = result.normal.tangent
 
 		return result
@@ -106,14 +106,14 @@ end
 function Collider:circ_box(other)
 	-- https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
 	-- make SELF a point and OTHER a box
-	local pos = (self.pos - other.pos):rotated(-other.angRad)
+	local pos = (self.pos - other.pos):rotated(-other.angle)
 	local delta = abs(pos) - other.hdims
 	local clip = vec2(math.max(delta.x, 0), math.max(delta.y, 0))
 	local dist = clip.length + min(max(delta.x, delta.y), 0)
 	local result = {}
 
 	result.depth = self.radius + other.radius - dist
-	result.normal = (clip.normalized ^ sign(pos)):rotated(other.angRad)
+	result.normal = (clip.normalized ^ sign(pos)):rotated(other.angle)
 	result.tangent = result.normal.tangent
 	result.self = self
 	result.other = other
@@ -269,8 +269,8 @@ function CircleCollider:box_contact(other)
 
 	-- https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 	-- make SELF a ray and OTHER a stationary rounded rectangle
-	local offset = (self.ppos - other.ppos):rotated(-other.angRad)
-	local vel = (self.vel - other.vel):rotated(-other.angRad)
+	local offset = (self.ppos - other.ppos):rotated(-other.angle)
+	local vel = (self.vel - other.vel):rotated(-other.angle)
 	local radius = self.radius + other.radius
 	local determ = 1
 	local t = -1
@@ -450,8 +450,7 @@ BoxCollider = Collider:extend("BoxCollider", {
 	right = nil,
 	bow = nil,
 	star = nil,
-	angRad = nil,
-	angDeg = nil,
+	angle = nil,
 	hwidth = nil,
 	hheight = nil,
 	hdims = nil
@@ -471,8 +470,7 @@ function BoxCollider:construct(key)
 	elseif key == "right" then return self.forward.normal
 	elseif key == "bow" then return self.forward * self.hheight
 	elseif key == "star" then return self.right * self.hwidth
-	elseif key == "angRad" then return self.right.angle
-	elseif key == "angDeg" then return math.deg(self.angRad)
+	elseif key == "angle" then return self.right.angle
 	elseif key == "hdims" then return vec2(self.hwidth, self.hheight) end
 end
 
@@ -483,7 +481,7 @@ function BoxCollider:assign(key, value)
 	self:readOnly(key, "ppos",
 						"p1", "p2", "p3", "p4",
 						"pp1", "pp2", "pp3", "pp4",
-						"angRad", "angDeg")
+						"angle")
 
 	if key == "pos" then
 		result = self:checkSet(key, value, "vector")
@@ -506,15 +504,13 @@ function BoxCollider:assign(key, value)
 		slf.bow = result * self.hheight
 		slf.right = nil
 		slf.star = nil
-		slf.angRad = nil
-		slf.angDeg = nil
+		slf.angle = nil
 	elseif key == "right" then
 		result = self:checkSet(key, value, "vector").normalized
 		slf.star = result * self.hwidth
 		slf.forward = nil
 		slf.bow = nil
-		slf.angRad = nil
-		slf.angDeg = nil
+		slf.angle = nil
 	elseif key == "bow" then
 		result = self:checkSet(key, value, "vector")
 		slf.hheight = result.length
@@ -522,8 +518,7 @@ function BoxCollider:assign(key, value)
 		slf.right = nil
 		slf.star = nil
 		slf.hdims = nil
-		slf.angRad = nil
-		slf.angDeg = nil
+		slf.angle = nil
 	elseif key == "star" then
 		result = self:checkSet(key, value, "vector")
 		slf.hwidth = result.length
@@ -531,8 +526,7 @@ function BoxCollider:assign(key, value)
 		slf.forward = nil
 		slf.bow = nil
 		slf.hdims = nil
-		slf.angRad = nil
-		slf.angDeg = nil
+		slf.angle = nil
 	elseif key == "hwidth" then
 		result = self:checkSet(key, value, "number")
 		slf.star = nil
@@ -585,13 +579,13 @@ function BoxCollider:draw(color, scale, debug)
 		if debug == true and self.vel ~= vec2() then
 			Stache.debugNormal(self.pos, self.bow, "green", 1)
 			Stache.debugNormal(self.pos, self.star, "red", 1)
-			Stache.debugBox(self.ppos, self.angRad, self.hwidth * scale, self.hheight * scale, self.radius, color, 0.5)
+			Stache.debugBox(self.ppos, self.angle, self.hwidth * scale, self.hheight * scale, self.radius, color, 0.5)
 			Stache.debugLine(self.pos, self.ppos, color, 0.5)
 			Stache.setColor(color, 0.5)
 			lg.circle("fill", self.ppos.x, self.ppos.y, scale)
 		end
 
-		Stache.debugBox(self.pos, self.angRad, self.hwidth * scale, self.hheight * scale, self.radius, color)
+		Stache.debugBox(self.pos, self.angle, self.hwidth * scale, self.hheight * scale, self.radius, color)
 	lg.pop()
 end
 
@@ -613,8 +607,7 @@ LineCollider = Collider:extend("LineCollider", {
 	delta = nil,
 	direction = nil,
 	normal = nil,
-	angRad = nil,
-	angDeg = nil
+	angle = nil
 })
 
 function LineCollider:construct(key)
@@ -630,14 +623,13 @@ function LineCollider:construct(key)
 		return dp
 	elseif key == "direction" then return self.delta.normalized
 	elseif key == "normal" then return self.delta.normal
-	elseif key == "angRad" then return self.delta.angle
-	elseif key == "angDeg" then return math.deg(self.angRad) end
+	elseif key == "angle" then return self.delta.angle end
 end
 
 function LineCollider:assign(key, value)
 	local slf = rawget(self, "private")
 
-	self:readOnly(key, "pp1", "pp2", "delta", "direction", "normal", "angRad", "angDeg")
+	self:readOnly(key, "pp1", "pp2", "delta", "direction", "normal", "angle")
 
 	if key == "p1" or key == "p2" then
 		slf.pp1 = nil
@@ -645,8 +637,7 @@ function LineCollider:assign(key, value)
 		slf.delta = nil
 		slf.direction = nil
 		slf.normal = nil
-		slf.angRad = nil
-		slf.angDeg = nil
+		slf.angle = nil
 		return self:checkSet(key, value, "vector")
 	elseif key == "vel" then
 		slf.pp1 = nil
@@ -696,18 +687,18 @@ function LineCollider:draw(color, scale, debug)
 			lg.setLineWidth(0.25)
 			Stache.setColor(color, 1)
 			-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-			lg.arc("line", "open", self.p1.x, self.p1.y, self.radius, math.pi / 2 + self.angRad, 3 * math.pi / 2 + self.angRad)
-			lg.arc("line", "open", self.p2.x, self.p2.y, self.radius, -math.pi / 2 + self.angRad, math.pi / 2 + self.angRad)
+			lg.arc("line", "open", self.p1.x, self.p1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
+			lg.arc("line", "open", self.p2.x, self.p2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
 			lg.line(top.x, top.y, (top + self.delta):split())
 			lg.line(bot.x, bot.y, (bot + self.delta):split())
 
 			Stache.setColor(color, 0.4)
 			-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-			lg.arc("fill", "open", self.p1.x, self.p1.y, self.radius, math.pi / 2 + self.angRad, 3 * math.pi / 2 + self.angRad)
-			lg.arc("fill", "open", self.p2.x, self.p2.y, self.radius, -math.pi / 2 + self.angRad, math.pi / 2 + self.angRad)
+			lg.arc("fill", "open", self.p1.x, self.p1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
+			lg.arc("fill", "open", self.p2.x, self.p2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
 			lg.push("all")
 				lg.translate(self.p1:split())
-				lg.rotate(self.angRad)
+				lg.rotate(self.angle)
 				lg.rectangle("fill", 0, -self.radius, self.delta.length, self.radius * 2)
 			lg.pop()
 
@@ -719,18 +710,18 @@ function LineCollider:draw(color, scale, debug)
 				lg.setLineWidth(0.25)
 				Stache.setColor(color, 0.5)
 				-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-				lg.arc("line", "open", self.pp1.x, self.pp1.y, self.radius, math.pi / 2 + self.angRad, 3 * math.pi / 2 + self.angRad)
-				lg.arc("line", "open", self.pp2.x, self.pp2.y, self.radius, -math.pi / 2 + self.angRad, math.pi / 2 + self.angRad)
+				lg.arc("line", "open", self.pp1.x, self.pp1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
+				lg.arc("line", "open", self.pp2.x, self.pp2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
 				lg.line(top.x, top.y, (top + self.delta):split())
 				lg.line(bot.x, bot.y, (bot + self.delta):split())
 
 				Stache.setColor(color, 0.25)
 				-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-				lg.arc("fill", "open", self.pp1.x, self.pp1.y, self.radius, math.pi / 2 + self.angRad, 3 * math.pi / 2 + self.angRad)
-				lg.arc("fill", "open", self.pp2.x, self.pp2.y, self.radius, -math.pi / 2 + self.angRad, math.pi / 2 + self.angRad)
+				lg.arc("fill", "open", self.pp1.x, self.pp1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
+				lg.arc("fill", "open", self.pp2.x, self.pp2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
 				lg.push("all")
 					lg.translate(self.pp1:split())
-					lg.rotate(self.angRad)
+					lg.rotate(self.angle)
 					lg.rectangle("fill", 0, -self.radius, self.delta.length, self.radius * 2)
 				lg.pop()
 			end

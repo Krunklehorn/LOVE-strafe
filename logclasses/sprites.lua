@@ -15,8 +15,8 @@ end
 function StaticSprite:update(tl)
 end
 
-function StaticSprite:draw(sheet, offset, angRad, scale)
-	lg.draw(sheet, self.quad, offset.x, offset.y, angRad, scale.x, scale.y, self.origin.x, self.origin.y)
+function StaticSprite:draw(sheet, offset, angle, scale)
+	lg.draw(sheet, self.quad, offset.x, offset.y, angle, scale.x, scale.y, self.origin.x, self.origin.y)
 end
 
 AnimatedSprite = Sprite:extend("AnimatedSprite", {
@@ -33,6 +33,6 @@ function AnimatedSprite:update(tl)
 	self.animation:update(60 * tl) -- Durations are stored at 60fps
 end
 
-function AnimatedSprite:draw(sheet, offset, angRad, scale)
-	self.animation:draw(sheet, offset.x, offset.y, angRad, scale.x, scale.y, self.origin.x, self.origin.y)
+function AnimatedSprite:draw(sheet, offset, angle, scale)
+	self.animation:draw(sheet, offset.x, offset.y, angle, scale.x, scale.y, self.origin.x, self.origin.y)
 end

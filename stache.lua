@@ -451,9 +451,9 @@ function Stache.debugCircle(pos, radius, color, alpha)
 	lg.pop()
 end
 
-function Stache.debugBox(pos, angRad, hwidth, hheight, radius, color, alpha)
+function Stache.debugBox(pos, angle, hwidth, hheight, radius, color, alpha)
 	Stache.checkArg("pos", pos, "vector", "Stache.debugRectangle")
-	Stache.checkArg("angRad", angRad, "number", "Stache.debugRectangle")
+	Stache.checkArg("angle", angle, "number", "Stache.debugRectangle")
 	Stache.checkArg("hwidth", hwidth, "number", "Stache.debugRectangle")
 	Stache.checkArg("hheight", hheight, "number", "Stache.debugRectangle")
 	Stache.checkArg("radius", radius, "number", "Stache.debugRectangle", true)
@@ -466,7 +466,7 @@ function Stache.debugBox(pos, angRad, hwidth, hheight, radius, color, alpha)
 
 	lg.push("all")
 		lg.translate(pos:split())
-		lg.rotate(angRad)
+		lg.rotate(angle)
 
 		lg.setLineWidth(0.25)
 		Stache.setColor(color, 0.5 * alpha)

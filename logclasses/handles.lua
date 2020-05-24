@@ -32,8 +32,8 @@ function PointHandle:init(target, pkey)
 	Stache.checkArg("target", target, "indexable", "PointHandle:init")
 	Stache.checkArg("pkey", pkey, "string", "PointHandle:init")
 
-	if target[pkey] == nil or not vec2.isVector(target[pkey]) then
-		Stache.formatError("PointHandle:init() called with an invalid 'pkey' argument: %q", pkey)
+	if not vec2.isVector(target[pkey]) then
+		Stache.formatError("PointHandle:init() called with a 'pkey' argument that target '%s' doesn't have: %q", target, pkey)
 	end
 
 	self.target = target
@@ -114,10 +114,10 @@ function VectorHandle:init(target, pkey, dkey)
 	Stache.checkArg("pkey", pkey, "string", "VectorHandle:init")
 	Stache.checkArg("dkey", dkey, "string", "VectorHandle:init")
 
-	if target[pkey] == nil or not vec2.isVector(target[pkey]) then
-		Stache.formatError("PointHandle:init() called with an invalid 'pkey' argument: %q", pkey)
-	elseif target[dkey] == nil or not vec2.isVector(target[dkey]) then
-		Stache.formatError("PointHandle:init() called with an invalid 'dkey' argument: %q", dkey)
+	if not vec2.isVector(target[pkey]) then
+		Stache.formatError("VectorHandle:init() called with a 'pkey' argument that target '%s' doesn't have: %q", target, pkey)
+	elseif not vec2.isVector(target[dkey]) then
+		Stache.formatError("VectorHandle:init() called with a 'dkey' argument that target '%s' doesn't have: %q", target, dkey)
 	end
 
 	self.target = target

@@ -59,7 +59,7 @@ function Agent:init(data)
 end
 
 function Agent:update(tl)
-	self.angRad = self.angRad + self.aim.x * AIM_SENSITIVITY
+	self.angle = self.angle + self.aim.x * AIM_SENSITIVITY
 	self.aim = vec2()
 
 	-- Check for state changes based on input...
@@ -100,7 +100,7 @@ function Agent:update(tl)
 		if self.state == "idle" then
 			self.vel.length = approach(self.vel.length, 0, math.max(self.vel.length, self.dampmin) * self.dampfact * tl)
 		elseif self.state == "move" then
-			local axis = self.axis:rotated(self.angRad)
+			local axis = self.axis:rotated(self.angle)
 			local acc = self.accmove
 			local top = self.top
 			local dampmin = self.dampmin
@@ -116,7 +116,7 @@ function Agent:update(tl)
 		end
 	else
 		if self.state == "air" then
-			local axis = self.axis:rotated(self.angRad)
+			local axis = self.axis:rotated(self.angle)
 			local bunny = not nearZero(math.abs(self.axis.x)) and nearZero(math.abs(self.axis.y))
 			local control = nearZero(math.abs(self.axis.x)) and not nearZero(math.abs(self.axis.y))
 
@@ -284,7 +284,7 @@ function Agent:update(tl)
 end
 
 function Agent:draw()
-	local axis = self.axis:rotated(self.angRad)
+	local axis = self.axis:rotated(self.angle)
 	local dbgVel = self.vel / 10
 	local dbgAxis = axis * self.top / 10
 	local dbgSpd = dbgVel * axis * axis
@@ -298,13 +298,13 @@ function Agent:draw()
 		lg.translate(self.pos:split())
 		Stache.debugLine(dbgVel, dbgSpd, "white", 0.4)
 
-		lg.rotate(self.angRad)
+		lg.rotate(self.angle)
 		Stache.setColor("white", 0.4)
 		lg.line(0, 0, 0, -self.collider.radius)
 		Stache.debugPrintf(40, math.floor(self.vel.length + 0.5), nil, nil, nil, "center")
 	lg.pop()
 
-	-- self.sprite:draw(self.sheet, self.pos, self.angRad, self.scale) TODO: ready to add particles, props and actor sprites...
+	-- self.sprite:draw(self.sheet, self.pos, self.angle, self.scale) TODO: ready to add particles, props and actor sprites...
 
 	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
 	Stache.setColor("white", 0.5)

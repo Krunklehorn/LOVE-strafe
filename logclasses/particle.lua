@@ -26,18 +26,18 @@ function Particle:draw()
 	if not self.visible then return end
 
 	local pos = vec2()
-	local angRad = 0
+	local angle = 0
 	local scale = vec2(1)
 
 	for p = 1, self.params and #self.params or 0 do -- TODO: we can do better, try something like how we did it in the Handles class
 		if self.params[p] == "pos" then
 			pos = self.anchor.pos
-		elseif self.params[p] == "angRad" then
-			angRad = self.anchor.angRad
+		elseif self.params[p] == "angle" then
+			angle = self.anchor.angle
 		elseif self.params[p] == "scale" then
 			scale = self.anchor.scale
 		end
 	end
 
-	self.sprite:draw(self.sheet, pos + self.pos, self.angRad + angRad, self.scale ^ scale)
+	self.sprite:draw(self.sheet, pos + self.pos, self.angle + angle, self.scale ^ scale)
 end

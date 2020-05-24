@@ -143,12 +143,12 @@ function editState:mousepressed(x, y, button)
 
 			height = height and height + 40 or 0
 
-			if self.activeTool == "Circle" then brush = playState:addBrush(Brush{collider = CircleCollider{ pos = mwpos }, height = height})
-			elseif self.activeTool == "Box" then brush = playState:addBrush(Brush{collider = BoxCollider{ pos = mwpos, hwidth = 32, radius = 32 }, height = height})
-			elseif self.activeTool == "Line" then brush = playState:addBrush(Brush{collider = LineCollider{ p1 = mwpos, p2 = mwpos, radius = 32 }, height = height}) end
+			if self.activeTool == "Circle" then brush = playState:addBrush{collider = CircleCollider{ pos = mwpos }, height = height}
+			elseif self.activeTool == "Box" then brush = playState:addBrush{collider = BoxCollider{ pos = mwpos, hwidth = 32, radius = 32 }, height = height}
+			elseif self.activeTool == "Line" then brush = playState:addBrush{collider = LineCollider{ p1 = mwpos, p2 = mwpos, radius = 32 }, height = height} end
 
 			self.toolState = { type = self.activeTool, brush = brush  }
-			self:addHandle(brush)
+			self:addHandles(brush)
 			self.pmwpos = mwpos
 		end
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
@@ -240,7 +240,7 @@ function editState:load()
 	end
 end
 
-function editState:addHandle(brush)
+function editState:addHandles(brush)
 	if brush:instanceOf(CircleCollider) then
 		table.insert(self.handles, PointHandle(brush, "pos"))
 	elseif brush:instanceOf(BoxCollider) then
@@ -257,5 +257,5 @@ function editState:refreshHandles()
 	self.handles = {}
 
 	for _, brush in ipairs(playState.brushes) do
-		self:addHandle(brush) end
+		self:addHandles(brush) end
 end

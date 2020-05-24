@@ -11,30 +11,30 @@ playState = {
 function playState:init()
 	self.camera = stalker()
 
-	self:addBackground(Background{ sprite = "parallax_grid", scale = vec2(32), scroll = vec2(1.25), alpha = 0.2 })
-	self:addBackground(Background{ sprite = "parallax_grid", scale = vec2(4), alpha = 0.1 })
-	self:addBackground(Background{ sprite = "parallax_grid", scale = vec2(2), alpha = 0.1 })
-	self:addBackground(Background{ sprite = "parallax_screen", scale = vec2(2), scroll = vec2(0.25), alpha = 0.2 })
+	self:addBackground{sprite = "parallax_grid", scale = vec2(32), scroll = vec2(1.25), alpha = 0.2}
+	self:addBackground{sprite = "parallax_grid", scale = vec2(4), alpha = 0.1}
+	self:addBackground{sprite = "parallax_grid", scale = vec2(2), alpha = 0.1}
+	self:addBackground{sprite = "parallax_screen", scale = vec2(2), scroll = vec2(0.25), alpha = 0.2}
 
-	self:addBrush(Brush{ collider = LineCollider{ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 }})
-	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(-2000, 0), radius = 200 }, height = 50 })
-	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(2000, 0), radius = 200 }, height = 50 })
+	self:addBrush{collider = LineCollider{ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 }}
+	self:addBrush{collider = CircleCollider{ pos = vec2(-2000, 0), radius = 200 }, height = 50}
+	self:addBrush{collider = CircleCollider{ pos = vec2(2000, 0), radius = 200 }, height = 50}
 
-	self:addBrush(Brush{ collider = LineCollider{ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 }})
-	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(-3000, -11000), radius = 800 }, height = 50 })
-	self:addBrush(Brush{ collider = CircleCollider{ pos = vec2(3000, -11000), radius = 800 }, height = 50 })
+	self:addBrush{collider = LineCollider{ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 }}
+	self:addBrush{collider = CircleCollider{ pos = vec2(-3000, -11000), radius = 800 }, height = 50}
+	self:addBrush{collider = CircleCollider{ pos = vec2(3000, -11000), radius = 800 }, height = 50}
 
 	local function respawnAgent(agent)
 		agent.pos.x = clamp(agent.pos.x, -1600, 1600)
 		agent.pos.y = 0
 		agent.vel = vec2()
-		agent.angRad = 0
+		agent.angle = 0
 		agent.posz = 20
 		agent.velz = 20
 		agent:changeState("air")
 	end
 
-	self:addTrigger(Trigger{ collider = BoxCollider{ pos = vec2(0, -6000), hwidth = 8000 }, height = -100, onOverlap = respawnAgent })
+	self:addTrigger{collider = BoxCollider{ pos = vec2(0, -6000), hwidth = 8000 }, height = -100, onOverlap = respawnAgent}
 
 	Stache.players[1].agent = self:spawnAgent("strafer", { posz = 20 })
 end
@@ -64,7 +64,7 @@ function playState:update(tl)
 	Stache.updateList(self.triggers, tl)
 
 	self.camera:follow(active_agent.pos:split())
-	self.camera.rotation = -active_agent.angRad
+	self.camera.rotation = -active_agent.angle
 	self.camera:update(tl)
 
 	Stache.updateList(self.backgrounds, self.camera)
@@ -175,19 +175,22 @@ function playState:resize(w, h)
 	self.camera.h = h
 end
 
-function playState:addBackground(background)
+function playState:addBackground(data)
+	local background = Background(data)
 	table.insert(self.backgrounds, background)
 
 	return background
 end
 
-function playState:addBrush(brush)
+function playState:addBrush(data)
+	local brush = Brush(data)
 	table.insert(self.brushes, brush)
 
 	return brush
 end
 
-function playState:addTrigger(trigger)
+function playState:addTrigger(data)
+	local trigger = Trigger(data)
 	table.insert(self.triggers, trigger)
 
 	return trigger
