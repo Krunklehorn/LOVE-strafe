@@ -107,9 +107,8 @@ function Base:checkSet(key, value, query, nillable, copy)
 	return copy and Stache.copy(value) or value
 end
 
-function Base:readOnly(key, queries)
+function Base:readOnly(key, ...)
 	Stache.checkArg("key", key, "string", "readOnly")
-	Stache.checkArg("queries", queries, "indexable", "readOnly")
 
 	local class = class.isClass(self) and self or self.class
 
@@ -118,15 +117,30 @@ function Base:readOnly(key, queries)
 			Stache.formatError("Attempted to set a key of class '%s' that is read-only: %q", class, key) end
 	end
 
-	for _, query in ipairs(queries) do
+	for q, query in ipairs({...}) do
+		Stache.checkArg("vararg["..q.."]", query, "string", "readOnly")
+
 		if key == query then
 			Stache.formatError("Attempted to set a key of class '%s' that is read-only: %q", class, key) end
 	end
 end
 
+function Base:abstract(...)
+	local class = class.isClass(self) and self or self.class
+
+	for f, func in ipairs({...}) do
+		Stache.checkArg("vararg["..f.."]", func, "string", "abstract")
+
+		self[func] = function()
+			Stache.formatError("Abstract function "..class..":"..func.."() called!") end
+	end
+
+	return self
+end
+
 function Base:proxy(member)
-	Stache.checkArg("self", self, "class", "Stache.proxy")
-	Stache.checkArg("member", member, "string", "Stache.proxy")
+	Stache.checkArg("self", self, "class", "proxy")
+	Stache.checkArg("member", member, "string", "proxy")
 
 	for _, v in ipairs(Stache.exclude) do
 		table.insert(self.exclude, v) end

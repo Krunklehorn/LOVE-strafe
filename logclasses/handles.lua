@@ -1,47 +1,25 @@
-Handle = class("Handle", {
+Handle = Base:extend("Handle", {
 	target = nil,
 	state = "idle",
+	color = nil,
 	colors = {
 		idle = { 1, 1, 1 },
 		hover = { 1, 1, 0 },
 		pick = { 1, 0.5, 0 }
 	},
+	radius = 32,
+	scaleMin = 4,
+	scaleMax = 32,
 	pmwpos = nil
-})
+}):abstract("init", "update", "draw" , "drag", "pick")
 
-HANDLE_RADIUS = 32
-HANDLE_SCALE_MIN = 4
-HANDLE_SCALE_MAX = 32
-
-function Handle:init(target, ...)
-	Stache.formatError("Abstract function Handle:init() called!")
+function Handle:construct(key)
+	if key == "color" then
+		return self.colors[self.state] end
 end
 
-function Handle:update()
-	Stache.formatError("Abstract function Handle:update() called!")
-end
-
-function Handle:draw(scale)
-	Stache.formatError("Abstract function Handle:draw() called!")
-end
-
-function Handle:drag()
-	Stache.formatError("Abstract function Handle:drag() called!")
-end
-
-function Handle:pick()
-	Stache.formatError("Abstract function Handle:pick() called!")
-end
-
-function Handle:getRect(scale)
-	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
-
-	local radius = HANDLE_RADIUS / scale
-
-	return self.pos.x - radius,
-		  self.pos.y - radius,
-		  2 * radius,
-		  2 * radius
+function Handle:assign(key, value)
+	self:readOnly(key, "color")
 end
 
 PointHandle = Handle:extend("PointHandle", {
@@ -70,20 +48,27 @@ function PointHandle:update()
 end
 
 function PointHandle:draw(scale)
+	scale = clamp(scale, Handle.scaleMin, Handle.scaleMax)
+
 	local r, g, b = unpack(self.colors[self.state])
-	local x, y, w, h = self:getRect(scale)
+	local radius = Handle.radius / scale
+	local x, y, d
+
+	x = self.pos.x - radius
+	y = self.pos.y - radius
+	d = 2 * radius
 
 	lg.push("all")
 		lg.setLineWidth(0.25 / scale)
 		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
-		lg.rectangle("line", x, y, w, h)
+		lg.rectangle("line", x, y, d, d)
 		lg.setColor(r, g, b, self.state == "idle" and 0.25 or 0.5)
-		lg.rectangle("fill", x, y, w, h)
+		lg.rectangle("fill", x, y, d, d)
 	lg.pop()
 end
 
 function PointHandle:drag(mwpos, interval)
-	self.pos = self.ppos + mwpos - self.pmwpos
+	self.pos = self.ppos + mwpos - Handle.pmwpos
 
 	if not lk.isDown("lctrl", "rctrl") then
 		self.pos = snap(self.pos, interval) end
@@ -92,19 +77,19 @@ function PointHandle:drag(mwpos, interval)
 end
 
 function PointHandle:pick(mwpos, scale, state)
-	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
+	scale = clamp(scale, Handle.scaleMin, Handle.scaleMax)
 
-	local left = self.pos.x - HANDLE_RADIUS / scale
-	local right = self.pos.x + HANDLE_RADIUS / scale
-	local top = self.pos.y - HANDLE_RADIUS / scale
-	local bottom = self.pos.y + HANDLE_RADIUS / scale
+	local left = self.pos.x - Handle.radius / scale
+	local right = self.pos.x + Handle.radius / scale
+	local top = self.pos.y - Handle.radius / scale
+	local bottom = self.pos.y + Handle.radius / scale
 
 	if mwpos.x >= left and mwpos.x <= right and
 	   mwpos.y >= top and mwpos.y <= bottom then
 		if state then
 			if state == "pick" then
 				self.ppos = self.pos
-				self.pmwpos = mwpos
+				Handle.pmwpos = mwpos
 			end
 
 			self.state = state
@@ -148,7 +133,7 @@ function VectorHandle:update()
 end
 
 function VectorHandle:draw(scale)
-	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
+	scale = clamp(scale, Handle.scaleMin, Handle.scaleMax)
 
 	local r, g, b = unpack(self.colors[self.state])
 	local pos = self.target.collider[self.pkey]
@@ -157,15 +142,15 @@ function VectorHandle:draw(scale)
 	lg.push("all")
 		lg.setLineWidth(0.25 / scale)
 		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
-		lg.circle("line", tip.x, tip.y, HANDLE_RADIUS / scale)
+		lg.circle("line", tip.x, tip.y, Handle.radius / scale)
 		lg.line(pos.x, pos.y, tip:split())
 		lg.setColor(r, g, b, self.state == "idle" and 0.25 or 0.5)
-		lg.circle("fill", tip.x, tip.y, HANDLE_RADIUS / scale)
+		lg.circle("fill", tip.x, tip.y, Handle.radius / scale)
 	lg.pop()
 end
 
 function VectorHandle:drag(mwpos, interval)
-	self.delta = self.pdelta + mwpos - self.pmwpos
+	self.delta = self.pdelta + mwpos - Handle.pmwpos
 
 	if not lk.isDown("lctrl", "rctrl") then
 		self.delta = snap(self.delta, interval) end
@@ -174,16 +159,16 @@ function VectorHandle:drag(mwpos, interval)
 end
 
 function VectorHandle:pick(mwpos, scale, state)
-	scale = clamp(scale, HANDLE_SCALE_MIN, HANDLE_SCALE_MAX)
+	scale = clamp(scale, Handle.scaleMin, Handle.scaleMax)
 
 	local pos = self.target.collider[self.pkey] + self.delta
-	local radius = HANDLE_RADIUS / scale
+	local radius = Handle.radius / scale
 
 	if (pos - mwpos).length <= radius then
 		if state then
 			if state == "pick" then
 				self.pdelta = self.delta
-				self.pmwpos = mwpos
+				Handle.pmwpos = mwpos
 			end
 
 			self.state = state

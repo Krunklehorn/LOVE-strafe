@@ -20,7 +20,7 @@ end
 function Entity:assign(key, value)
 	local slf = rawget(self, "private")
 
-	self:readOnly(key, { "angDeg", "angVelDeg" })
+	self:readOnly(key, "angDeg", "angVelDeg")
 
 	if key == "sprite" then return self:checkSet(key, value, "asset", true)
 	elseif key == "collider" then return self:checkSet(key, value, Collider, true, true)

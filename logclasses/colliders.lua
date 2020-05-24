@@ -1,7 +1,7 @@
 Collider = Base:extend("Collider", {
 	vel = nil,
 	radius = nil
-})
+}):abstract("draw", "getCastBounds")
 
 function Collider:init(data)
 	Stache.checkArg("vel", data.vel, "vector", "Collider:init", true)
@@ -16,14 +16,6 @@ end
 function Collider:update(pos, vel)
 	self.pos = pos
 	self.vel = vel
-end
-
-function Collider:draw()
-	Stache.formatError("Abstract function Collider:draw() called!")
-end
-
-function Collider:getCastBounds()
-	Stache.formatError("Abstract function Collider:getCastBounds() called!")
 end
 
 function Collider:checkCastBounds(other)
@@ -179,7 +171,7 @@ end
 function CircleCollider:assign(key, value)
 	local slf = rawget(self, "private")
 
-	self:readOnly(key, { "ppos" })
+	self:readOnly(key, "ppos")
 
 	if key == "pos" or key == "vel" then
 		slf.ppos = nil
@@ -488,9 +480,10 @@ function BoxCollider:assign(key, value)
 	local slf = rawget(self, "private")
 	local result
 
-	self:readOnly(key, { "ppos", "p1", "p2", "p3", "p4",
-								 "pp1", "pp2", "pp3", "pp4",
-								 "angRad", "angDeg" })
+	self:readOnly(key, "ppos",
+						"p1", "p2", "p3", "p4",
+						"pp1", "pp2", "pp3", "pp4",
+						"angRad", "angDeg")
 
 	if key == "pos" then
 		result = self:checkSet(key, value, "vector")
@@ -644,7 +637,7 @@ end
 function LineCollider:assign(key, value)
 	local slf = rawget(self, "private")
 
-	self:readOnly(key, { "pp1", "pp2", "delta", "direction", "normal", "angRad", "angDeg" })
+	self:readOnly(key, "pp1", "pp2", "delta", "direction", "normal", "angRad", "angDeg")
 
 	if key == "p1" or key == "p2" then
 		slf.pp1 = nil
