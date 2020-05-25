@@ -56,11 +56,6 @@ Stache = {
 		trigger = { 1, 1, 0, 0.25 }
 	},
 	sprites = {},
-	--[[
-	sheets = {},
-	particles = {},
-	props = {},
-	]]
 	actors = {},
 	players = {}
 }
@@ -278,37 +273,7 @@ function Stache.load()
 		bitser.register("sprites."..fs, Stache.sprites[name])
 	end
 
-	--[[ TODO: ready to add particles, props and actor sprites...
-	subDir = Stache.sheets
-	subDir.particles = lg.newImage("sprites/particles.png")
-	subDir.props = lg.newImage("sprites/props.png")
-	subDir.actors = {
-		strafer = lg.newImage("sprites/strafer.png")
-	}
-
-	subDir = Stache.particles
-	sheet = Stache.sheets.particles
-	width, height = sheet:getDimensions()
-	subDir.particle1 = {
-		sprite = nil,
-		params = nil -- TODO: particles DO have baked information: randomness
-	}
-
-	subDir = Stache.props
-	sheet = Stache.sheets.props
-	width, height = sheet:getDimensions()
-	subDir.prop1 = {
-		sprite = nil,
-		collider = nil,
-		onOverlap = function(self, target) end
-	}
-	]]
-
 	subDir = Stache.actors
-	--[[ TODO: ready to add particles, props and actor sprites...
-	sheet = Stache.sheets.actors.strafer
-	width, height = sheet:getDimensions()
-	]]
 
 	-- TODO: use filepath from lg.getDirectoryItems() like above
 	subDir.strafer = {

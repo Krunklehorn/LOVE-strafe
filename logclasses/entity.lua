@@ -1,6 +1,4 @@
 Entity = Base:extend("Entity", {
-	sheet = nil,
-	sprite = nil,
 	collider = nil,
 	pos = nil,
 	vel = nil,
@@ -8,18 +6,19 @@ Entity = Base:extend("Entity", {
 	angVel = nil,
 	scale = vec2(1),
 	visible = true
-})
+}):abstract("update", "draw")
 
 function Entity:assign(key, value)
 	local slf = rawget(self, "private")
 
 	self:readOnly(key)
 
-	if key == "sprite" then return self:checkSet(key, value, "asset", true)
-	elseif key == "collider" then return self:checkSet(key, value, Collider, true, true)
+	if key == "collider" then return self:checkSet(key, value, Collider, true, true)
 	elseif key == "pos" or key == "vel" then return self:checkSet(key, value, "vector")
 	elseif key == "angle" then return wrap(self:checkSet(key, value, "number"), -math.pi, math.pi)
-	elseif key == "angVel" then return self:checkSet(key, value, "number") end
+	elseif key == "angVel" then return self:checkSet(key, value, "number")
+	elseif key == "scale" then return self:checkSet(key, value, "vector")
+	elseif key == "visible" then return self:checkSet(key, value, "boolean") end
 end
 
 function Entity:init(data)
@@ -27,6 +26,8 @@ function Entity:init(data)
 	Stache.checkArg("vel", data.vel, "vector", "Entity:init", true)
 	Stache.checkArg("angle", data.angle, "number", "Entity:init", true)
 	Stache.checkArg("angVel", data.angVel, "number", "Entity:init", true)
+	Stache.checkArg("scale", data.scale, "vector", "Entity:init", true)
+	Stache.checkArg("visible", data.visible, "boolean", "Entity:init", true)
 
 	data.pos = data.pos or vec2()
 	data.vel = data.vel or vec2()
@@ -34,19 +35,4 @@ function Entity:init(data)
 	data.angVel = data.angVel or 0
 
 	Base.init(self, data)
-end
-
-function Entity:update(tl)
-	self.pos = self.pos + self.vel * tl
-	self.angle = self.angle + self.angVel * tl
-	if self.sprite then self.sprite:update(tl) end
-	if self.collider then self.collider:update(self.pos, self.vel) end
-
-	return false
-end
-
-function Entity:draw()
-	if not self.visible then return end
-
-	self.sprite:draw(self.sheet, self.pos, self.angle, self.scale)
 end

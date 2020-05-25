@@ -277,9 +277,6 @@ function Agent:update(tl)
 
 	self:updateCollider()
 
-	-- TODO: Set appearance based on state...
-
-	--self.sprite:update(tl) -- TODO: rework visuals...
 	return false
 end
 
@@ -304,8 +301,6 @@ function Agent:draw()
 		lg.line(0, 0, 0, -self.collider.radius)
 		Stache.debugPrintf(40, math.floor(self.vel.length + 0.5), nil, nil, nil, "center")
 	lg.pop()
-
-	-- self.sprite:draw(self.sheet, self.pos, self.angle, self.scale) TODO: ready to add particles, props and actor sprites...
 
 	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
 	lg.setLineWidth(0.25)
@@ -337,33 +332,15 @@ end
 function Agent:changeAction(action, jumpTo, play)
 	local subDir = Stache.actors[self.actor]
 
-	self.sprite = subDir.sprite
 	self.collider = subDir.collider
-
 	subDir = subDir.states[self.state]
-
-	if subDir.sprite then self.sprite = subDir.sprite end
-	if subDir.collider then self.collider = subDir.collider end
-
+	self.collider = subDir.collider or self.collider
 	action = action or subDir.default
 
 	if action then
 		subDir = subDir[action]
-		if subDir.sprite then self.sprite = subDir.sprite end
-		if subDir.collider then self.collider = subDir.collider end
+		self.collider = subDir.collider or self.collider
 	end
-
-	--[[ TODO: ready to add particles, props and actor sprites...
-	if self.sprite:instanceOf(AnimatedSprite) then
-		if jumpTo then
-			self.sprite.animation:gotoFrame(jumpTo) end
-
-		if play == true then
-			self.sprite.animation:resume()
-		elseif play == false then
-			self.sprite.animation:pause() end
-	end
-	]]
 
 	self.action = action
 	self:updateCollider()
