@@ -36,14 +36,11 @@ function Background:update(camera)
 	local width, height = lg.getDimensions()
 	local pos = nil
 
-	if camera.pos then
-		pos = camera.pos
-	elseif camera.x and camera.y then
-		pos = vec2(camera.x, camera.y)
-	else
+	if not camera.pos then
 		Stache.formatError("Background:update() called with an invalid 'camera' argument: %q", camera)
 	end
 
+	pos = camera.pos
 	pos = pos ^ self.scroll
 	pos = pos - self.offset ^ self.scale
 
@@ -56,13 +53,13 @@ function Background:update(camera)
 end
 
 function Background:draw(camera)
-	local width, height = lg.getDimensions()
+	local center = vec2(lg.getDimensions()) / 2
 
 	lg.push("all")
-		lg.translate((width / 2), (height / 2))
-		lg.rotate(camera.rotation)
+		lg.translate(center:split())
+		lg.rotate(-camera.angle)
 		lg.scale(camera.scale)
-		lg.translate(-(width / 2) * BG_OVERDRAW, -(height / 2) * BG_OVERDRAW)
+		lg.translate((-center * BG_OVERDRAW):split())
 
 		Stache.setColor(self.color, self.alpha)
 		lg.draw(self.sprite, self.quad)

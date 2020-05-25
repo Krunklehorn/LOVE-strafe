@@ -452,13 +452,13 @@ function Stache.debugCircle(pos, radius, color, alpha)
 end
 
 function Stache.debugBox(pos, angle, hwidth, hheight, radius, color, alpha)
-	Stache.checkArg("pos", pos, "vector", "Stache.debugRectangle")
-	Stache.checkArg("angle", angle, "number", "Stache.debugRectangle")
-	Stache.checkArg("hwidth", hwidth, "number", "Stache.debugRectangle")
-	Stache.checkArg("hheight", hheight, "number", "Stache.debugRectangle")
-	Stache.checkArg("radius", radius, "number", "Stache.debugRectangle", true)
-	Stache.checkArg("color", color, "asset", "Stache.debugRectangle", true)
-	Stache.checkArg("alpha", alpha, "number", "Stache.debugRectangle", true)
+	Stache.checkArg("pos", pos, "vector", "Stache.debugBox")
+	Stache.checkArg("angle", angle, "number", "Stache.debugBox")
+	Stache.checkArg("hwidth", hwidth, "number", "Stache.debugBox")
+	Stache.checkArg("hheight", hheight, "number", "Stache.debugBox")
+	Stache.checkArg("radius", radius, "number", "Stache.debugBox", true)
+	Stache.checkArg("color", color, "asset", "Stache.debugBox", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugBox", true)
 
 	radius = radius or 0
 	color = color or "white"
@@ -543,6 +543,7 @@ function Stache.debugBounds(bounds, color, alpha)
 	alpha = alpha or 1
 
 	lg.push("all")
+		lg.setLineWidth(0.25)
 		Stache.setColor(color, alpha)
 		lg.rectangle("line", bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top)
 	lg.pop()
@@ -596,7 +597,7 @@ function floatEquality(a, b)
 end
 
 function nearZero(x)
-	Stache.checkArg("x", x, "number", "equalsZero")
+	Stache.checkArg("x", x, "number", "nearZero")
 
 	return floatEquality(x, 0)
 end
@@ -633,7 +634,7 @@ function min(a, b)
 	else
 		return type(b) == "number" and
 			vec2(math.min(a.x, b),math.min(a.y, b)) or
-			vec2(math.min(a.x, b.x), math.min(a.x, b.y))
+			vec2(math.min(a.x, b.x), math.min(a.y, b.y))
 	end
 end
 
@@ -648,7 +649,7 @@ function max(a, b)
 	else
 		return type(b) == "number" and
 			vec2(math.max(a.x, b), math.max(a.y, b)) or
-			vec2(math.max(a.x, b.x), math.max(a.x, b.y))
+			vec2(math.max(a.x, b.x), math.max(a.y, b.y))
 	end
 end
 
@@ -658,6 +659,19 @@ function clamp(value, lower, upper)
 	Stache.checkArg("upper", upper, "scalar/vector", "clamp")
 
 	return min(max(lower, value), upper)
+end
+
+function wrap(value, lower, upper)
+	Stache.checkArg("value", value, "scalar/vector", "wrap")
+	Stache.checkArg("lower", lower, "number", "wrap")
+	Stache.checkArg("upper", upper, "number", "wrap")
+
+	if type(value) == "number" then
+		return lower + (value - lower) % (upper - lower)
+	else
+		return vec2(lower + (value.x - lower) % (upper - lower),
+					lower + (value.y - lower) % (upper - lower))
+	end
 end
 
 function floor(x)

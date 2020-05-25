@@ -52,7 +52,6 @@ DEBUG_PRINT_TABLE = function(table)
 end
 
 vec2 = require "modules.brinevector"
-stalker = require "modules.stalker-x"
 anim8 = require "modules.anim8"
 flux = require "modules.flux"
 editgrid = require "modules.editgrid"
@@ -70,6 +69,7 @@ Stache = require "stache"
 
 class = require "modules.30log"
 require "logclasses.base"
+require "logclasses.camera"
 require "logclasses.player"
 require "logclasses.background"
 require "logclasses.colliders"

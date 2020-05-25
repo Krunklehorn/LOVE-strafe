@@ -9,9 +9,7 @@ editState = {
 }
 
 function editState:init()
-	self.camera = stalker()
-	self.camera:setFollowLerp(1)
-	self.camera:setFollowLead(0)
+	self.camera = Camera{plerp = 0.25, alerp = 0.25, slerp = 0.25}
 
 	self.grid = editgrid.grid(self.camera, {
 		size = 32,
@@ -28,21 +26,18 @@ function editState:init()
 end
 
 function editState:enter()
-	self.camera.w = lg.getWidth()
-	self.camera.h = lg.getHeight()
-
 	flux.to(Stache, 0.25, { fade = 0 }):ease("quadout")
 
 	self:refreshHandles()
 end
 
 function editState:resume()
-	self.camera.w = lg.getWidth()
-	self.camera.h = lg.getHeight()
-
-	self.camera.x = playState.camera.x
-	self.camera.y = playState.camera.y
+	self.camera.pos = playState.camera.pos
+	self.camera.angle = playState.camera.angle
 	self.camera.scale = playState.camera.scale
+	self.camera.ptarget = playState.camera.pos
+	self.camera.atarget = 0
+	self.camera.starget = playState.camera.scale * 0.8 ^ 3
 
 	self:refreshHandles()
 end
@@ -63,9 +58,7 @@ function editState:draw()
 	Stache.drawList(playState.props)
 	Stache.drawList(playState.particles)
 	Stache.drawList(playState.triggers)
-
-	Stache.setColor("red", 1)
-	lg.rectangle("line", self.grid.visible(playState))
+	playState.camera:draw()
 
 	Stache.drawList(self.handles, self.camera.scale)
 
@@ -80,8 +73,6 @@ function editState:draw()
 
 	Stache.setColor("white", 0.8)
 	Stache.debugPrintf(40, self.activeTool, 5, 0, nil, "left")
-
-	self.camera:draw()
 end
 
 function editState:keypressed(key)
@@ -101,7 +92,7 @@ end
 
 function editState:mousepressed(x, y, button)
 	local scale = self.camera.scale
-	local mwpos = vec2(self.camera:toWorldCoords(x, y))
+	local mwpos = self.camera:toWorld(x, y)
 
 	if button == 1 and not lm.isDown(2) and not lm.isDown(3) and not self.pickHandle then
 		for _, handle in ipairs(self.handles) do
@@ -165,16 +156,14 @@ function editState:mousereleased(x, y, button)
 		self.toolState = nil
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
 		lm.setRelativeMode(false)
-		lm.setPosition(self.camera:toCameraCoords(self.pmwpos:split()))
+		lm.setPosition(self.camera:toCamera(self.pmwpos):split())
 	end
 end
 
 function editState:mousemoved(x, y, dx, dy, istouch)
 	local scale = self.camera.scale
-	local mwpos = vec2(self.camera:toWorldCoords(x, y))
-
-	dx = dx / scale
-	dy = dy / scale
+	local mwpos = self.camera:toWorld(x, y)
+	local delta = vec2(dx, dy) / scale
 
 	if lm.isDown(1) and not lm.isDown(2) and not lm.isDown(3) and self.pickHandle then
 		self.pickHandle:drag(mwpos, self.grid:minorInterval())
@@ -188,7 +177,7 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 		elseif self.toolState.type == "Line" then self.toolState.brush.p2 = self.pmwpos + delta
 		elseif self.toolState.type == "Box" then self.toolState.brush.star = delta end
 	elseif lm.isDown(3) and not lm.isDown(1) and not lm.isDown(2) then
-		self.camera:move(-dx * MOUSE_SENSITIVITY, -dy * MOUSE_SENSITIVITY)
+		self.camera:move(-delta * MOUSE_SENSITIVITY)
 	else
 		for _, handle in ipairs(self.handles) do
 			handle:pick(mwpos, scale, "hover") end
@@ -196,28 +185,17 @@ function editState:mousemoved(x, y, dx, dy, istouch)
 end
 
 function editState:wheelmoved(x, y)
-	local mwpos = vec2(self.camera:getMousePosition())
+	local mwpos = self.camera:getMouseWorld(true)
 
-	if y < 0 and self.camera.scale > 0.01 then
-		self.camera.scale = self.camera.scale * 0.8
-	elseif y > 0 and self.camera.scale < 10 then
-		self.camera.scale = self.camera.scale * 1.25
-	end
+	if y ~= 0 then
+		self.camera:zoom(y < 0 and 0.8 or 1.25) end
 
 	if EDIT_ZOOM_ON_CURSOR then
-		mwpos = vec2(self.camera:getMousePosition()) - mwpos
-		self.camera.x = self.camera.x - mwpos.x
-		self.camera.y = self.camera.y - mwpos.y
+		mwpos = self.camera:getMouseWorld(true) - mwpos
+		self.camera:move(-mwpos)
 	else
 		self:mousemoved(lm.getX(), lm.getY(), 0, 0, false)
 	end
-end
-
-function editState:resize(w, h)
-	self.camera.w = w
-	self.camera.h = h
-	playState.camera.w = w
-	playState.camera.h = h
 end
 
 function editState:save()

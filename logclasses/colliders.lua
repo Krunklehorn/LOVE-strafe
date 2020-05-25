@@ -47,7 +47,7 @@ function Collider:pick(point)
 		-- make SELF a box and OTHER a point
 		local pos = (point - self.pos):rotated(-self.angle)
 		local delta = abs(pos) - self.hdims
-		local clip = vec2(math.max(delta.x, 0), math.max(delta.y, 0))
+		local clip = max(delta, 0)
 		local dist = clip.length + min(max(delta.x, delta.y), 0)
 		local result = {}
 
@@ -108,7 +108,7 @@ function Collider:circ_box(other)
 	-- make SELF a point and OTHER a box
 	local pos = (self.pos - other.pos):rotated(-other.angle)
 	local delta = abs(pos) - other.hdims
-	local clip = vec2(math.max(delta.x, 0), math.max(delta.y, 0))
+	local clip = max(delta, 0)
 	local dist = clip.length + min(max(delta.x, delta.y), 0)
 	local result = {}
 
@@ -198,6 +198,7 @@ function CircleCollider:draw(color, scale, debug)
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
+		lg.setLineWidth(0.25)
 		Stache.debugCircle(self.pos, self.radius * scale, color)
 
 		if debug == true and self.vel ~= vec2() then
@@ -209,10 +210,10 @@ end
 
 function CircleCollider:getCastBounds()
 	return {
-		left = math.min(	self.pos.x, self.ppos.x) - self.radius,
-		right = math.max(	self.pos.x, self.ppos.x) + self.radius,
-		top = math.min(	self.pos.y, self.ppos.y) - self.radius,
-		bottom = math.max(	self.pos.y, self.ppos.y) + self.radius
+		left = min(		self.pos.x, self.ppos.x) - self.radius,
+		right = max(	self.pos.x, self.ppos.x) + self.radius,
+		top = min(		self.pos.y, self.ppos.y) - self.radius,
+		bottom = max(	self.pos.y, self.ppos.y) + self.radius
 	}
 end
 
@@ -305,10 +306,10 @@ function CircleCollider:box_contact(other)
 
 		-- faces
 		pos = pos - size
-		pos.x = math.max(pos.x, pos.y)
-		pos.y = math.max(pos.y, 0)
+		pos.x = max(pos.x, pos.y)
+		pos.y = max(pos.y, 0)
 
-		if math.min(math.min(pos.x, pos.y), 0) >= 0 then
+		if min(min(pos.x, pos.y), 0) >= 0 then
 			-- some precomputation
 			local oc = ro - size -- vector
 			local dd = rd ^ rd -- vector
@@ -573,6 +574,7 @@ function BoxCollider:draw(color, scale, debug)
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
+		lg.setLineWidth(0.25)
 		Stache.setColor(color, 0.5)
 		lg.circle("fill", self.pos.x, self.pos.y, scale)
 
@@ -591,10 +593,10 @@ end
 
 function BoxCollider:getCastBounds()
 	return {
-		left = math.min(	self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x) - self.radius,
-		right = math.max(	self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x) + self.radius,
-		top = math.min(	self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y) - self.radius,
-		bottom = math.max(	self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y) + self.radius
+		left = min(		self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x) - self.radius,
+		right = max(	self.p1.x, self.p2.x, self.p3.x, self.p4.x, self.pp1.x, self.pp2.x, self.pp3.x, self.pp4.x) + self.radius,
+		top = min(		self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y) - self.radius,
+		bottom = max(	self.p1.y, self.p2.y, self.p3.y, self.p4.y, self.pp1.y, self.pp2.y, self.pp3.y, self.pp4.y) + self.radius
 	}
 end
 
@@ -664,6 +666,7 @@ function LineCollider:draw(color, scale, debug)
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
+		lg.setLineWidth(0.25)
 		Stache.setColor(color, 1)
 		lg.circle("fill", self.p1.x, self.p1.y, scale)
 		lg.circle("fill", self.p2.x, self.p2.y, scale)
@@ -684,7 +687,6 @@ function LineCollider:draw(color, scale, debug)
 			local top = self.p1 + offset
 			local bot = self.p1 - offset
 
-			lg.setLineWidth(0.25)
 			Stache.setColor(color, 1)
 			-- TODO: MOVE THIS TO STACHE.DEBUGCAP
 			lg.arc("line", "open", self.p1.x, self.p1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
@@ -707,7 +709,6 @@ function LineCollider:draw(color, scale, debug)
 				local top = self.pp1 + offset
 				local bot = self.pp1 - offset
 
-				lg.setLineWidth(0.25)
 				Stache.setColor(color, 0.5)
 				-- TODO: MOVE THIS TO STACHE.DEBUGCAP
 				lg.arc("line", "open", self.pp1.x, self.pp1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
@@ -731,10 +732,10 @@ end
 
 function LineCollider:getCastBounds()
 	return {
-		left = math.min(	self.p1.x, self.p2.x, self.pp1.x, self.pp2.x) - self.radius,
-		right = math.max(	self.p1.x, self.p2.x, self.pp1.x, self.pp2.x) + self.radius,
-		top = math.min(	self.p1.y, self.p2.y, self.pp1.y, self.pp2.y) - self.radius,
-		bottom = math.max(	self.p1.y, self.p2.y, self.pp1.y, self.pp2.y) + self.radius
+		left = min(		self.p1.x, self.p2.x, self.pp1.x, self.pp2.x) - self.radius,
+		right = max(	self.p1.x, self.p2.x, self.pp1.x, self.pp2.x) + self.radius,
+		top = min(		self.p1.y, self.p2.y, self.pp1.y, self.pp2.y) - self.radius,
+		bottom = max(	self.p1.y, self.p2.y, self.pp1.y, self.pp2.y) + self.radius
 	}
 end
 

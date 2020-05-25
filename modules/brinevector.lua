@@ -270,7 +270,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 function Vector.__tostring(t)
-	return string.format("Vector{ %.4f, %.4f }", t.x, t.y) -- Krunk: Added spaces, personal preference...
+	return string.format("Vector{ %.4f, %.4f }", t.x, t.y) -- Krunk: Added spaces, personal preference
 end
 
 function Vector.__concat(str, v)

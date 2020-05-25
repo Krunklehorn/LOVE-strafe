@@ -299,6 +299,7 @@ function Agent:draw()
 		Stache.debugLine(dbgVel, dbgSpd, "white", 0.4)
 
 		lg.rotate(self.angle)
+		lg.setLineWidth(0.25)
 		Stache.setColor("white", 0.4)
 		lg.line(0, 0, 0, -self.collider.radius)
 		Stache.debugPrintf(40, math.floor(self.vel.length + 0.5), nil, nil, nil, "center")
@@ -307,6 +308,7 @@ function Agent:draw()
 	-- self.sprite:draw(self.sheet, self.pos, self.angle, self.scale) TODO: ready to add particles, props and actor sprites...
 
 	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
+	lg.setLineWidth(0.25)
 	Stache.setColor("white", 0.5)
 	lg.circle("line", self.collider.pos.x, self.collider.pos.y, self.collider.radius)
 end

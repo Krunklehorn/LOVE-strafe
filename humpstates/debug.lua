@@ -5,7 +5,7 @@ debugState = {
 }
 
 function debugState:init()
-	self.camera = stalker()
+	self.camera = Camera{}
 
 	--table.insert(self.brushes, CircleBrush{ pos = vec2(100, -100), vel = vec2(-200, 200), radius = 64 })
 	table.insert(self.brushes, BoxBrush{ pos = vec2(100, -100), --[[vel = vec2(-200, 200),]] forward = vec2.dir("upright"), hwidth = 200, hheight = 100 })

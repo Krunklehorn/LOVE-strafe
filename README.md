@@ -58,7 +58,6 @@ These amazing modules helped me build it! ...
 [Editgrid](https://github.com/bakpakin/Editgrid)  
 [flux](https://github.com/rxi/flux)  
 [hump](https://github.com/vrld/hump)  
-[STALKER-X](https://github.com/adnzzzzZ/STALKER-X)  
 
 
 ...and these two helped me deploy it!

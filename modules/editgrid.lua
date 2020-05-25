@@ -24,35 +24,35 @@ local lg = love.graphics
 local EMPTY = {}
 
 local function floor(x, y)
-    return math.floor(x / y) * y
+	return math.floor(x / y) * y
 end
 
 local function mod(x, y)
-    return x - floor(x, y)
+	return x - floor(x, y)
 end
 
 local function checkType(x, typename, name)
-    assert(
+	assert(
 	   type(x) == typename,
 	   "Expected "..name.." (type = "..type(x)..") to be a "..typename.."."
-    )
-    return x
+	)
+	return x
 end
 
 local function unpackCamera(t)
-    local sx, sy, sw, sh
-    if t.getWindow then -- assume t is a gamera camera
+	local sx, sy, sw, sh
+	if t.getWindow then -- assume t is a gamera camera
 	   sx, sy, sw, sh = t:getWindow()
-    else
+	else
 	   sx, sy, sw, sh =
 		  t.sx or 0,
 		  t.sy or 0,
-		  t.sw or t.w or lg.getWidth(), -- Krunk: added support for STALKER-X cameras
-		  t.sh or t.h or lg.getHeight()
-    end
-    return
-	   t.x or 0,
-	   t.y or 0,
+		  t.sw or lg.getWidth(),
+		  t.sh or lg.getHeight()
+	end
+	return
+	   t.x or t.pos.x or 0, -- Krunk: added brinevector hooks
+	   t.y or t.pos.y or 0, -- Krunk: added brinevector hooks
 	   t.scale or t.zoom or 1,
 	   t.angle or t.rot or 0,
 	   sx, sy, sw, sh
@@ -63,208 +63,208 @@ local DEFAULT_X_COLOR = {255 / 255, 0 / 255, 0 / 255}
 local DEFAULT_Y_COLOR = {0 / 255, 255 / 255, 0 / 255}
 
 local function unpackVisuals(t, zoom)
-    local size = t.size or 256
-    if type(size) == "function" then
+	local size = t.size or 256
+	if type(size) == "function" then
 	   size = size(zoom)
-    end
-    local sds = t.subdivisions or 4
-    if type(sds) == "function" then
+	end
+	local sds = t.subdivisions or 4
+	if type(sds) == "function" then
 	   sds = sds(size, zoom)
-    end
-    local color = t.color or DEFAULT_COLOR
-    local drawScale
-    if t.drawScale == nil then
+	end
+	local color = t.color or DEFAULT_COLOR
+	local drawScale
+	if t.drawScale == nil then
 	   drawScale = true
-    else
+	else
 	   drawScale = t.drawScale
-    end
-    local xColor = t.xColor or DEFAULT_X_COLOR
-    local yColor = t.yColor or DEFAULT_Y_COLOR
-    local fadeFactor = t.fadeFactor or 0.5
-    local textFadeFactor = t.textFadeFactor or 1.0
-    local hideOrigin = t.hideOrigin
-    local style = t.style or "smooth"
-    return size, sds, drawScale, color, xColor, yColor, fadeFactor, textFadeFactor, hideOrigin, style
+	end
+	local xColor = t.xColor or DEFAULT_X_COLOR
+	local yColor = t.yColor or DEFAULT_Y_COLOR
+	local fadeFactor = t.fadeFactor or 0.5
+	local textFadeFactor = t.textFadeFactor or 1.0
+	local hideOrigin = t.hideOrigin
+	local style = t.style or "smooth"
+	return size, sds, drawScale, color, xColor, yColor, fadeFactor, textFadeFactor, hideOrigin, style
 end
 
 local function getGridInterval(visuals, zoom)
-    if visuals.interval then
+	if visuals.interval then
 	   return visuals.interval
-    else
+	else
 	   local size, sds = unpackVisuals(visuals, zoom)
 	   return size * math.pow(sds, -math.ceil(math.log(zoom, sds)))
-    end
+	end
 end
 
 local function visible(camera)
-    camera = checkType(camera or EMPTY, "table", "camera")
-    local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
-    local w, h = sw / zoom, sh / zoom
-    if not nearZero(angle) then -- Added float equality hook...
+	camera = checkType(camera or EMPTY, "table", "camera")
+	local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
+	local w, h = sw / zoom, sh / zoom
+	if not nearZero(angle) then -- Added float equality hook...
 	   local sin, cos = math.abs(math.sin(angle)), math.abs(math.cos(angle))
 	   w, h = cos * w + sin * h, sin * w + cos * h
-    end
-    return camx - w * 0.5, camy - h * 0.5, w, h
+	end
+	return camx - w * 0.5, camy - h * 0.5, w, h
 end
 
 local function toWorld(camera, screenx, screeny)
-    checkType(screenx, "number", "screenx")
-    checkType(screeny, "number", "screeny")
-    camera = checkType(camera or EMPTY, "table", "camera")
-    local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
-    local sin, cos = math.sin(angle), math.cos(angle)
-    local x, y = (screenx - sw/2 - sx) / zoom, (screeny - sh/2 - sy) / zoom
-    x, y = cos * x - sin * y, sin * x + cos * y
-    return x + camx, y + camy
+	checkType(screenx, "number", "screenx")
+	checkType(screeny, "number", "screeny")
+	camera = checkType(camera or EMPTY, "table", "camera")
+	local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
+	local sin, cos = math.sin(angle), math.cos(angle)
+	local x, y = (screenx - sw/2 - sx) / zoom, (screeny - sh/2 - sy) / zoom
+	x, y = cos * x - sin * y, sin * x + cos * y
+	return x + camx, y + camy
 end
 
 local function toScreen(camera, worldx, worldy)
-    checkType(worldx, "number", "worldx")
-    checkType(worldy, "number", "worldy")
-    camera = checkType(camera or EMPTY, "table", "camera")
-    local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
-    local sin, cos = math.sin(angle), math.cos(angle)
-    local x, y = worldx - camx, worldy - camy
-    x, y = cos * x + sin * y, -sin * x + cos * y
-    return zoom * x + sw/2 + sx, zoom * y + sh/2 + sy
+	checkType(worldx, "number", "worldx")
+	checkType(worldy, "number", "worldy")
+	camera = checkType(camera or EMPTY, "table", "camera")
+	local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
+	local sin, cos = math.sin(angle), math.cos(angle)
+	local x, y = worldx - camx, worldy - camy
+	x, y = cos * x + sin * y, -sin * x + cos * y
+	return zoom * x + sw/2 + sx, zoom * y + sh/2 + sy
 end
 
 local function minorInterval(camera, visuals)
-    camera = checkType(camera or EMPTY, "table", "camera")
-    visuals = checkType(visuals or EMPTY, "table", "visuals")
-    local zoom = select(3, unpackCamera(camera))
-    return getGridInterval(visuals, zoom)
+	camera = checkType(camera or EMPTY, "table", "camera")
+	visuals = checkType(visuals or EMPTY, "table", "visuals")
+	local zoom = select(3, unpackCamera(camera))
+	return getGridInterval(visuals, zoom)
 end
 
 local function majorInterval(camera, visuals)
-    camera = checkType(camera or EMPTY, "table", "camera")
-    visuals = checkType(visuals or EMPTY, "table", "visuals")
-    local zoom = select(3, unpackCamera(camera))
-    local sds = select(2, unpackVisuals(visuals, zoom))
-    return sds * minorInterval(camera, visuals)
+	camera = checkType(camera or EMPTY, "table", "camera")
+	visuals = checkType(visuals or EMPTY, "table", "visuals")
+	local zoom = select(3, unpackCamera(camera))
+	local sds = select(2, unpackVisuals(visuals, zoom))
+	return sds * minorInterval(camera, visuals)
 end
 
 local function cellToWorld(camera, visuals, x, y)
-    local d = minorInterval(camera, visuals)
-    return math.floor(x) * d, math.floor(y) * d
+	local d = minorInterval(camera, visuals)
+	return math.floor(x) * d, math.floor(y) * d
 end
 
 local function cellToScreen(camera, visuals, x, y)
-    return cellToWorld(camera, visuals, toWorld(camera, x, y))
+	return cellToWorld(camera, visuals, toWorld(camera, x, y))
 end
 
 local function worldToCell(camera, visuals, x, y)
-    local d = minorInterval(camera, visuals)
-    return math.floor(x / d), math.floor(y / d)
+	local d = minorInterval(camera, visuals)
+	return math.floor(x / d), math.floor(y / d)
 end
 
 local function screenToCell(camera, visuals, x, y)
-    return worldToCell(camera, visuals, toWorld(camera, x, y))
+	return worldToCell(camera, visuals, toWorld(camera, x, y))
 end
 
 local function convertCoords(camera, visuals, src, dest, x, y)
-    checkType(x, "number", "x")
-    checkType(y, "number", "y")
-    camera = checkType(camera or EMPTY, "table", "camera")
-    visuals = checkType(visuals or EMPTY, "table", "visuals")
-    assert(
+	checkType(x, "number", "x")
+	checkType(y, "number", "y")
+	camera = checkType(camera or EMPTY, "table", "camera")
+	visuals = checkType(visuals or EMPTY, "table", "visuals")
+	assert(
 	   src == "screen" or src == "world" or src == "cell",
 	   "Unrecognized src " .. tostring(src) .. "."
-    )
-    assert(
+	)
+	assert(
 	   dest == "screen" or dest == "world" or dest == "cell",
 	   "Unrecognized dest " .. tostring(dest) .. "."
-    )
-    if src == dest then return x, y end
-    if src == "screen" then
+	)
+	if src == dest then return x, y end
+	if src == "screen" then
 	   if dest == "cell" then
 		  return screenToCell(camera, visuals, x, y)
 	   else -- dest == "world"
 		  return toWorld(camera, x, y)
 	   end
-    elseif src == "cell" then
+	elseif src == "cell" then
 	   if dest == "screen" then
 		  return cellToScreen(camera, visuals, x, y)
 	   else -- dest == "world"
 		  return cellToWorld(camera, visuals, x, y)
 	   end
-    elseif src == "world" then
+	elseif src == "world" then
 	   if dest == "cell" then
 		  return worldToCell(camera, visuals, x, y)
 	   else -- dest == "screen"
 		  return toScreen(camera, x, y)
 	   end
-    end
+	end
 end
 
 local function getCorners(camera)
-    local sx, sy, sw, sh = select(5, unpackCamera(camera))
-    local x1, y1 = toWorld(camera, sx, sy) -- top left
-    local x2, y2 = toWorld(camera, sx + sw, sy) -- top right
-    local x3, y3 = toWorld(camera, sx + sw, sy + sh) -- bottom right
-    local x4, y4 = toWorld(camera, sx, sy + sh) -- bottom left
-    return x1, y1, x2, y2, x3, y3, x4, y4
+	local sx, sy, sw, sh = select(5, unpackCamera(camera))
+	local x1, y1 = toWorld(camera, sx, sy) -- top left
+	local x2, y2 = toWorld(camera, sx + sw, sy) -- top right
+	local x3, y3 = toWorld(camera, sx + sw, sy + sh) -- bottom right
+	local x4, y4 = toWorld(camera, sx, sy + sh) -- bottom left
+	return x1, y1, x2, y2, x3, y3, x4, y4
 end
 
 local function intersect(x1, y1, x2, y2, x3, y3, x4, y4)
-    local x21, x43 = x2 - x1, x4 - x3
-    local y21, y43 = y2 - y1, y4 - y3
-    local d = x21 * y43 - y21 * x43
-    if nearZero(d) then return false end -- Added float equality hook...
-    local xy34 = x3 * y4 - y3 * x4
-    local xy12 = x1 * y2 - y1 * x2
-    local a = xy34 * x21 - xy12 * x43
-    local b = xy34 * y21 - xy12 * y43
-    return a / d, b / d
+	local x21, x43 = x2 - x1, x4 - x3
+	local y21, y43 = y2 - y1, y4 - y3
+	local d = x21 * y43 - y21 * x43
+	if nearZero(d) then return false end -- Added float equality hook...
+	local xy34 = x3 * y4 - y3 * x4
+	local xy12 = x1 * y2 - y1 * x2
+	local a = xy34 * x21 - xy12 * x43
+	local b = xy34 * y21 - xy12 * y43
+	return a / d, b / d
 end
 
 local function drawLabel(camera, worldx, worly, label)
-    lg.push()
-    lg.origin()
-    local x, y = toScreen(camera, worldx, worly)
-    lg.printf(label, x + 2, y + 2, 400, "left")
-    lg.pop()
+	lg.push()
+	lg.origin()
+	local x, y = toScreen(camera, worldx, worly)
+	lg.printf(label, x + 2, y + 2, 400, "left")
+	lg.pop()
 end
 
 local function push(camera, stack) -- Added optional parameter for specifying the stackType to push
-    camera = checkType(camera or EMPTY, "table", "camera")
-    local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
-    lg.push(stack)
-    lg.scale(zoom)
-    lg.translate((sw / 2 + sx) / zoom, (sh / 2 + sy) / zoom)
-    lg.rotate(-angle)
-    lg.translate(-camx, -camy)
+	camera = checkType(camera or EMPTY, "table", "camera")
+	local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
+	lg.push(stack)
+	lg.scale(zoom)
+	lg.translate((sw / 2 + sx) / zoom, (sh / 2 + sy) / zoom)
+	lg.rotate(-angle)
+	lg.translate(-camx, -camy)
 end
 
 local function pop() -- Added for clarity when identifying stack changes
-    lg.pop()
+	lg.pop()
 end
 
 local function draw(camera, visuals)
-    camera = checkType(camera or EMPTY, "table", "camera")
-    visuals = checkType(visuals or EMPTY, "table", "visuals")
-    local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
-    local size, sds, ds, color, xColor, yColor, ff, tf, hideOrigin, style = unpackVisuals(visuals, zoom)
-    local x1, y1, x2, y2, x3, y3, x4, y4 = getCorners(camera)
-    local swapXYLabels = mod(angle + math.pi/4, math.pi) > math.pi/2
+	camera = checkType(camera or EMPTY, "table", "camera")
+	visuals = checkType(visuals or EMPTY, "table", "visuals")
+	local camx, camy, zoom, angle, sx, sy, sw, sh = unpackCamera(camera)
+	local size, sds, ds, color, xColor, yColor, ff, tf, hideOrigin, style = unpackVisuals(visuals, zoom)
+	local x1, y1, x2, y2, x3, y3, x4, y4 = getCorners(camera)
+	local swapXYLabels = mod(angle + math.pi/4, math.pi) > math.pi/2
 
-    lg.setScissor(sx, sy, sw, sh)
-    local vx, vy, vw, vh = visible(camera)
-    local d = getGridInterval(visuals, zoom)
-    local delta = d / 2
+	lg.setScissor(sx, sy, sw, sh)
+	local vx, vy, vw, vh = visible(camera)
+	local d = getGridInterval(visuals, zoom)
+	local delta = d / 2
 
-    push(camera)
+	push(camera)
 
-    local oldCol = { lg.getColor() }
-    local oldLineWidth = lg.getLineWidth()
-    local oldLineStyle = lg.getLineStyle()
+	local oldCol = { lg.getColor() }
+	local oldLineWidth = lg.getLineWidth()
+	local oldLineStyle = lg.getLineStyle()
 
-    lg.setLineWidth(1 / zoom)
-    lg.setLineStyle(style)
+	lg.setLineWidth(1 / zoom)
+	lg.setLineStyle(style)
 
-    -- lines parallel to y axis
-    local xc = sds
-    for x = floor(vx, d * sds), vx + vw, d do
+	-- lines parallel to y axis
+	local xc = sds
+	for x = floor(vx, d * sds), vx + vw, d do
 	   if xc >= sds then
 		  lg.setColor(color[1], color[2], color[3], 1)
 		  xc = 1
@@ -273,11 +273,11 @@ local function draw(camera, visuals)
 		  xc = xc + 1
 	   end
 	   lg.line(x, vy, x, vy + vh)
-    end
+	end
 
-    -- lines parallel to x axis
-    local yc = sds
-    for y = floor(vy, d * sds), vy + vh, d do
+	-- lines parallel to x axis
+	local yc = sds
+	for y = floor(vy, d * sds), vy + vh, d do
 	   if yc >= sds then
 		  lg.setColor(color[1], color[2], color[3], 1)
 		  yc = 1
@@ -288,10 +288,10 @@ local function draw(camera, visuals)
 	   if math.abs(y) > delta then
 		  lg.line(vx, y, vx + vw, y)
 	   end
-    end
+	end
 
-    -- draw labels
-    for x = floor(vx, d * sds), vx + vw, d do
+	-- draw labels
+	for x = floor(vx, d * sds), vx + vw, d do
 	   if math.abs(x) < delta then
 		  lg.setColor(yColor[1] * tf, yColor[2] * tf, yColor[3] * tf, 1)
 		  lg.line(x, vy, x, vy + vh)
@@ -310,9 +310,9 @@ local function draw(camera, visuals)
 			 drawLabel(camera, ix, iy, "x=" .. x)
 		  end
 	   end
-    end
+	end
 
-    for y = floor(vy, d * sds), vy + vh, d do
+	for y = floor(vy, d * sds), vy + vh, d do
 	   if math.abs(y) < delta then
 		  lg.setColor(xColor[1] * tf, xColor[2] * tf, xColor[3] * tf, 1)
 		  lg.line(vx, y, vx + vw, y)
@@ -331,64 +331,64 @@ local function draw(camera, visuals)
 			 drawLabel(camera, ix, iy, "y=" .. y)
 		  end
 	   end
-    end
+	end
 
-    lg.pop()
-    lg.setLineWidth(1)
+	lg.pop()
+	lg.setLineWidth(1)
 
-    -- draw origin
-    if not hideOrigin then
+	-- draw origin
+	if not hideOrigin then
 	   lg.setColor(1, 1, 1, 1)
 	   local ox, oy = toScreen(camera, 0, 0)
 	   lg.rectangle("fill", ox - 1, oy - 1, 2, 2)
 	   lg.circle("line", ox, oy, 8)
-    end
+	end
 
-    lg.setLineWidth(oldLineWidth)
-    lg.setLineStyle(oldLineStyle)
-    lg.setColor(unpack(oldCol))
-    lg.setScissor()
+	lg.setLineWidth(oldLineWidth)
+	lg.setLineStyle(oldLineStyle)
+	lg.setColor(unpack(oldCol))
+	lg.setScissor()
 end
 
 local gridIndex = {
-    toWorld = function (self, x, y) return toWorld(self.camera, x, y) end,
-    toScreen = function (self, x, y) return toScreen(self.camera, x, y) end,
-    convertCoords = function (self, src, dest, x, y)
+	toWorld = function (self, x, y) return toWorld(self.camera, x, y) end,
+	toScreen = function (self, x, y) return toScreen(self.camera, x, y) end,
+	convertCoords = function (self, src, dest, x, y)
 	   return convertCoords(self.camera, self.visuals, src, dest, x, y)
-    end,
-    draw = function (self) return draw(self.camera, self.visuals) end,
-    minorInterval = function (self)
+	end,
+	draw = function (self) return draw(self.camera, self.visuals) end,
+	minorInterval = function (self)
 	   return minorInterval(self.camera, self.visuals)
-    end,
-    majorInterval = function (self)
+	end,
+	majorInterval = function (self)
 	   return majorInterval(self.camera, self.visuals)
-    end,
-    visible = function (self) return visible(self.camera) end,
-    push = function (self, stack) return push(self.camera, stack) end, -- Added optional parameter for specifying the stackType to push
-    pop = function (self) return pop() end -- Added for clarity when identifying stack changes
+	end,
+	visible = function (self) return visible(self.camera) end,
+	push = function (self, stack) return push(self.camera, stack) end, -- Added optional parameter for specifying the stackType to push
+	pop = function (self) return pop() end -- Added for clarity when identifying stack changes
 }
 
 local gridMt = {
-    __index = gridIndex
+	__index = gridIndex
 }
 
 local function grid(camera, visuals)
-    camera = checkType(camera or EMPTY, "table", "camera") -- Added missing use of EMPTY
-    visuals = checkType(visuals or EMPTY, "table", "visuals") -- Added missing use of EMPTY
-    return setmetatable({
+	camera = checkType(camera or EMPTY, "table", "camera") -- Added missing use of EMPTY
+	visuals = checkType(visuals or EMPTY, "table", "visuals") -- Added missing use of EMPTY
+	return setmetatable({
 	   camera = camera,
 	   visuals = visuals
-    }, gridMt)
+	}, gridMt)
 end
 
 return {
-    toWorld = toWorld,
-    toScreen = toScreen,
-    convertCoords = convertCoords,
-    draw = draw,
-    visible = visible,
-    minorInterval = minorInterval,
-    majorInterval = majorInterval,
-    grid = grid,
-    push = push
+	toWorld = toWorld,
+	toScreen = toScreen,
+	convertCoords = convertCoords,
+	draw = draw,
+	visible = visible,
+	minorInterval = minorInterval,
+	majorInterval = majorInterval,
+	grid = grid,
+	push = push
 }

@@ -9,7 +9,8 @@ playState = {
 }
 
 function playState:init()
-	self.camera = stalker()
+	self.camera = Camera{}
+	self.camera:setBounds(10000)
 
 	self:addBackground{sprite = "parallax_grid", scale = vec2(32), scroll = vec2(1.25), alpha = 0.2}
 	self:addBackground{sprite = "parallax_grid", scale = vec2(4), alpha = 0.1}
@@ -37,18 +38,17 @@ function playState:init()
 	self:addTrigger{collider = BoxCollider{ pos = vec2(0, -6000), hwidth = 8000 }, height = -100, onOverlap = respawnAgent}
 
 	Stache.players[1].agent = self:spawnAgent("strafer", { posz = 20 })
+
+	self.camera:setPTarget(Stache.players[1].agent, "pos")
+	self.camera:setATarget(Stache.players[1].agent, "angle")
 end
 
 function playState:enter()
-	self.camera.w = lg.getWidth()
-	self.camera.h = lg.getHeight()
-
 	lm.setRelativeMode(true)
 end
 
 function playState:resume()
-	self.camera.w = lg.getWidth()
-	self.camera.h = lg.getHeight()
+	lm.setRelativeMode(true)
 end
 
 function playState:leave()
@@ -63,8 +63,6 @@ function playState:update(tl)
 	Stache.updateList(self.particles, tl)
 	Stache.updateList(self.triggers, tl)
 
-	self.camera:follow(active_agent.pos:split())
-	self.camera.rotation = -active_agent.angle
 	self.camera:update(tl)
 
 	Stache.updateList(self.backgrounds, self.camera)
@@ -150,8 +148,6 @@ function playState:draw()
 
 	Stache.setColor("white", 0.8)
 	Stache.debugPrintf(40, Stache.players[1].agent.physmode, 5, 0, nil, "left")
-
-	self.camera:draw()
 end
 
 function playState:mousemoved(x, y, dx, dy, istouch)
@@ -168,11 +164,6 @@ function playState:keypressed(key)
 	elseif key == "v" then
 		self.agents[1]:togglePhysMode()
 	end
-end
-
-function playState:resize(w, h)
-	self.camera.w = w
-	self.camera.h = h
 end
 
 function playState:addBackground(data)
