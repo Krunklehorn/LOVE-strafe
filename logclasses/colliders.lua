@@ -689,15 +689,15 @@ function LineCollider:draw(color, scale, debug)
 
 			Stache.setColor(color, 1)
 			-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-			lg.arc("line", "open", self.p1.x, self.p1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
-			lg.arc("line", "open", self.p2.x, self.p2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
+			lg.arc("line", "open", self.p1.x, self.p1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
+			lg.arc("line", "open", self.p2.x, self.p2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
 			lg.line(top.x, top.y, (top + self.delta):split())
 			lg.line(bot.x, bot.y, (bot + self.delta):split())
 
 			Stache.setColor(color, 0.4)
 			-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-			lg.arc("fill", "open", self.p1.x, self.p1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
-			lg.arc("fill", "open", self.p2.x, self.p2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
+			lg.arc("fill", "open", self.p1.x, self.p1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
+			lg.arc("fill", "open", self.p2.x, self.p2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
 			lg.push("all")
 				lg.translate(self.p1:split())
 				lg.rotate(self.angle)
@@ -711,15 +711,15 @@ function LineCollider:draw(color, scale, debug)
 
 				Stache.setColor(color, 0.5)
 				-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-				lg.arc("line", "open", self.pp1.x, self.pp1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
-				lg.arc("line", "open", self.pp2.x, self.pp2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
+				lg.arc("line", "open", self.pp1.x, self.pp1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
+				lg.arc("line", "open", self.pp2.x, self.pp2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
 				lg.line(top.x, top.y, (top + self.delta):split())
 				lg.line(bot.x, bot.y, (bot + self.delta):split())
 
 				Stache.setColor(color, 0.25)
 				-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-				lg.arc("fill", "open", self.pp1.x, self.pp1.y, self.radius, math.pi / 2 + self.angle, 3 * math.pi / 2 + self.angle)
-				lg.arc("fill", "open", self.pp2.x, self.pp2.y, self.radius, -math.pi / 2 + self.angle, math.pi / 2 + self.angle)
+				lg.arc("fill", "open", self.pp1.x, self.pp1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
+				lg.arc("fill", "open", self.pp2.x, self.pp2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
 				lg.push("all")
 					lg.translate(self.pp1:split())
 					lg.rotate(self.angle)

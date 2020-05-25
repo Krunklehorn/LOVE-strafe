@@ -5,83 +5,8 @@ lm = love.mouse
 la = love.audio
 lw = love.window
 
-FLOAT_EPSILON = 0.00001
-MATH_2PI = 2 * math.pi
-
-NULL_FUNC = function() end
-
-WINDOW_WIDTH = 720
-WINDOW_HEIGHT = 480
-WINDOW_WIDTH_HALF = WINDOW_WIDTH / 2
-WINDOW_HEIGHT_HALF = WINDOW_HEIGHT / 2
-
-FONT_BLOWUP = 100
-FONT_SHRINK = 1 / FONT_BLOWUP
-
-MOUSE_SENSITIVITY = 1
-AIM_SENSITIVITY = 1 / math.deg(MATH_2PI)
-
-EDIT_ZOOM_ON_CURSOR = true
-
-BG_OVERDRAW = 3
-
-DEBUG_COLLISION_FALLBACK = true
-DEBUG_STATECHANGES = false
-DEBUG_DRAW = true
-
-DEBUG_PRINT_TABLE = function(table)
-	print("---------------------", table, "---------------------------------------------")
-	for k, v in pairs(table) do
-		print("", k, "	", rawget(table, k))
-	end
-
-	local private = rawget(table, "private")
-	local header = false
-
-	if private then
-		for k, v in pairs(private) do
-			if not header then
-				print("Private --- " .. tostring(private) .. " ---------------------------------------------")
-				header = true
-			end
-
-			print("", k, "	", rawget(private, k))
-		end
-	end
-	print("	")
-end
-
-vec2 = require "modules.brinevector"
-anim8 = require "modules.anim8"
-flux = require "modules.flux"
-editgrid = require "modules.editgrid"
-boipushy = require "modules.boipushy"
-bitser = require "modules.bitser"
-
-humpstate = require "modules.humpstate"
-require "humpstates.title"
-require "humpstates.edit"
-require "humpstates.play"
-require "humpstates.pause"
-require "humpstates.debug"
-
-Stache = require "stache"
-
-class = require "modules.30log"
-require "logclasses.base"
-require "logclasses.camera"
-require "logclasses.player"
-require "logclasses.background"
-require "logclasses.colliders"
-require "logclasses.brush"
-require "logclasses.trigger"
-require "logclasses.sprites"
-require "logclasses.entity"
-require "logclasses.particle"
-require "logclasses.prop"
-require "logclasses.agent"
-require "logclasses.handles"
-require "logclasses.dummy"
+require "constants"
+require "includes"
 
 function love.load()
 	Stache.load()
