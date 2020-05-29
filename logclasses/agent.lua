@@ -40,7 +40,8 @@ Agent = Entity:extend("Agent", {
 	grv = -800,
 	jmp = 270,
 
-	grndRef = nil
+	grndRef = nil,
+	grndTick = 0
 })
 
 function Agent:init(data)
@@ -277,6 +278,18 @@ function Agent:update(tl)
 
 	self:updateCollider()
 
+	-- Play sfx based on state...
+	if self:isGrounded() then
+		if self.state == "move" then
+			self.grndTick = self.grndTick + 1
+
+			if self.grndTick % (60 / 2) == 0 then
+				Stache.play("gunz_step_concrete1", 50, 100, 0, 5)
+			elseif self.grndTick % (60 / 2) == (60 / 4) then
+					Stache.play("gunz_step_concrete2", 50, 100, 0, 5) end
+		end
+	end
+
 	return false
 end
 
@@ -350,7 +363,6 @@ function Agent:allowJump()
 	if self.jump then
 		self:changeState("air")
 		self.velz = self.jmp
-		-- TODO: Stache.play("jump")
 	end
 end
 
@@ -390,9 +402,14 @@ function Agent:isGrounded()
 end
 
 function Agent:setGround(brush)
+	if not self.grndRef then
+		Stache.play("gunz_step_concrete1") end
+
 	self.grndRef = brush
+	self.grndTick = 0
 end
 
 function Agent:clearGround()
 	self.grndRef = nil
+	self.grndTick = 0
 end

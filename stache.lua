@@ -360,14 +360,33 @@ function Stache.debugPrintf(size, text, x, y, limit, align, r, sx, sy)
 	lg.pop()
 end
 
-function Stache.play(sound)
+function Stache.play(sound, amplitude, pitch, ampRange, pitRange)
 	Stache.checkArg("sound", sound, "string", "Stache.play")
+	Stache.checkArg("amplitude", amplitude, "number", "Stache.play", true)
+	Stache.checkArg("pitch", pitch, "number", "Stache.play", true)
+	Stache.checkArg("ampRange", ampRange, "number", "Stache.play", true)
+	Stache.checkArg("pitRange", pitRange, "number", "Stache.play", true)
+
+	amplitude = amplitude or 100
+	pitch = pitch or 100
+	ampRange = ampRange or 0
+	pitRange = pitRange or 0
+
+	amplitude = amplitude + math.random(0, ampRange) - (ampRange / 2)
+	amplitude = amplitude / 100
+
+	pitch = pitch + math.random(0, pitRange) - (pitRange / 2)
+	pitch = pitch / 100
 
 	if Stache.sfx[sound] then
 		Stache.sfx[sound]:stop()
+		Stache.sfx[sound]:setVolume(amplitude)
+		Stache.sfx[sound]:setPitch(pitch)
 		Stache.sfx[sound]:play()
 	elseif Stache.music[sound] then
 		Stache.music[sound]:stop()
+		Stache.sfx[sound]:setVolume(amplitude)
+		Stache.sfx[sound]:setPitch(pitch)
 		Stache.music[sound]:play()
 	else
 		Stache.formatError("Stache.play() called with a 'sound' argument that does not correspond to a loaded sound: %q", sound)
