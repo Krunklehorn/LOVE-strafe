@@ -13,9 +13,9 @@ function Collider:init(data)
 	Base.init(self, data)
 end
 
-function Collider:update(pos, vel)
+function Collider:update(tl, pos, vel)
 	self.pos = pos
-	self.vel = vel
+	self.vel = vel * tl
 end
 
 function Collider:checkCastBounds(other)

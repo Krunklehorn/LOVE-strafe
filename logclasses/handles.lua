@@ -41,7 +41,7 @@ function PointHandle:init(target, pkey)
 	self.pkey = pkey
 end
 
-function PointHandle:update()
+function PointHandle:update(tl)
 	self.pos = self.target[self.pkey]
 
 	return false
@@ -126,7 +126,7 @@ function VectorHandle:init(target, pkey, dkey)
 	self.dkey = dkey
 end
 
-function VectorHandle:update()
+function VectorHandle:update(tl)
 	self.delta = self.target[self.dkey]
 
 	return false

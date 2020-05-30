@@ -14,10 +14,10 @@ function love.load()
 	love.resize(lg.getDimensions())
 
 	humpstate.registerEvents()
-	--humpstate.switch(titleState)
+	humpstate.switch(titleState)
 	--humpstate.switch(debugState)
-	humpstate.switch(editState)
-	humpstate.push(playState)
+	--humpstate.switch(editState)
+	--humpstate.push(playState)
 end
 
 function love.run()

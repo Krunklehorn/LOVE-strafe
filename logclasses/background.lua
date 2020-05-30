@@ -32,12 +32,16 @@ function Background:init(data)
 	self.sprite:setWrap("repeat", "repeat")
 end
 
-function Background:update(camera)
+function Background:update(tl, camera)
+end
+
+function Background:draw(camera)
 	local width, height = lg.getDimensions()
+	local center = vec2(width, height) / 2
 	local pos = nil
 
 	if not camera.pos then
-		Stache.formatError("Background:update() called with an invalid 'camera' argument: %q", camera)
+		Stache.formatError("Background:draw() called with an invalid 'camera' argument: %q", camera)
 	end
 
 	pos = camera.pos
@@ -48,12 +52,6 @@ function Background:update(camera)
 					  pos.y - (height / 2) * BG_OVERDRAW + self.sd.y / 2,
 					  width * BG_OVERDRAW, height * BG_OVERDRAW,
 					  self.sd.x, self.sd.y)
-
-	return false
-end
-
-function Background:draw(camera)
-	local center = vec2(lg.getDimensions()) / 2
 
 	lg.push("all")
 		lg.translate(center:split())

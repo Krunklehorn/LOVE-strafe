@@ -41,7 +41,7 @@ Agent = Entity:extend("Agent", {
 	jmp = 270,
 
 	grndRef = nil,
-	grndTick = 0
+	grndMoveTicks = 0
 })
 
 function Agent:init(data)
@@ -281,12 +281,12 @@ function Agent:update(tl)
 	-- Play sfx based on state...
 	if self:isGrounded() then
 		if self.state == "move" then
-			self.grndTick = self.grndTick + 1
+			self.grndMoveTicks = self.grndMoveTicks + (tl ~= 0 and 1 or 0)
 
-			if self.grndTick % (60 / 2) == 0 then
+			if self.grndMoveTicks % (60 / 2) == 0 then
 				Stache.play("gunz_step_concrete1", 50, 100, 0, 5)
-			elseif self.grndTick % (60 / 2) == (60 / 4) then
-					Stache.play("gunz_step_concrete2", 50, 100, 0, 5) end
+			elseif self.grndMoveTicks % (60 / 2) == (60 / 4) then
+				Stache.play("gunz_step_concrete2", 50, 100, 0, 5) end
 		end
 	end
 
@@ -312,7 +312,7 @@ function Agent:draw()
 		lg.setLineWidth(0.25)
 		Stache.setColor("white", 0.4)
 		lg.line(0, 0, 0, -self.collider.radius)
-		Stache.debugPrintf(40, math.floor(self.vel.length + 0.5), nil, nil, nil, "center")
+		Stache.debugPrintf{40, math.floor(self.vel.length + 0.5), xalign = "center"}
 	lg.pop()
 
 	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
@@ -394,7 +394,7 @@ function Agent:togglePhysMode()
 end
 
 function Agent:updateCollider()
-	self.collider:update(self.pos, self.vel * Stache.ticklength)
+	self.collider:update(Stache.ticklength, self.pos, self.vel)
 end
 
 function Agent:isGrounded()
@@ -403,13 +403,13 @@ end
 
 function Agent:setGround(brush)
 	if not self.grndRef then
-		Stache.play("gunz_step_concrete1") end
+		Stache.play("gunz_step_concrete1", 100, 100, 0, 5) end
 
 	self.grndRef = brush
-	self.grndTick = 0
+	self.grndMoveTicks = 0
 end
 
 function Agent:clearGround()
 	self.grndRef = nil
-	self.grndTick = 0
+	self.grndMoveTicks = 0
 end

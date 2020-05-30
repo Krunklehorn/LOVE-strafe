@@ -31,7 +31,7 @@ local state_init = setmetatable({leave = __NULL__},
 		{__index = function() error("Gamestate not initialized. Use Gamestate.switch()") end})
 local stack = {state_init}
 local initialized_states = setmetatable({}, {__mode = "k"})
---local state_is_dirty = true -- Removed, see bottom of document...
+--local state_is_dirty = true -- Krunk: Removed, see bottom of document...
 
 local GS = {}
 function GS.new(t) return t or {} end -- constructor - deprecated!
@@ -44,7 +44,7 @@ local function change_state(stack_offset, to, ...)
 	initialized_states[to] = __NULL__
 
 	stack[#stack+stack_offset] = to
-	--state_is_dirty = true -- Removed, see bottom of document...
+	--state_is_dirty = true -- Krunk: Removed, see bottom of document...
 	return (to.enter or __NULL__)(to, pre, ...)
 end
 
@@ -66,7 +66,7 @@ function GS.pop(...)
 	local pre, to = stack[#stack], stack[#stack-1]
 	stack[#stack] = nil
 	;(pre.leave or __NULL__)(pre)
-	--state_is_dirty = true -- Removed, see bottom of document...
+	--state_is_dirty = true -- Krunk: Removed, see bottom of document...
 	return (to.resume or __NULL__)(to, pre, ...)
 end
 
@@ -78,12 +78,12 @@ end
 --      this callback is different than the other callbacks
 --      (see http://love2d.org/wiki/love.errorhandler)
 --      overwriting thi callback can result in random crashes (issue #95)
-local def_callbacks = { 'draw', 'update' } -- Changed to represent "default" callbacks instead, see below...
+local def_callbacks = { 'draw', 'update' } -- Krunk: Changed to represent "default" callbacks instead, see below...
 
 function GS.registerEvents(add_callbacks)
 	local registry = {}
-	--------------------------------------------------------------
-	-- Moved the fetch loop in here so that GS.registerEvents()
+	-------------------------------------------------------------------
+	-- Krunk: Moved the fetch loop in here so that GS.registerEvents()
 	-- now adds to the callbacks list instead of overwriting it...
 	local callbacks = def_callbacks -- Changed to use "default" callbacks instead...
 
@@ -94,7 +94,7 @@ function GS.registerEvents(add_callbacks)
 
 	for k, v in pairs(add_callbacks) do callbacks[#callbacks+1] = v end
 	for k in pairs(love.handlers) do callbacks[#callbacks+1] = k end
-	--------------------------------------------------------------
+	-------------------------------------------------------------------
 
 	for _, f in ipairs(callbacks) do
 		registry[f] = love[f] or __NULL__
@@ -110,8 +110,9 @@ end
 setmetatable(GS, {__index = function(_, func)
 	-- call function only if at least one 'update' was called beforehand
 	-- (see issue #46)
-	-----------------------------------------------------------------------------------------------------------------
-	-- Reverted this dirty check because it actually skips drawing and event callbacks for an entire frame! Not cool.
+	---------------------------------------------------------------
+	-- Krunk: Reverted this dirty check because it actually skips
+	-- drawing and event callbacks for an entire frame! Not cool.
 	--if not state_is_dirty or func == 'update' then
 		--state_is_dirty = false
 		return function(...)
@@ -119,7 +120,7 @@ setmetatable(GS, {__index = function(_, func)
 		end
 	--end
 	--return __NULL__
-	-----------------------------------------------------------------------------------------------------------------
+	---------------------------------------------------------------
 end})
 
 return GS

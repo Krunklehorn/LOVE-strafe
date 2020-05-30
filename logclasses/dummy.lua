@@ -27,7 +27,7 @@ function Dummy:update(tl)
 	end
 
 	self.vel = self.pos - self.ppos
-	self:updateCollider()
+	self:updateCollider(tl)
 
 	local brush = debugState.brushes[1]
 	--bounds_self = self.collider:getCastBounds()
@@ -42,7 +42,7 @@ function Dummy:update(tl)
 		else collision = nil end
 	end
 
-	self:updateCollider()
+	self:updateCollider(tl)
 
 	return false
 end
@@ -100,6 +100,6 @@ function Dummy:toggleControlMode()
 	end
 end
 
-function Dummy:updateCollider()
-	self.collider:update(self.pos, self.ppos)
+function Dummy:updateCollider(tl)
+	self.collider:update(tl, self.pos, self.ppos)
 end

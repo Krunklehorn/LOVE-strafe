@@ -37,22 +37,25 @@ function playState:init()
 
 	self:addTrigger{collider = BoxCollider{ pos = vec2(0, -6000), hwidth = 8000 }, height = -100, onOverlap = respawnAgent}
 
-	Stache.players[1].agent = self:spawnAgent("strafer", { posz = 20 })
+	Stache.players.active.agent = self:spawnAgent("strafer", { posz = 20 })
 
-	self.camera:setPTarget(Stache.players[1].agent, "pos")
-	self.camera:setATarget(Stache.players[1].agent, "angle")
+	self.camera:setPTarget(Stache.players.active.agent, "pos")
+	self.camera:setATarget(Stache.players.active.agent, "angle")
 end
 
 function playState:enter()
 	lm.setRelativeMode(true)
+	Stache.players.active.agent = playState.agents[1]
 end
 
 function playState:resume()
 	lm.setRelativeMode(true)
+	Stache.players.active.agent = playState.agents[1]
 end
 
 function playState:leave()
 	lm.setRelativeMode(false)
+	Stache.players.active.agent = nil
 end
 
 function playState:update(tl)
@@ -65,7 +68,7 @@ function playState:update(tl)
 
 	self.camera:update(tl)
 
-	Stache.updateList(self.backgrounds, self.camera)
+	Stache.updateList(self.backgrounds, tl, self.camera)
 end
 
 function playState:draw()
@@ -87,12 +90,14 @@ function playState:draw()
 	end
 
 	self.camera:detach()
+
+	if humpstate.current() == self then
 	lg.push("all")
 		lg.translate(-8 * 3, -8 * 3)
 		lg.scale(3)
 
 		lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
-		if Stache.players[1].boipy:down("up") then
+		if Stache.players.active.boipy:down("up") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_up_prs)
 		else
@@ -101,7 +106,7 @@ function playState:draw()
 		end
 
 		lg.translate(0, 60 / 3)
-		if Stache.players[1].boipy:down("down") then
+		if Stache.players.active.boipy:down("down") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_down_prs)
 		else
@@ -110,7 +115,7 @@ function playState:draw()
 		end
 
 		lg.translate(-60 / 3, 0)
-		if Stache.players[1].boipy:down("left") then
+		if Stache.players.active.boipy:down("left") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_left_prs)
 		else
@@ -119,7 +124,7 @@ function playState:draw()
 		end
 
 		lg.translate(120 / 3, 0)
-		if Stache.players[1].boipy:down("right") then
+		if Stache.players.active.boipy:down("right") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_right_prs)
 		else
@@ -128,7 +133,7 @@ function playState:draw()
 		end
 
 		lg.translate(-140 / 3, 60 / 3)
-		if Stache.players[1].boipy:down("jump") then
+		if Stache.players.active.boipy:down("jump") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.spacebtn_prs)
 		else
@@ -137,7 +142,7 @@ function playState:draw()
 		end
 
 		lg.translate(140 / 3, 0)
-		if Stache.players[1].boipy:down("crouch") then
+		if Stache.players.active.boipy:down("crouch") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.crouchbtn_prs)
 		else
@@ -146,8 +151,11 @@ function playState:draw()
 		end
 	lg.pop()
 
-	Stache.setColor("white", 0.8)
-	Stache.debugPrintf(40, Stache.players[1].agent.physmode, 5, 0, nil, "left")
+	lg.push("all")
+		Stache.setColor("white", 0.8)
+		Stache.debugPrintf{40, Stache.players.active.agent.physmode, 5}
+	lg.pop()
+	end
 end
 
 function playState:mousemoved(x, y, dx, dy, istouch)
@@ -157,6 +165,9 @@ end
 function playState:keypressed(key)
 	if key == "backspace" then
 		humpstate.pop()
+		--lm.setRelativeMode(false)
+		--Stache.players.active.agent = nil
+		--humpstate.push(pauseState)
 	elseif key == "kp+" then
 		Stache.timescale = Stache.timescale * 2
 	elseif key == "kp-" then

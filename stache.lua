@@ -83,9 +83,9 @@ function Stache.formatError(msg, ...)
 	error(msg:format(unpack(strings)), 2)
 end
 
-function Stache.checkArg(key, arg, query, func, nillable)
+function Stache.checkArg(key, arg, query, func, nillable, default)
 	if arg == nil and nillable == true then
-		return
+		return default
 	else
 		if query == "number" or query == "string" or query == "boolean" or query == "function" then
 			if type(arg) ~= query then
@@ -129,6 +129,8 @@ function Stache.checkArg(key, arg, query, func, nillable)
 			Stache.formatError("Stache.checkArg() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
 		end
 	end
+
+	return arg
 end
 
 local function deep_copy(obj, seen)
@@ -232,8 +234,9 @@ function Stache.load()
 	end
 
 	lg.setDefaultFilter("nearest", "nearest", 1)
-	Stache.fonts.debug = lg.setNewFont(FONT_BLOWUP)
-	bitser.register("fonts.debug", Stache.fonts.debug)
+	Stache.fonts.default = lg.setNewFont(FONT_BLOWUP)
+	Stache.fonts.default:setLineHeight(FONT_BLOWUP / Stache.fonts.default:getHeight())
+	bitser.register("fonts.default", Stache.fonts.default)
 
 	filestrings = lfs.getDirectoryItems("fonts")
 	for _, fs in ipairs(filestrings) do
@@ -244,6 +247,12 @@ function Stache.load()
 		Stache.fonts[2][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 2)
 		Stache.fonts[3][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 3)
 		Stache.fonts[4][name] = lg.newImageFont("fonts/"..fs, " ABCDEFGHIJKLMNOÖPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!?.,':;-", 4)
+		Stache.fonts[-1][name]:setLineHeight(12 / 14)
+		Stache.fonts[0][name]:setLineHeight(12 / 14)
+		Stache.fonts[1][name]:setLineHeight(12 / 14)
+		Stache.fonts[2][name]:setLineHeight(12 / 14)
+		Stache.fonts[3][name]:setLineHeight(12 / 14)
+		Stache.fonts[4][name]:setLineHeight(12 / 14)
 		bitser.register("fonts.-1."..fs, Stache.fonts[-1][name])
 		bitser.register("fonts.0."..fs, Stache.fonts[0][name])
 		bitser.register("fonts.1."..fs, Stache.fonts[1][name])
@@ -305,7 +314,7 @@ end
 function Stache.draw()
 	lg.push("all")
 		Stache.setColor("black", Stache.fade)
-		lg.rectangle("fill", 0, 0, lg.getWidth(), lg.getHeight())
+		lg.rectangle("fill", 0, 0, lg.getDimensions())
 	lg.pop()
 end
 
@@ -321,42 +330,78 @@ function Stache.getAsset(arg, asset, table, func, copy)
 	return copy and Stache.copy(asset) or asset
 end
 
-function Stache.setFont(font, spacing)
-	Stache.checkArg("font", font, "asset", "Stache.setFont")
-	Stache.checkArg("spacing", spacing, "number", "Stache.setFont", true)
+function Stache.getFontSpacing(font)
+	font = Stache.checkArg("font", font, "asset", "Stache.getFontBaseline", true, lg.getFont())
 
-	font = Stache.getAsset("font", font, Stache.fonts[spacing or 0], "Stache.setFont")
+	for i = -1, 4 do
+		for _, v in pairs(Stache.fonts[i]) do
+			if font == v then
+				return i end end
+	end
+
+	return 0
+end
+
+function Stache.getFontHeight(font, spacing)
+	font = Stache.checkArg("font", font, "asset", "Stache.getFontBaseline", true, lg.getFont())
+	spacing = Stache.checkArg("spacing", spacing, "number", "Stache.getFontBaseline", true, 0)
+
+	font = Stache.getAsset("font", font, Stache.fonts[spacing], "Stache.getFontBaseline")
+
+	return font:getHeight()
+end
+
+function Stache.getFontBaseline(font, spacing)
+	font = Stache.checkArg("font", font, "asset", "Stache.getFontBaseline", true, lg.getFont())
+	spacing = Stache.checkArg("spacing", spacing, "number", "Stache.getFontBaseline", true, 0)
+
+	font = Stache.getAsset("font", font, Stache.fonts[spacing], "Stache.getFontBaseline")
+
+	return font:getHeight() * font:getLineHeight()
+end
+
+function Stache.setFont(font, spacing)
+	font = Stache.checkArg("font", font, "asset", "Stache.setFont", true, lg.getFont())
+	spacing = Stache.checkArg("spacing", spacing, "number", "Stache.setFont", true, 0)
+
+	font = Stache.getAsset("font", font, Stache.fonts[spacing], "Stache.setFont")
 
 	lg.setFont(font)
 end
 
-function Stache.debugPrintf(size, text, x, y, limit, align, r, sx, sy)
-	Stache.checkArg("size", size, "number", "Stache.debugPrintf")
-	Stache.checkArg("x", x, "number", "Stache.debugPrintf", true)
-	Stache.checkArg("y", y, "number", "Stache.debugPrintf", true)
-	Stache.checkArg("limit", limit, "number", "Stache.debugPrintf", true)
-	Stache.checkArg("align", align, "string", "Stache.debugPrintf", true)
-	Stache.checkArg("r", r, "number", "Stache.debugPrintf", true)
-	Stache.checkArg("sx", sx, "number", "Stache.debugPrintf", true)
-	Stache.checkArg("sy", sy, "number", "Stache.debugPrintf", true)
+function Stache.debugPrintf(params)
+	local font = lg.getFont()
+	local size = Stache.checkArg("size", params[1] or params.size, "number", "Stache.debugPrintf")
+	local text = params[2] or params.text
+	local x = Stache.checkArg("x", params[3] or params.x, "number", "Stache.debugPrintf", true, 0)
+	local y = Stache.checkArg("y", params[4] or params.y, "number", "Stache.debugPrintf", true, 0)
+	local limit = Stache.checkArg("limit", params[5] or params.limit, "number", "Stache.debugPrintf", true, 100000)
+	local xalign = Stache.checkArg("xalign", params[6] or params.xalign, "string", "Stache.debugPrintf", true, "left")
+	local yalign = Stache.checkArg("yalign", params[7] or params.yalign, "string", "Stache.debugPrintf", true, "top")
+	local r = Stache.checkArg("r", params[8] or params.r, "number", "Stache.debugPrintf", true, 0)
+	local sx = Stache.checkArg("sx", params[9] or params.sx, "number", "Stache.debugPrintf", true, 1)
+	local sy = Stache.checkArg("sy", params[10] or params.sy, "number", "Stache.debugPrintf", true, 1)
+	local ox = Stache.checkArg("ox", params[11] or params.ox, "number", "Stache.debugPrintf", true, 0)
+	local oy = Stache.checkArg("oy", params[12] or params.oy, "number", "Stache.debugPrintf", true, 0)
 
-	local ox = 0
+	size = size / (font == Stache.fonts.default and FONT_BLOWUP or Stache.getFontBaseline(font))
 
-	size = size * FONT_SHRINK
-	x = x or 0
-	y = y or 0
-	limit = (limit or 100000) / size
-	align = align or "center"
-	sx = (sx or 1) * size
-	sy = (sy or 1) * size
+	limit = limit / size
+	sx = sx * size
+	sy = sy * size
 
-	if align == "center" then
+	if xalign == "left" then ox = 0
+	elseif xalign == "center" then
 		ox = limit / 2
-	elseif align == "right" then
-		ox = limit end
+		ox = ox - Stache.getFontSpacing() / 2 -- Fixes alignment issues with image fonts
+	elseif xalign == "right" then ox = limit end
+
+	if yalign == "top" then oy = 0
+	elseif yalign == "center" then oy = Stache.getFontHeight() / 2
+	elseif yalign == "bottom" then oy = Stache.getFontHeight() end
 
 	lg.push("all")
-		lg.printf(text, x, y, limit, align, r, sx, sy, ox)
+		lg.printf(text, x, y, limit, xalign, r, sx, sy, ox, oy)
 	lg.pop()
 end
 

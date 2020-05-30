@@ -12,7 +12,7 @@ function debugState:init()
 	--table.insert(self.brushes, LineBrush{ p1 = vec2(0, -100), p2 = vec2(-200, 100), vel = vec2(200, 0), radius = 64 })
 	table.insert(self.dummies, Dummy())
 
-	Stache.players[1].agent = self.dummies[1]
+	Stache.players.active.agent = self.dummies[1]
 end
 
 function debugState:enter()
@@ -44,7 +44,7 @@ function debugState:draw()
 	self.camera:detach()
 
 	Stache.setColor("white", 0.8)
-	Stache.debugPrintf(40, Stache.players[1].agent.controlmode, 10, 0, nil, "left")
+	Stache.debugPrintf{40, Stache.players.active.agent.controlmode, 10}
 
 	self.camera:draw()
 end

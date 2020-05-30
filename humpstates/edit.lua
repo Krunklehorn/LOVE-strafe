@@ -72,7 +72,7 @@ function editState:draw()
 	self.grid:pop()
 
 	Stache.setColor("white", 0.8)
-	Stache.debugPrintf(40, self.activeTool, 5, 0, nil, "left")
+	Stache.debugPrintf{40, self.activeTool, 5}
 end
 
 function editState:keypressed(key)
