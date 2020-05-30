@@ -48,6 +48,11 @@ function playState:enter()
 	Stache.players.active.agent = playState.agents[1]
 end
 
+function playState:pause()
+	lm.setRelativeMode(true)
+	Stache.players.active.agent = playState.agents[1]
+end
+
 function playState:resume()
 	lm.setRelativeMode(true)
 	Stache.players.active.agent = playState.agents[1]
@@ -165,8 +170,6 @@ end
 function playState:keypressed(key)
 	if key == "backspace" then
 		humpstate.pop()
-		--lm.setRelativeMode(false)
-		--Stache.players.active.agent = nil
 		--humpstate.push(pauseState)
 	elseif key == "kp+" then
 		Stache.timescale = Stache.timescale * 2

@@ -58,6 +58,7 @@ end
 function GS.push(to, ...)
 	assert(to, "Missing argument: Gamestate to switch to")
 	assert(to ~= GS, "Can't call push with colon operator")
+	;(stack[#stack].pause or __NULL__)(stack[#stack]) -- Krunk: Added because why not...
 	return change_state(1, to, ...)
 end
 
