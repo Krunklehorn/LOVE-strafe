@@ -131,14 +131,16 @@ function Camera:update(tl)
 		local tPos = vec2.isVector(self.ptarget) and self.ptarget or self.ptarget[self.pkey]
 		local delta = tPos - self.pos
 
-		self.pos = self.pos + delta * self.plerp
+		if nearZero(delta.length) then self.pos = tPos
+		else self.pos = self.pos + delta * self.plerp end
 	end
 
 	if self.atarget then
 		local tAngle = type(self.atarget) == "number" and self.atarget or self.atarget[self.akey]
 		local delta = tAngle - self.angle
 
-		self.angle = self.angle + delta * self.alerp
+		if nearZero(delta) then self.angle = tAngle
+		else self.angle = self.angle + delta * self.alerp end
 	end
 
 	if self.starget then
@@ -146,7 +148,8 @@ function Camera:update(tl)
 		tScale = clamp(tScale, self.smin, self.smax)
 		local delta = tScale - self.scale
 
-		self.scale = self.scale + delta * self.slerp
+		if nearZero(delta) then self.scale = tScale
+		else self.scale = self.scale + delta * self.slerp end
 	end
 
 	if self.bounds then

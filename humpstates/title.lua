@@ -28,11 +28,20 @@ function titleState:draw()
 	lg.pop()
 end
 
-function titleState:keypressed(key)
-	if key == "return" then
+function titleState:mousepressed(x, y, button)
+	--if button == 1 then
 		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
 			humpstate.switch(editState)
 			humpstate.push(playState)
 		end)
-	end
+	--end
+end
+
+function titleState:keypressed(key)
+	--if key == "return" then
+		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
+			humpstate.switch(editState)
+			humpstate.push(playState)
+		end)
+	--end
 end
