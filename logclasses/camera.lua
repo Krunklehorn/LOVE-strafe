@@ -125,8 +125,6 @@ function Camera:init(data)
 end
 
 function Camera:update(tl)
-	local center = vec2(lg.getDimensions()) / 2
-
 	if self.ptarget then
 		local tPos = vec2.isVector(self.ptarget) and self.ptarget or self.ptarget[self.pkey]
 		local delta = tPos - self.pos
@@ -162,17 +160,14 @@ function Camera:draw()
 	lg.push("all")
 		lg.translate(self.pos:split())
 		lg.rotate(self.angle)
-		lg.setLineWidth(0.25)
 		Stache.setColor("red", 1)
 		lg.rectangle("line", -center.x, -center.y, lg.getDimensions())
 	lg.pop()
 end
 
 function Camera:attach()
-	local center = vec2(lg.getDimensions()) / 2
-
 	lg.push()
-	lg.translate(center:split())
+	lg.translate(lg.getWidth() / 2, lg.getHeight() / 2)
 	lg.rotate(-self.angle)
 	lg.scale(self.scale)
 	lg.translate((-self.pos):split())
@@ -308,16 +303,16 @@ function Camera:toWorld(x, y, nolerp)
 	scale = nolerp and scale or self.scale
 
 	point = point - center
-	point = point:rotated(-self.angle) / scale
+	point = point:rotated(self.angle) / scale
 	point = point + pos
 
 	return point
 end
 
-function Camera:toCamera(x, y, nolerp)
-	Stache.checkArg("x", x, "scalar/vector", "Camera:toCamera")
-	Stache.checkArg("y", y, "number", "Camera:toCamera", true)
-	Stache.checkArg("nolerp", nolerp, "boolean", "Camera:toCamera", true)
+function Camera:toScreen(x, y, nolerp)
+	Stache.checkArg("x", x, "scalar/vector", "Camera:toScreen")
+	Stache.checkArg("y", y, "number", "Camera:toScreen", true)
+	Stache.checkArg("nolerp", nolerp, "boolean", "Camera:toScreen", true)
 
 	local point = vec2.isVector(x) and x or vec2(x, y)
 	local center = vec2(lg.getDimensions()) / 2
@@ -328,7 +323,7 @@ function Camera:toCamera(x, y, nolerp)
 	scale = nolerp and scale or self.scale
 
 	point = point - pos
-	point = point:rotated(self.angle) * scale
+	point = point:rotated(-self.angle) * scale
 	point = point + center
 
 	return point

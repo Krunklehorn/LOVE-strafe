@@ -156,7 +156,7 @@ function editState:mousereleased(x, y, button)
 		self.toolState = nil
 	elseif button == 3 and not lm.isDown(1) and not lm.isDown(2) then
 		lm.setRelativeMode(false)
-		lm.setPosition(self.camera:toCamera(self.pmwpos):split())
+		lm.setPosition(self.camera:toScreen(self.pmwpos):split())
 	end
 end
 

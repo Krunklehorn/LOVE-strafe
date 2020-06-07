@@ -2,6 +2,7 @@ lfs = love.filesystem
 lg = love.graphics
 lk = love.keyboard
 lm = love.mouse
+lmth = love.math
 la = love.audio
 lw = love.window
 
@@ -60,7 +61,7 @@ function love.run()
 		end
 
 		if lg and lg.isActive() then
-			lg.clear(lg.getBackgroundColor())
+			lg.clear()
 			lg.origin()
 			if love.draw then
 				love.draw()

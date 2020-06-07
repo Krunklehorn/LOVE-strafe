@@ -50,8 +50,7 @@ end
 function Dummy:draw()
 	lg.push("all")
 		lg.translate(self.ppos:split())
-
-		lg.setLineWidth(0.25)
+		
 		Stache.setColor("white", 0.8)
 		lg.line(0, 0, self.vel:split())
 

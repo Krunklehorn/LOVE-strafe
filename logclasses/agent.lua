@@ -309,16 +309,17 @@ function Agent:draw()
 		Stache.debugLine(dbgVel, dbgSpd, "white", 0.4)
 
 		lg.rotate(self.angle)
-		lg.setLineWidth(0.25)
 		Stache.setColor("white", 0.4)
 		lg.line(0, 0, 0, -self.collider.radius)
 		Stache.debugPrintf{40, math.floor(self.vel.length + 0.5), xalign = "center"}
 	lg.pop()
 
 	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
-	lg.setLineWidth(0.25)
+
+	lg.push("all")
 	Stache.setColor("white", 0.5)
 	lg.circle("line", self.collider.pos.x, self.collider.pos.y, self.collider.radius)
+	lg.pop()
 end
 
 function Agent:changeState(next)
@@ -394,7 +395,8 @@ function Agent:togglePhysMode()
 end
 
 function Agent:updateCollider()
-	self.collider:update(Stache.ticklength, self.pos, self.vel)
+	self.collider.pos = self.pos
+	self.collider.vel = self.vel * Stache.ticklength
 end
 
 function Agent:isGrounded()

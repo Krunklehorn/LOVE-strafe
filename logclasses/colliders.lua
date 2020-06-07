@@ -13,11 +13,6 @@ function Collider:init(data)
 	Base.init(self, data)
 end
 
-function Collider:update(tl, pos, vel)
-	self.pos = pos
-	self.vel = vel * tl
-end
-
 function Collider:checkCastBounds(other)
 	local b1 = self:getCastBounds()
 	local b2 = other:getCastBounds()
@@ -189,6 +184,9 @@ function CircleCollider:init(data)
 end
 
 function CircleCollider:draw(color, scale, debug)
+	local shader = Stache.shaders.colliders
+	local camera = humpstate.current().camera
+
 	Stache.checkArg("color", color, "asset", "CircleCollider:draw", true)
 	Stache.checkArg("scale", scale, "number", "CircleCollider:draw", true)
 	Stache.checkArg("debug", debug, "boolean", "CircleCollider:draw", true)
@@ -198,13 +196,26 @@ function CircleCollider:draw(color, scale, debug)
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
-		lg.setLineWidth(0.25)
-		Stache.debugCircle(self.pos, self.radius * scale, color)
+		lg.setShader(shader)
+			Stache.setColor(color)
+			Stache.send(shader, "scale", camera.scale)
 
-		if debug == true and self.vel ~= vec2() then
-			Stache.debugCircle(self.ppos, self.radius * scale, color, 0.5)
-			Stache.debugLine(self.pos, self.ppos, color, 0.5)
-		end
+			Stache.send(shader, "type", SHADERTYPE_CIRCLE)
+			Stache.send(shader, "pos", { camera:toScreen(self.pos):split() })
+			Stache.send(shader, "radius", self.radius * scale * camera.scale)
+
+			lg.draw(SDF_UNITPLANE)
+
+			if debug == true and self.vel ~= vec2() then
+				Stache.setColor(color, 0.5)
+				Stache.send(shader, "pos", { camera:toScreen(self.ppos):split() })
+
+				lg.draw(SDF_UNITPLANE)
+				lg.setShader()
+
+				Stache.debugLine(self.pos, self.ppos, color, 0.5)
+			end
+		lg.setShader()
 	lg.pop()
 end
 
@@ -565,6 +576,9 @@ function BoxCollider:init(data)
 end
 
 function BoxCollider:draw(color, scale, debug)
+	local shader = Stache.shaders.colliders
+	local camera = humpstate.current().camera
+
 	Stache.checkArg("color", color, "asset", "BoxCollider:draw", true)
 	Stache.checkArg("scale", scale, "number", "BoxCollider:draw", true)
 	Stache.checkArg("debug", debug, "boolean", "BoxCollider:draw", true)
@@ -574,20 +588,35 @@ function BoxCollider:draw(color, scale, debug)
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
-		lg.setLineWidth(0.25)
-		Stache.setColor(color, 0.5)
-		lg.circle("fill", self.pos.x, self.pos.y, scale)
-
-		if debug == true and self.vel ~= vec2() then
-			Stache.debugNormal(self.pos, self.bow, "green", 1)
-			Stache.debugNormal(self.pos, self.star, "red", 1)
-			Stache.debugBox(self.ppos, self.angle, self.hwidth * scale, self.hheight * scale, self.radius, color, 0.5)
-			Stache.debugLine(self.pos, self.ppos, color, 0.5)
+		lg.push("all")
+			lg.translate(self.pos:split())
+			lg.rotate(self.angle)
 			Stache.setColor(color, 0.5)
-			lg.circle("fill", self.ppos.x, self.ppos.y, scale)
-		end
+			lg.rectangle("line", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
+		lg.pop()
 
-		Stache.debugBox(self.pos, self.angle, self.hwidth * scale, self.hheight * scale, self.radius, color)
+		lg.setShader(shader)
+			Stache.setColor(color)
+			Stache.send(shader, "scale", camera.scale)
+
+			Stache.send(shader, "type", SHADERTYPE_BOX)
+			Stache.send(shader, "pos", { camera:toScreen(self.pos):split() })
+			Stache.send(shader, "rotation", Stache.glslRotator(self.angle - camera.angle))
+			Stache.send(shader, "hdims", { (self.hdims * camera.scale):split() })
+			Stache.send(shader, "radius", self.radius * scale * camera.scale)
+
+			lg.draw(SDF_UNITPLANE)
+
+			if debug == true and self.vel ~= vec2() then
+				Stache.setColor(color, 0.5)
+				Stache.send(shader, "pos", { camera:toScreen(self.ppos):split() })
+
+				lg.draw(SDF_UNITPLANE)
+				lg.setShader()
+
+				Stache.debugLine(self.pos, self.ppos, color, 0.5)
+			end
+		lg.setShader()
 	lg.pop()
 end
 
@@ -657,6 +686,9 @@ function LineCollider:init(data)
 end
 
 function LineCollider:draw(color, scale, debug)
+	local shader = Stache.shaders.colliders
+	local camera = humpstate.current().camera
+
 	Stache.checkArg("color", color, "asset", "LineCollider:draw", true)
 	Stache.checkArg("scale", scale, "number", "LineCollider:draw", true)
 	Stache.checkArg("debug", debug, "boolean", "LineCollider:draw", true)
@@ -666,67 +698,31 @@ function LineCollider:draw(color, scale, debug)
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
-		lg.setLineWidth(0.25)
-		Stache.setColor(color, 1)
-		lg.circle("fill", self.p1.x, self.p1.y, scale)
-		lg.circle("fill", self.p2.x, self.p2.y, scale)
+		Stache.setColor(color)
 		Stache.debugLine(self.p1, self.p2, color, 0.5)
 
-		if debug == true and self.vel ~= vec2() then
-			Stache.setColor(color, 0.5)
-			lg.circle("fill", self.pp1.x, self.pp1.y, scale)
-			lg.circle("fill", self.pp2.x, self.pp2.y, scale)
-			Stache.debugLine(self.pp1, self.p1, color, 0.5)
-			Stache.debugLine(self.pp2, self.p2, color, 0.5)
-		end
+		lg.setShader(shader)
+			Stache.setColor(color)
+			Stache.send(shader, "scale", camera.scale)
 
-		if self.radius == 0 then
-			Stache.debugLine(self.p1, self.p2, color)
-		else
-			local offset = self.normal * self.radius
-			local top = self.p1 + offset
-			local bot = self.p1 - offset
+			Stache.send(shader, "type", SHADERTYPE_LINE)
+			Stache.send(shader, "pos", { camera:toScreen(self.p1):split() })
+			Stache.send(shader, "delta", { (self.delta * camera.scale):rotated(-camera.angle):split() })
+			Stache.send(shader, "radius", self.radius * scale * camera.scale)
 
-			Stache.setColor(color, 1)
-			-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-			lg.arc("line", "open", self.p1.x, self.p1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
-			lg.arc("line", "open", self.p2.x, self.p2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
-			lg.line(top.x, top.y, (top + self.delta):split())
-			lg.line(bot.x, bot.y, (bot + self.delta):split())
-
-			Stache.setColor(color, 0.4)
-			-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-			lg.arc("fill", "open", self.p1.x, self.p1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
-			lg.arc("fill", "open", self.p2.x, self.p2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
-			lg.push("all")
-				lg.translate(self.p1:split())
-				lg.rotate(self.angle)
-				lg.rectangle("fill", 0, -self.radius, self.delta.length, self.radius * 2)
-			lg.pop()
+			lg.draw(SDF_UNITPLANE)
 
 			if debug == true and self.vel ~= vec2() then
-				local offset = self.normal * self.radius  -- TODO: MOVE SOME OF THIS TO STACHE.DEBUGCAP
-				local top = self.pp1 + offset
-				local bot = self.pp1 - offset
-
 				Stache.setColor(color, 0.5)
-				-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-				lg.arc("line", "open", self.pp1.x, self.pp1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
-				lg.arc("line", "open", self.pp2.x, self.pp2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
-				lg.line(top.x, top.y, (top + self.delta):split())
-				lg.line(bot.x, bot.y, (bot + self.delta):split())
+				Stache.send(shader, "pos", { camera:toScreen(self.ppos):split() })
 
-				Stache.setColor(color, 0.25)
-				-- TODO: MOVE THIS TO STACHE.DEBUGCAP
-				lg.arc("fill", "open", self.pp1.x, self.pp1.y, self.radius, MATH_PIO2 + self.angle, 3 * MATH_PIO2 + self.angle)
-				lg.arc("fill", "open", self.pp2.x, self.pp2.y, self.radius, -MATH_PIO2 + self.angle, MATH_PIO2 + self.angle)
-				lg.push("all")
-					lg.translate(self.pp1:split())
-					lg.rotate(self.angle)
-					lg.rectangle("fill", 0, -self.radius, self.delta.length, self.radius * 2)
-				lg.pop()
+				lg.draw(SDF_UNITPLANE)
+				lg.setShader()
+
+				Stache.debugLine(self.pp1, self.p1, color, 0.5)
+				Stache.debugLine(self.pp2, self.p2, color, 0.5)
 			end
-		end
+		lg.setShader()
 	lg.pop()
 end
 

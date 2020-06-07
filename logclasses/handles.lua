@@ -7,9 +7,9 @@ Handle = Base:extend("Handle", {
 		hover = { 1, 1, 0 },
 		pick = { 1, 0.5, 0 }
 	},
-	radius = 32,
-	scaleMin = 4,
-	scaleMax = 32,
+	radius = 16,
+	scaleMin = 2,
+	scaleMax = 8,
 	pmwpos = nil
 }):abstract("init", "update", "draw" , "drag", "pick")
 
@@ -59,7 +59,7 @@ function PointHandle:draw(scale)
 	d = 2 * radius
 
 	lg.push("all")
-		lg.setLineWidth(0.25 / scale)
+		lg.setLineWidth(LINE_WIDTH / scale)
 		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
 		lg.rectangle("line", x, y, d, d)
 		lg.setColor(r, g, b, self.state == "idle" and 0.25 or 0.5)
@@ -140,7 +140,7 @@ function VectorHandle:draw(scale)
 	local tip = pos + self.delta
 
 	lg.push("all")
-		lg.setLineWidth(0.25 / scale)
+		lg.setLineWidth(LINE_WIDTH / scale)
 		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
 		lg.circle("line", tip.x, tip.y, Handle.radius / scale)
 		lg.line(pos.x, pos.y, tip:split())

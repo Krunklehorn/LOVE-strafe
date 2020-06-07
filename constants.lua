@@ -4,6 +4,16 @@ MATH_PIO2 = math.pi / 2
 
 NULL_FUNC = function() end
 
+LINE_WIDTH = 0.25
+SDF_UNITPLANE = lg.newMesh({{  1, -1,  1,  1 }, -- x, y, u, v
+							{ -1, -1,  0,  1 },
+							{ -1,  1,  0,  0 },
+							{  1,  1,  1,  0 }}, "fan", "static")
+
+SHADERTYPE_CIRCLE = 1
+SHADERTYPE_BOX = 2
+SHADERTYPE_LINE = 3
+
 FONT_BLOWUP = 100
 FONT_SHRINK = 1 / FONT_BLOWUP
 

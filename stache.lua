@@ -53,8 +53,9 @@ Stache = {
 		cyan = { 0, 1, 1 },
 		magenta = { 1, 0, 1 },
 		yellow = { 1, 1, 0 },
-		trigger = { 1, 1, 0, 0.25 }
+		trigger = { 1, 1, 1, 0.25 }
 	},
+	shaders = {},
 	sprites = {},
 	actors = {},
 	players = {}
@@ -234,6 +235,8 @@ function Stache.load()
 	end
 
 	lg.setDefaultFilter("nearest", "nearest", 1)
+	lg.setLineWidth(LINE_WIDTH)
+
 	Stache.fonts.default = lg.setNewFont(FONT_BLOWUP)
 	Stache.fonts.default:setLineHeight(FONT_BLOWUP / Stache.fonts.default:getHeight())
 	bitser.register("fonts.default", Stache.fonts.default)
@@ -280,6 +283,15 @@ function Stache.load()
 		local name, extension = string.match(fs, "(.+)%.(.+)")
 		Stache.sprites[name] = lg.newImage("sprites/"..fs)
 		bitser.register("sprites."..fs, Stache.sprites[name])
+	end
+
+	filestrings = lfs.getDirectoryItems("shaders")
+	for _, fs in ipairs(filestrings) do
+		local name, extension = string.match(fs, "(.+)%.(.+)")
+		if extension == "frag" then
+			Stache.shaders[name] = lg.newShader(lfs.read("shaders/"..name..".frag"), lfs.read("shaders/"..name..".vert"))
+			bitser.register("shaders."..fs, Stache.shaders[name])
+		end
 	end
 
 	subDir = Stache.actors
@@ -458,6 +470,20 @@ function Stache.setColor(color, alpha)
 	lg.setColor(Stache.colorUnpack(color, alpha))
 end
 
+function Stache.send(shader, uniform, data)
+	if shader:hasUniform(uniform) then
+		shader:send(uniform, data) end
+end
+
+function Stache.glslRotator(angle)
+	Stache.checkArg("angle", angle, "number", "Stache.glslRotator")
+
+	local c = math.cos(angle)
+	local s = math.sin(angle)
+
+	return { c, -s, s, c }
+end
+
 function Stache.debugCircle(pos, radius, color, alpha)
 	Stache.checkArg("pos", pos, "vector", "Stache.debugCircle")
 	Stache.checkArg("radius", radius, "number", "Stache.debugCircle", true)
@@ -470,7 +496,6 @@ function Stache.debugCircle(pos, radius, color, alpha)
 
 	lg.push("all")
 		lg.translate(pos:split())
-		lg.setLineWidth(0.25)
 		Stache.setColor(color, alpha)
 		lg.circle("line", 0, 0, radius)
 		Stache.setColor(color, 0.4 * alpha)
@@ -497,7 +522,6 @@ function Stache.debugBox(pos, angle, hwidth, hheight, radius, color, alpha)
 		lg.translate(pos:split())
 		lg.rotate(angle)
 
-		lg.setLineWidth(0.25)
 		Stache.setColor(color, 0.5 * alpha)
 		lg.rectangle("line", -hwidth, -hheight, hwidth * 2, hheight * 2)
 
@@ -523,7 +547,6 @@ function Stache.debugLine(p1, p2, color, alpha)
 	alpha = alpha or 1
 
 	lg.push("all")
-		lg.setLineWidth(0.25)
 		Stache.setColor(color, alpha)
 		lg.line(p1.x, p1.y, p2:split())
 	lg.pop()
@@ -540,7 +563,6 @@ function Stache.debugNormal(orig, dir, color, alpha)
 
 	lg.push("all")
 		lg.translate(orig:split())
-		lg.setLineWidth(0.25)
 		Stache.setColor(color, alpha)
 		lg.line(0, 0, dir.x, dir.y)
 	lg.pop()
@@ -557,7 +579,6 @@ function Stache.debugTangent(orig, dir, color, alpha)
 
 	lg.push("all")
 		lg.translate(orig:split())
-		lg.setLineWidth(0.25)
 		Stache.setColor(color, alpha)
 		lg.line(0, 0, dir.x, dir.y)
 		lg.line(0, 0, -dir.x, -dir.y)
@@ -572,7 +593,6 @@ function Stache.debugBounds(bounds, color, alpha)
 	alpha = alpha or 1
 
 	lg.push("all")
-		lg.setLineWidth(0.25)
 		Stache.setColor(color, alpha)
 		lg.rectangle("line", bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top)
 	lg.pop()
