@@ -206,14 +206,14 @@ function CircleCollider:draw(color, scale, debug)
 			Stache.send(shader, "scale", camera.scale)
 
 			Stache.send(shader, "type", SHADERTYPE_CIRCLE)
-			Stache.send(shader, "pos", { camera:toScreen(self.pos):split() })
+			Stache.send(shader, "pos", camera:toScreen(self.pos):table())
 			Stache.send(shader, "radius", self.radius * scale * camera.scale)
 
 			lg.draw(SDF_UNITPLANE)
 
 			if debug == true and self.vel ~= vec2() then
 				Stache.setColor(color, 0.5)
-				Stache.send(shader, "pos", { camera:toScreen(self.ppos):split() })
+				Stache.send(shader, "pos", camera:toScreen(self.ppos):table())
 
 				lg.draw(SDF_UNITPLANE)
 				lg.setShader()
@@ -608,16 +608,16 @@ function BoxCollider:draw(color, scale, debug)
 			Stache.send(shader, "scale", camera.scale)
 
 			Stache.send(shader, "type", SHADERTYPE_BOX)
-			Stache.send(shader, "pos", { camera:toScreen(self.pos):split() })
+			Stache.send(shader, "pos", camera:toScreen(self.pos):table())
 			Stache.send(shader, "rotation", Stache.glslRotator(self.angle - camera.angle))
-			Stache.send(shader, "hdims", { self.hdims:scaled(camera.scale):split() })
+			Stache.send(shader, "hdims", self.hdims:scaled(camera.scale):table())
 			Stache.send(shader, "radius", self.radius * scale * camera.scale)
 
 			lg.draw(SDF_UNITPLANE)
 
 			if debug == true and self.vel ~= vec2() then
 				Stache.setColor(color, 0.5)
-				Stache.send(shader, "pos", { camera:toScreen(self.ppos):split() })
+				Stache.send(shader, "pos", camera:toScreen(self.ppos):table())
 
 				lg.draw(SDF_UNITPLANE)
 				lg.setShader()
@@ -724,15 +724,15 @@ function LineCollider:draw(color, scale, debug)
 			Stache.send(shader, "scale", camera.scale)
 
 			Stache.send(shader, "type", SHADERTYPE_LINE)
-			Stache.send(shader, "pos", { camera:toScreen(self.p1):split() })
-			Stache.send(shader, "delta", { self.delta:scaled(camera.scale):rotated(-camera.angle):split() })
+			Stache.send(shader, "pos", camera:toScreen(self.p1):table())
+			Stache.send(shader, "delta", self.delta:scaled(camera.scale):rotated(-camera.angle):table())
 			Stache.send(shader, "radius", self.radius * scale * camera.scale)
 
 			lg.draw(SDF_UNITPLANE)
 
 			if debug == true and self.vel ~= vec2() then
 				Stache.setColor(color, 0.5)
-				Stache.send(shader, "pos", { camera:toScreen(self.pp1):split() })
+				Stache.send(shader, "pos", camera:toScreen(self.pp1):table())
 
 				lg.draw(SDF_UNITPLANE)
 				lg.setShader()

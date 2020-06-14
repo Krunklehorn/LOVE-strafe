@@ -68,7 +68,7 @@ function Vector.getLength(v)
 end
 
 function Vector.getLengthSquared(v)
-	return v.x*v.x + v.y*v.y
+	return v.x * v.x + v.y * v.y
 end
 
 function Vector.getNormalized(v)
@@ -111,6 +111,13 @@ end
 function Vector.split(v)
 	return v.x, v.y
 end
+
+---------------------------------------------------------
+-- Krunk: Added for clarity when updating shader uniforms
+function Vector.table(v)
+	return { v.x, v.y }
+end
+---------------------------------------------------------
 
 function Vector.__newindex(t, k, v)
 	if k == "length" then

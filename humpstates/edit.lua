@@ -66,18 +66,18 @@ function editState:draw()
 
 			for _, brush in ipairs(playState.brushes) do
 				if brush:instanceOf(CircleCollider) then
-					Stache.send(shader, "circles["..c.."].pos", { camera:toScreen(brush.pos):split() })
+					Stache.send(shader, "circles["..c.."].pos", camera:toScreen(brush.pos):table())
 					Stache.send(shader, "circles["..c.."].radius", brush.radius * camera.scale)
 					c = c + 1;
 				elseif brush:instanceOf(BoxCollider) then
-					Stache.send(shader, "boxes["..b.."].pos", { camera:toScreen(brush.pos):split() })
+					Stache.send(shader, "boxes["..b.."].pos", camera:toScreen(brush.pos):table())
 					Stache.send(shader, "boxes["..b.."].rotation", Stache.glslRotator(brush.angle - camera.angle))
-					Stache.send(shader, "boxes["..b.."].hdims", { brush.hdims:scaled(camera.scale):split() })
+					Stache.send(shader, "boxes["..b.."].hdims", brush.hdims:scaled(camera.scale):table())
 					Stache.send(shader, "boxes["..b.."].radius", brush.radius * camera.scale)
 					b = b + 1;
 				elseif brush:instanceOf(LineCollider) then
-					Stache.send(shader, "lines["..l.."].pos", { camera:toScreen(brush.p1):split() })
-					Stache.send(shader, "lines["..l.."].delta", { brush.delta:scaled(camera.scale):rotated(-camera.angle):split() })
+					Stache.send(shader, "lines["..l.."].pos", camera:toScreen(brush.p1):table())
+					Stache.send(shader, "lines["..l.."].delta", brush.delta:scaled(camera.scale):rotated(-camera.angle):table())
 					Stache.send(shader, "lines["..l.."].radius", brush.radius * camera.scale)
 					l = l + 1;
 				end
