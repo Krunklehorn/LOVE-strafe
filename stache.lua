@@ -53,7 +53,7 @@ Stache = {
 		cyan = { 0, 1, 1 },
 		magenta = { 1, 0, 1 },
 		yellow = { 1, 1, 0 },
-		trigger = { 1, 1, 1, 0.25 }
+		trigger = { 1, 1, 0, 0.25 }
 	},
 	shaders = {},
 	sprites = {},
@@ -470,9 +470,9 @@ function Stache.setColor(color, alpha)
 	lg.setColor(Stache.colorUnpack(color, alpha))
 end
 
-function Stache.send(shader, uniform, data)
+function Stache.send(shader, uniform, ...)
 	if shader:hasUniform(uniform) then
-		shader:send(uniform, data) end
+		shader:send(uniform, ...) end
 end
 
 function Stache.glslRotator(angle)
@@ -552,9 +552,9 @@ function Stache.debugLine(p1, p2, color, alpha)
 	lg.pop()
 end
 
-function Stache.debugNormal(orig, dir, color, alpha)
+function Stache.debugNormal(orig, norm, color, alpha)
 	Stache.checkArg("orig", orig, "vector", "Stache.debugNormal")
-	Stache.checkArg("dir", dir, "vector", "Stache.debugNormal")
+	Stache.checkArg("norm", norm, "vector", "Stache.debugNormal")
 	Stache.checkArg("color", color, "asset", "Stache.debugNormal", true)
 	Stache.checkArg("alpha", alpha, "number", "Stache.debugNormal", true)
 
@@ -564,7 +564,24 @@ function Stache.debugNormal(orig, dir, color, alpha)
 	lg.push("all")
 		lg.translate(orig:split())
 		Stache.setColor(color, alpha)
-		lg.line(0, 0, dir.x, dir.y)
+		lg.line(0, 0, norm.x, norm.y)
+	lg.pop()
+end
+
+function Stache.debugTangent(orig, norm, color, alpha)
+	Stache.checkArg("orig", orig, "vector", "Stache.debugTangent")
+	Stache.checkArg("norm", norm, "vector", "Stache.debugTangent")
+	Stache.checkArg("color", color, "asset", "Stache.debugTangent", true)
+	Stache.checkArg("alpha", alpha, "number", "Stache.debugTangent", true)
+
+	color = color or "white"
+	alpha = alpha or 1
+
+	lg.push("all")
+		lg.translate(orig:split())
+		Stache.setColor(color, alpha)
+		lg.line(0, 0, norm.x, norm.y)
+		lg.line(0, 0, -norm.x, -norm.y)
 	lg.pop()
 end
 

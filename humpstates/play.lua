@@ -9,21 +9,41 @@ playState = {
 }
 
 function playState:init()
+	local UNIT_MAJOR = 1024
+	local UNIT_MAJOR4 = 1024 * 2 * 2
+	local UNIT_MAJOR24 = 1024 * 2 * 2 * 2 * 3
+
 	self.camera = Camera{}
-	self.camera:setBounds(10000)
 
 	self:addBackground{sprite = "parallax_grid", scale = vec2(32), scroll = vec2(1.25), alpha = 0.2}
 	self:addBackground{sprite = "parallax_grid", scale = vec2(4), alpha = 0.1}
 	self:addBackground{sprite = "parallax_grid", scale = vec2(2), alpha = 0.1}
 	self:addBackground{sprite = "parallax_screen", scale = vec2(2), scroll = vec2(0.25), alpha = 0.2}
 
-	self:addBrush{collider = LineCollider{ p1 = vec2(-2000, 0), p2 = vec2(2000, 0), radius = 300 }}
-	self:addBrush{collider = CircleCollider{ pos = vec2(-2000, 0), radius = 200 }, height = 50}
-	self:addBrush{collider = CircleCollider{ pos = vec2(2000, 0), radius = 200 }, height = 50}
+	self:addBrush{collider = LineCollider{ p1 = vec2(-UNIT_MAJOR4, 0), p2 = vec2(UNIT_MAJOR4, 0), radius = 256 }}
+	self:addBrush{collider = CircleCollider{ pos = vec2(-UNIT_MAJOR4, 0), radius = 128 }, height = 50}
+	self:addBrush{collider = CircleCollider{ pos = vec2(UNIT_MAJOR4, 0), radius = 128 }, height = 50}
 
-	self:addBrush{collider = LineCollider{ p1 = vec2(-3000, -11000), p2 = vec2(3000, -11000), radius = 900 }}
-	self:addBrush{collider = CircleCollider{ pos = vec2(-3000, -11000), radius = 800 }, height = 50}
-	self:addBrush{collider = CircleCollider{ pos = vec2(3000, -11000), radius = 800 }, height = 50}
+	self:addBrush{collider = LineCollider{ p1 = vec2(-UNIT_MAJOR4, -UNIT_MAJOR24), p2 = vec2(UNIT_MAJOR4, -UNIT_MAJOR24), radius = UNIT_MAJOR }}
+	self:addBrush{collider = CircleCollider{ pos = vec2(-UNIT_MAJOR4, -UNIT_MAJOR24), radius = 896 }, height = 50}
+	self:addBrush{collider = CircleCollider{ pos = vec2(UNIT_MAJOR4, -UNIT_MAJOR24), radius = 896 }, height = 50}
+	self:addBrush{collider = LineCollider{ p1 = vec2(-UNIT_MAJOR * 3, -UNIT_MAJOR * 25 + 256), p2 = vec2(UNIT_MAJOR * 3, -UNIT_MAJOR * 25 + 256), radius = 64 }, height = 50}
+
+	debug_vq3_gamma = Gamma{vec2(-1280, -256), rate = 190, power = 1.4, steps = 30}
+
+	for i = 1, debug_vq3_gamma.steps do
+		local pos = debug_vq3_gamma:getPos(i)
+
+		self:addBrush{collider = LineCollider{ p1 = vec2(pos.x - UNIT_MAJOR, pos.y), p2 = vec2(pos.x + UNIT_MAJOR, pos.y), radius = 128 }}
+	end
+
+	debug_cpm_gamma = Gamma{vec2(1280, -256), rate = 270, power = 1.39, steps = 24}
+
+	for i = 1, debug_cpm_gamma.steps do
+		local pos = debug_cpm_gamma:getPos(i)
+
+		self:addBrush{collider = LineCollider{ p1 = vec2(pos.x - UNIT_MAJOR, pos.y), p2 = vec2(pos.x + UNIT_MAJOR, pos.y), radius = 128 }}
+	end
 
 	local function respawnAgent(agent)
 		agent.pos.x = clamp(agent.pos.x, -1600, 1600)
@@ -35,7 +55,7 @@ function playState:init()
 		agent:changeState("air")
 	end
 
-	self:addTrigger{collider = BoxCollider{ pos = vec2(0, -6000), hwidth = 8000 }, height = -100, onOverlap = respawnAgent}
+	self:addTrigger{collider = BoxCollider{ pos = vec2(0, -UNIT_MAJOR * 12), hwidth = UNIT_MAJOR * 14 }, height = -100, onOverlap = respawnAgent}
 
 	Stache.players.active.agent = self:spawnAgent("strafer", { posz = 20 })
 
@@ -77,15 +97,54 @@ function playState:update(tl)
 end
 
 function playState:draw()
-	Stache.drawList(self.backgrounds, self.camera)
+	local shader = Stache.shaders.sdf
+	local active_player = Stache.players.active
+	local camera = self.camera
 
-	self.camera:attach()
+	Stache.drawList(self.backgrounds, camera)
 
-	Stache.drawList(self.brushes)
+	camera:attach()
+
+	lg.push("all")
+		lg.setShader(shader)
+			Stache.setColor("white")
+			Stache.send(shader, "scale", camera.scale)
+
+			local c, b, l = 0, 0, 0;
+
+			for _, brush in ipairs(self.brushes) do
+				if brush:instanceOf(CircleCollider) then
+					Stache.send(shader, "circles["..c.."].pos", { camera:toScreen(brush.pos):split() })
+					Stache.send(shader, "circles["..c.."].radius", brush.radius * camera.scale)
+					c = c + 1;
+				elseif brush:instanceOf(BoxCollider) then
+					Stache.send(shader, "boxes["..b.."].pos", { camera:toScreen(brush.pos):split() })
+					Stache.send(shader, "boxes["..b.."].rotation", Stache.glslRotator(brush.angle - camera.angle))
+					Stache.send(shader, "boxes["..b.."].hdims", { brush.hdims:scaled(camera.scale):split() })
+					Stache.send(shader, "boxes["..b.."].radius", brush.radius * camera.scale)
+					b = b + 1;
+				elseif brush:instanceOf(LineCollider) then
+					Stache.send(shader, "lines["..l.."].pos", { camera:toScreen(brush.p1):split() })
+					Stache.send(shader, "lines["..l.."].delta", { brush.delta:scaled(camera.scale):rotated(-camera.angle):split() })
+					Stache.send(shader, "lines["..l.."].radius", brush.radius * camera.scale)
+					l = l + 1;
+				end
+			end
+
+			Stache.send(shader, "numCircles", c)
+			Stache.send(shader, "numBoxes", b)
+			Stache.send(shader, "numLines", l)
+
+			lg.draw(SDF_UNITPLANE)
+		lg.setShader()
+	lg.pop()
+
 	Stache.drawList(self.agents)
 	Stache.drawList(self.props)
 	Stache.drawList(self.particles)
-	Stache.drawList(self.triggers)
+
+	debug_vq3_gamma:draw()
+	debug_cpm_gamma:draw()
 
 	if DEBUG_DRAW then
 		if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
@@ -94,7 +153,7 @@ function playState:draw()
 		if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
 	end
 
-	self.camera:detach()
+	camera:detach()
 
 	if humpstate.current() == self then
 	lg.push("all")
@@ -102,7 +161,7 @@ function playState:draw()
 		lg.scale(3)
 
 		lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
-		if Stache.players.active.boipy:down("up") then
+		if active_player.boipy:down("up") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_up_prs)
 		else
@@ -111,7 +170,7 @@ function playState:draw()
 		end
 
 		lg.translate(0, 60 / 3)
-		if Stache.players.active.boipy:down("down") then
+		if active_player.boipy:down("down") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_down_prs)
 		else
@@ -120,7 +179,7 @@ function playState:draw()
 		end
 
 		lg.translate(-60 / 3, 0)
-		if Stache.players.active.boipy:down("left") then
+		if active_player.boipy:down("left") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_left_prs)
 		else
@@ -129,7 +188,7 @@ function playState:draw()
 		end
 
 		lg.translate(120 / 3, 0)
-		if Stache.players.active.boipy:down("right") then
+		if active_player.boipy:down("right") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.arrowbtn_right_prs)
 		else
@@ -138,7 +197,7 @@ function playState:draw()
 		end
 
 		lg.translate(-140 / 3, 60 / 3)
-		if Stache.players.active.boipy:down("jump") then
+		if active_player.boipy:down("jump") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.spacebtn_prs)
 		else
@@ -147,7 +206,7 @@ function playState:draw()
 		end
 
 		lg.translate(140 / 3, 0)
-		if Stache.players.active.boipy:down("crouch") then
+		if active_player.boipy:down("crouch") then
 			Stache.setColor("white", 0.8)
 			lg.draw(Stache.sprites.crouchbtn_prs)
 		else
@@ -158,7 +217,7 @@ function playState:draw()
 
 	lg.push("all")
 		Stache.setColor("white", 0.8)
-		Stache.debugPrintf{40, Stache.players.active.agent.physmode, 5}
+		Stache.debugPrintf{40, active_player.agent.physmode, 5}
 	lg.pop()
 	end
 end

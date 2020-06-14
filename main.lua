@@ -5,6 +5,7 @@ lm = love.mouse
 lmth = love.math
 la = love.audio
 lw = love.window
+lt = love.timer
 
 require "constants"
 require "includes"
@@ -26,7 +27,7 @@ function love.run()
 	local accumulator = 0
 
 	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
-	if love.timer then love.timer.step() end
+	if lt then lt.step() end
 
 	return function()
 		if love.event then
@@ -40,8 +41,8 @@ function love.run()
 			end
 		end
 
-		if love.timer then
-			delta_time = love.timer.step() end
+		if lt then
+			delta_time = lt.step() end
 
 		accumulator = accumulator + delta_time
 		while accumulator >= Stache.ticklength do
@@ -70,7 +71,7 @@ function love.run()
 			lg.present()
 		end
 
-		if love.timer then love.timer.sleep(0.001) end
+		if lt then lt.sleep(0.001) end
 	end
 end
 

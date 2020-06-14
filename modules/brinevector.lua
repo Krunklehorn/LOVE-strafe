@@ -27,15 +27,15 @@ local VECTORTYPE = "cdata"
 
 if jit and jit.status() then
 	ffi = require "ffi"
-	------------------------------------------------------------------------------
-	-- Krunk: Modified to fix compatibility with serializer modules like bitser...
+	---------------------------------------------------------------------------
+	-- Krunk: Modified to fix compatibility with serializer modules like bitser
 	ffi.cdef[[
 	typedef struct _brinevector {
 		double x;
 		double y;
 	} brinevector;
 	]]
-	------------------------------------------------------------------------------
+	---------------------------------------------------------------------------
 else
 	VECTORTYPE = "table"
 end
@@ -155,21 +155,37 @@ function Vector.clamp(v, topleft, bottomright)
 	)
 end
 
-function Vector.hadamard(v1, v2) -- also known as "Componentwise Multiplication"
-	return Vector(v1.x * v2.x, v1.y * v2.y)
+----------------------------------------
+-- Krunk: Added to use for chain calling
+function Vector.translated(v1, v2)
+	return Vector(v1.x + v2.x, v1.y + v2.y)
 end
+----------------------------------------
+
+--------------------------------------------------------
+-- Krunk: Renamed from hadamard to use for chain calling
+function Vector.scaled(v1, v2)
+	if type(v2) == "number" then
+		return Vector(v1.x * v2, v1.y * v2)
+	elseif type(v2) == VECTORTYPE then
+		return Vector(v1.x * v2.x, v1.y * v2.y)
+	end
+end
+--------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------
 -- Krunk: Modified to allow precalculated cosine and sine values to be supplied for efficiency
 function Vector.rotated(v, param1, param2)
-	if not param2 then -- Krunk: Param1 is an angle to rotate by
-		local length = v.length
+	local length = v.length
+
+	if not param2 then
 		local new_angle = v.angle + param1
-		return Vector(math.cos(new_angle) * length, math.sin(new_angle) * length)
-	else -- Krunk: Params1 and 2 are precalculated cosine and sine values for a rotation matrix
-		return Vector(v.x * param1 - v.y * param2,
-					  v.y * param1 + v.x * param2)
+
+		param1 = math.cos(new_angle)
+		param2 = math.sin(new_angle)
 	end
+
+	return Vector(param1 * length, param2 * length)
 end
 ----------------------------------------------------------------------------------------------
 

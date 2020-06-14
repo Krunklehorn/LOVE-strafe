@@ -100,7 +100,7 @@ function Base:checkSet(key, value, query, nillable, copy)
 				Stache.formatError("Attempted to set '%s' key of class '%s' to a value that isn't of type '%s': %q", key, thisClass, query.name, value)
 			end
 		else
-			Stache.formatError("self:checkSet() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
+			Stache.formatError("checkSet() called with a 'query' argument that hasn't been setup for type-checking yet: %q", query)
 		end
 	end
 

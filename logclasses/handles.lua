@@ -50,7 +50,7 @@ end
 function PointHandle:draw(scale)
 	scale = clamp(scale, Handle.scaleMin, Handle.scaleMax)
 
-	local r, g, b = unpack(self.colors[self.state])
+	local color = self.colors[self.state]
 	local radius = Handle.radius / scale
 	local x, y, d
 
@@ -60,9 +60,11 @@ function PointHandle:draw(scale)
 
 	lg.push("all")
 		lg.setLineWidth(LINE_WIDTH / scale)
-		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
+		Stache.setColor("white", self.state == "idle" and 0.5 or 1)
+		lg.circle("fill", self.pos.x, self.pos.y, LINE_WIDTH * 2 / scale)
+		Stache.setColor(color, self.state == "idle" and 0.5 or 1)
 		lg.rectangle("line", x, y, d, d)
-		lg.setColor(r, g, b, self.state == "idle" and 0.25 or 0.5)
+		Stache.setColor(color, self.state == "idle" and 0.25 or 0.5)
 		lg.rectangle("fill", x, y, d, d)
 	lg.pop()
 end
@@ -70,7 +72,7 @@ end
 function PointHandle:drag(mwpos, interval)
 	self.pos = self.ppos + mwpos - Handle.pmwpos
 
-	if not lk.isDown("lctrl", "rctrl") then
+	if lk.isDown("lctrl", "rctrl") then
 		self.pos = snap(self.pos, interval) end
 
 	self.target[self.pkey] = self.pos
@@ -135,24 +137,27 @@ end
 function VectorHandle:draw(scale)
 	scale = clamp(scale, Handle.scaleMin, Handle.scaleMax)
 
-	local r, g, b = unpack(self.colors[self.state])
+	local color = self.colors[self.state]
+	local radius = Handle.radius / scale
 	local pos = self.target[self.pkey]
 	local tip = pos + self.delta
 
 	lg.push("all")
 		lg.setLineWidth(LINE_WIDTH / scale)
-		lg.setColor(r, g, b, self.state == "idle" and 0.5 or 1)
-		lg.circle("line", tip.x, tip.y, Handle.radius / scale)
+		Stache.setColor("white", self.state == "idle" and 0.5 or 1)
+		lg.circle("fill", tip.x, tip.y, LINE_WIDTH * 2 / scale)
+		Stache.setColor(color, self.state == "idle" and 0.5 or 1)
+		lg.circle("line", tip.x, tip.y, radius)
 		lg.line(pos.x, pos.y, tip:split())
-		lg.setColor(r, g, b, self.state == "idle" and 0.25 or 0.5)
-		lg.circle("fill", tip.x, tip.y, Handle.radius / scale)
+		Stache.setColor(color, self.state == "idle" and 0.25 or 0.5)
+		lg.circle("fill", tip.x, tip.y, radius)
 	lg.pop()
 end
 
 function VectorHandle:drag(mwpos, interval)
 	self.delta = self.pdelta + mwpos - Handle.pmwpos
 
-	if not lk.isDown("lctrl", "rctrl") then
+	if lk.isDown("lctrl", "rctrl") then
 		self.delta = snap(self.delta, interval) end
 
 	self.target[self.dkey] = self.delta

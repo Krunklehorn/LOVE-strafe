@@ -4,7 +4,7 @@ MATH_PIO2 = math.pi / 2
 
 NULL_FUNC = function() end
 
-LINE_WIDTH = 0.25
+LINE_WIDTH = 1
 SDF_UNITPLANE = lg.newMesh({{  1, -1,  1,  1 }, -- x, y, u, v
 							{ -1, -1,  0,  1 },
 							{ -1,  1,  0,  0 },
