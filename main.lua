@@ -93,6 +93,8 @@ function love.keypressed(key)
 end
 
 function love.resize(w, h)
+	SDF_CANVAS = lg.newCanvas()
+
 	if not lw.getFullscreen() then
 		local dw, dh = lw.getDesktopDimensions()
 		lw.setPosition(dw - w - 40, 40) end

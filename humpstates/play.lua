@@ -37,7 +37,7 @@ function playState:init()
 		self:addBrush{collider = LineCollider{ p1 = vec2(pos.x - UNIT_MAJOR, pos.y), p2 = vec2(pos.x + UNIT_MAJOR, pos.y), radius = 128 }}
 	end
 
-	debug_cpm_gamma = Gamma{vec2(1280, -256), rate = 270, power = 1.39, steps = 24}
+	debug_cpm_gamma = Gamma{vec2(1280, -256), rate = 260, power = 1.4, steps = 24}
 
 	for i = 1, debug_cpm_gamma.steps do
 		local pos = debug_cpm_gamma:getPos(i)
@@ -97,48 +97,11 @@ function playState:update(tl)
 end
 
 function playState:draw()
-	local shader = Stache.shaders.sdf
-	local active_player = Stache.players.active
-	local camera = self.camera
+	Stache.drawList(self.backgrounds, self.camera)
 
-	Stache.drawList(self.backgrounds, camera)
+	self.camera:attach()
 
-	camera:attach()
-
-	lg.push("all")
-		lg.setShader(shader)
-			Stache.setColor("white")
-			Stache.send(shader, "scale", camera.scale)
-
-			local c, b, l = 0, 0, 0;
-
-			for _, brush in ipairs(self.brushes) do
-				if brush:instanceOf(CircleCollider) then
-					Stache.send(shader, "circles["..c.."].pos", camera:toScreen(brush.pos):table())
-					Stache.send(shader, "circles["..c.."].radius", brush.radius * camera.scale)
-					c = c + 1;
-				elseif brush:instanceOf(BoxCollider) then
-					Stache.send(shader, "boxes["..b.."].pos", camera:toScreen(brush.pos):table())
-					Stache.send(shader, "boxes["..b.."].rotation", Stache.glslRotator(brush.angle - camera.angle))
-					Stache.send(shader, "boxes["..b.."].hdims", brush.hdims:scaled(camera.scale):table())
-					Stache.send(shader, "boxes["..b.."].radius", brush.radius * camera.scale)
-					b = b + 1;
-				elseif brush:instanceOf(LineCollider) then
-					Stache.send(shader, "lines["..l.."].pos", camera:toScreen(brush.p1):table())
-					Stache.send(shader, "lines["..l.."].delta", brush.delta:scaled(camera.scale):rotated(-camera.angle):table())
-					Stache.send(shader, "lines["..l.."].radius", brush.radius * camera.scale)
-					l = l + 1;
-				end
-			end
-
-			Stache.send(shader, "numCircles", c)
-			Stache.send(shader, "numBoxes", b)
-			Stache.send(shader, "numLines", l)
-
-			lg.draw(SDF_UNITPLANE)
-		lg.setShader()
-	lg.pop()
-
+	Stache.batchSDF(playState.brushes, self.camera)
 	Stache.drawList(self.agents)
 	Stache.drawList(self.props)
 	Stache.drawList(self.particles)
@@ -153,12 +116,14 @@ function playState:draw()
 		if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
 	end
 
-	camera:detach()
+	self.camera:detach()
 
 	if humpstate.current() == self then
 	lg.push("all")
 		lg.translate(-8 * 3, -8 * 3)
 		lg.scale(3)
+
+		local active_player = Stache.players.active
 
 		lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
 		if active_player.boipy:down("up") then

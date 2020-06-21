@@ -49,48 +49,11 @@ function editState:update(tl)
 end
 
 function editState:draw()
-	local shader = Stache.shaders.sdf
-	local active_player = Stache.players.active
-	local camera = self.camera
-
 	self.grid:draw()
 
 	self.grid:push("all")
 
-	lg.push("all")
-		lg.setShader(shader)
-			Stache.setColor("white")
-			Stache.send(shader, "scale", camera.scale)
-
-			local c, b, l = 0, 0, 0;
-
-			for _, brush in ipairs(playState.brushes) do
-				if brush:instanceOf(CircleCollider) then
-					Stache.send(shader, "circles["..c.."].pos", camera:toScreen(brush.pos):table())
-					Stache.send(shader, "circles["..c.."].radius", brush.radius * camera.scale)
-					c = c + 1;
-				elseif brush:instanceOf(BoxCollider) then
-					Stache.send(shader, "boxes["..b.."].pos", camera:toScreen(brush.pos):table())
-					Stache.send(shader, "boxes["..b.."].rotation", Stache.glslRotator(brush.angle - camera.angle))
-					Stache.send(shader, "boxes["..b.."].hdims", brush.hdims:scaled(camera.scale):table())
-					Stache.send(shader, "boxes["..b.."].radius", brush.radius * camera.scale)
-					b = b + 1;
-				elseif brush:instanceOf(LineCollider) then
-					Stache.send(shader, "lines["..l.."].pos", camera:toScreen(brush.p1):table())
-					Stache.send(shader, "lines["..l.."].delta", brush.delta:scaled(camera.scale):rotated(-camera.angle):table())
-					Stache.send(shader, "lines["..l.."].radius", brush.radius * camera.scale)
-					l = l + 1;
-				end
-			end
-
-			Stache.send(shader, "numCircles", c)
-			Stache.send(shader, "numBoxes", b)
-			Stache.send(shader, "numLines", l)
-
-			lg.draw(SDF_UNITPLANE)
-		lg.setShader()
-	lg.pop()
-
+	Stache.batchSDF(playState.brushes, self.camera)
 	Stache.drawList(playState.agents)
 	Stache.drawList(playState.props)
 	Stache.drawList(playState.particles)
@@ -165,16 +128,14 @@ function editState:mousepressed(x, y, button)
 			if lk.isDown("lctrl", "rctrl") then
 				mwpos = snap(mwpos, self.grid:minorInterval()) end
 
-			--[[for _, brush in ipairs(playState.brushes) do
+			for _, brush in ipairs(playState.brushes) do
 				local result = brush:pick(mwpos)
 
 				if result.distance <= 0 and (not height or brush.height > height) then
 					height = brush.height end
 			end
 
-			height = height and height + 40 or 0]]
-
-			height = 0
+			height = height and height + 40 or 0
 
 			if self.activeTool == "Circle" then brush = playState:addBrush{collider = CircleCollider{ pos = mwpos }, height = height}
 			elseif self.activeTool == "Box" then brush = playState:addBrush{collider = BoxCollider{ pos = mwpos, hwidth = 32, radius = 32 }, height = height}

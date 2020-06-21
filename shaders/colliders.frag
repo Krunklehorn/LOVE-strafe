@@ -2,7 +2,7 @@
 
 #define MATH_HUGE 100000
 
-uniform float scale = 1;
+uniform float scale;
 uniform float line_width = 1;
 
 uniform int type;

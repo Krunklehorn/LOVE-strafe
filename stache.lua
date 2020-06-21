@@ -646,6 +646,83 @@ function Stache.drawList(table, ...)
 		table[t]:draw(...) end
 end
 
+function Stache.batchSDF(brushes, camera)
+	local shader = Stache.shaders.sdf
+	SDF_CANVAS:renderTo(lg.clear)
+
+	lg.push("all")
+		lg.setShader(shader)
+			lg.setBlendMode("replace")
+			Stache.send(shader, "scale", camera.scale)
+
+			local heights = {}
+
+			for _, brush in ipairs(brushes) do
+				if not heights[brush.height] then
+					heights[brush.height] = {} end
+
+				table.insert(heights[brush.height], brush)
+			end
+
+			for height, list in spairs(heights) do
+				local c, b, l = 0, 0, 0
+
+				for _, brush in ipairs(list) do
+					if brush:instanceOf(CircleCollider) then
+						Stache.send(shader, "circles["..c.."].pos", camera:toScreen(brush.pos):table())
+						Stache.send(shader, "circles["..c.."].radius", brush.radius * camera.scale)
+						c = c + 1
+					elseif brush:instanceOf(BoxCollider) then
+						Stache.send(shader, "boxes["..b.."].pos", camera:toScreen(brush.pos):table())
+						Stache.send(shader, "boxes["..b.."].rotation", Stache.glslRotator(brush.angle - camera.angle))
+						Stache.send(shader, "boxes["..b.."].hdims", brush.hdims:scaled(camera.scale):table())
+						Stache.send(shader, "boxes["..b.."].radius", brush.radius * camera.scale)
+						b = b + 1
+					elseif brush:instanceOf(LineCollider) then
+						Stache.send(shader, "lines["..l.."].pos", camera:toScreen(brush.p1):table())
+						Stache.send(shader, "lines["..l.."].delta", brush.delta:scaled(camera.scale):rotated(-camera.angle):table())
+						Stache.send(shader, "lines["..l.."].radius", brush.radius * camera.scale)
+						l = l + 1
+					end
+				end
+
+				Stache.send(shader, "canvas", SDF_CANVAS)
+				Stache.send(shader, "height", height)
+
+				Stache.send(shader, "numCircles", c)
+				Stache.send(shader, "numBoxes", b)
+				Stache.send(shader, "numLines", l)
+
+				lg.setCanvas(SDF_CANVAS) -- Forces canvas to finish, avoids glitchy texture reads...
+				lg.draw(SDF_UNITPLANE)
+				lg.setCanvas()
+			end
+		lg.setShader()
+
+		lg.origin()
+		lg.setBlendMode("alpha", "premultiplied")
+		lg.draw(SDF_CANVAS)
+	lg.pop()
+end
+
+function spairs(t)
+	local a, i = {}, 0
+
+	for k in pairs(t) do
+		table.insert(a, k) end
+
+	table.sort(a)
+
+	return function()
+		i = i + 1
+		if a[i] == nil then
+			return nil
+		else
+			return a[i], t[a[i]]
+		end
+	end
+end
+
 function abs(x)
 	Stache.checkArg("x", x, "scalar/vector", "abs")
 
