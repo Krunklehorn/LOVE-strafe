@@ -32,12 +32,12 @@ function Gamma:assign(key, value)
 end
 
 function Gamma:init(data)
-	data.origin = Stache.checkArg("origin", data[1] or data.origin, "vector", "Gamma:init")
-	data.dir = Stache.checkArg("dir", data[2] or data.dir, "vector", "Gamma:init", true, vec2.dir("up"))
-	data.offset = Stache.checkArg("offset", data[3] or data.offset, "number", "Gamma:init", true, 0)
-	data.rate = Stache.checkArg("rate", data[4] or data.rate, "number", "Gamma:init", true, 0)
-	data.power = Stache.checkArg("power", data[5] or data.power, "number", "Gamma:init", true, 1)
-	data.steps = Stache.checkArg("steps", data[6] or data.steps, "number", "Gamma:init", true, 1)
+	data.origin = stache.checkArg("origin", data[1] or data.origin, "vector", "Gamma:init")
+	data.dir = stache.checkArg("dir", data[2] or data.dir, "vector", "Gamma:init", true, vec2.dir("up"))
+	data.offset = stache.checkArg("offset", data[3] or data.offset, "number", "Gamma:init", true, 0)
+	data.rate = stache.checkArg("rate", data[4] or data.rate, "number", "Gamma:init", true, 0)
+	data.power = stache.checkArg("power", data[5] or data.power, "number", "Gamma:init", true, 1)
+	data.steps = stache.checkArg("steps", data[6] or data.steps, "number", "Gamma:init", true, 1)
 
 	for i = 1, 6 do
 		data[i] = nil end
@@ -50,19 +50,19 @@ function Gamma:draw()
 		for i = 0, self.steps do
 			local pos = self:getPos(i)
 
-			Stache.debugTangent(pos, self.normal * 512, "yellow", 1)
+			stache.debugTangent(pos, self.normal * 512, "yellow", 1)
 		end
 	lg.pop()
 end
 
 function Gamma:getStep(index)
-	index = floor(Stache.checkArg("index", index, "number", "Gamma:getStep"))
+	index = floor(stache.checkArg("index", index, "number", "Gamma:getStep"))
 
 	return self.offset + self.rate * math.pow(index, self.power)
 end
 
 function Gamma:getPos(index)
-	index = floor(Stache.checkArg("index", index, "number", "Gamma:getPos"))
+	index = floor(stache.checkArg("index", index, "number", "Gamma:getPos"))
 
 	return self.origin + self.dir * self:getStep(index)
 end

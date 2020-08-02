@@ -4,6 +4,9 @@ A top-down 2D tech demo of Quake-based strafe jumping physics using the LÖVE en
 
 Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld source codes.
 
+This project has been shelved and will remain a tech demo until further notice. The latest build is fully functional and can be found in the releases section.
+
+
 ![VQ3 physics in LÖVEstrafe](meta/LÖVEstrafe_200507_1.png)
 ![CPM physics in LÖVEstrafe](meta/LÖVEstrafe_200507_2.png)
 ![CPM physics in LÖVEstrafe](meta/LÖVEstrafe_200507_3.png)
@@ -18,6 +21,7 @@ Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld
 | Space | Jump |
 | C | Crouch |
 | V | Physics |
+| P | Pause |
 | M | Fullscreen |
 | Backspace | Edit Mode |
 
@@ -32,35 +36,28 @@ Currently supports VQ3 and CPM physics models according to the Quake2/QuakeWorld
 | 3 | Line |
 | J | Save |
 | K | Load |
-| Ctrl | Disable Snap |
+| Ctrl | Snap |
 | M | Fullscreen |
 | Enter | Play Mode |
 
 
-# Future Plans
+# Planned Features
 
-- Support for crouch sliding (Quake 4)
+- Support for crouch sliding (Quake 4 style)
+- Tweakable gamma generator
 - Stage select with presets for all skill levels
-- Tweakable generator for quickly creating a series of jumps (referred to as a "gamma")
-- Sfx for footsteps and jumps
-- Alternate camera and control styles like world lock or touchscreen mode
 
 
 # Special Thanks
 
-These amazing modules helped me build it! ...
+These amazing modules helped me build it!
 
+[o-ten-one](https://github.com/love2d-community/splashes)  
 [30log](https://github.com/Yonaba/30log)  
-[anim8](https://github.com/kikito/anim8) (planned)  
 [bitser](https://github.com/gvx/bitser)  
 [boipushy](https://github.com/adnzzzzZ/boipushy)  
 [brinevector](https://github.com/novemberisms/brinevector)  
-[Editgrid](https://github.com/bakpakin/Editgrid)  
+[editgrid](https://github.com/bakpakin/Editgrid)  
 [flux](https://github.com/rxi/flux)  
 [hump](https://github.com/vrld/hump)  
-
-
-...and these two helped me deploy it!
-
 [boon](https://github.com/camchenry/boon)  
-[LoveWebBuilder](https://github.com/schellingb/LoveWebBuilder) (planned)

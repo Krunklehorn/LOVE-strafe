@@ -3,11 +3,11 @@ introState = {
 }
 
 function introState:enter()
-	Stache.fade = 0
+	stache.fade = 0
 
-	self.splash = o_ten_one{background = Stache.colors.black}
+	self.splash = o_ten_one{background = stache.colors.black}
 	self.splash.onDone = function()
-		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
+		flux.to(stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
 			humpstate.switch(titleState) end) end
 end
 

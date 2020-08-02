@@ -45,8 +45,8 @@ Agent = Entity:extend("Agent", {
 })
 
 function Agent:init(data)
-	Stache.checkArg("posz", data.posz, "number", "Agent:init", true)
-	Stache.checkArg("velz", data.velz, "number", "Agent:init", true)
+	stache.checkArg("posz", data.posz, "number", "Agent:init", true)
+	stache.checkArg("velz", data.velz, "number", "Agent:init", true)
 
 	data.posz = data.posz or 0
 	data.velz = data.velz or 0
@@ -280,13 +280,13 @@ function Agent:update(tl)
 
 	-- Play sfx based on state...
 	if self:isGrounded() then
-		if self.state == "move" then
+		if self.state == "move" and self.action ~= "crouch" then
 			self.grndMoveTicks = self.grndMoveTicks + (tl ~= 0 and 1 or 0)
 
-			if self.grndMoveTicks % (60 / 2) == 0 then
-				Stache.play("gunz_step_concrete1", 50, 100, 0, 5)
-			elseif self.grndMoveTicks % (60 / 2) == (60 / 4) then
-				Stache.play("gunz_step_concrete2", 50, 100, 0, 5) end
+			if self.grndMoveTicks % (stache.tickrate / 2) == 0 then
+				stache.play("gunz_step_concrete1", 50, 100, 10, 10)
+			elseif self.grndMoveTicks % (stache.tickrate / 2) == (stache.tickrate / 4) then
+				stache.play("gunz_step_concrete2", 50, 100, 10, 10) end
 		end
 	end
 
@@ -303,21 +303,21 @@ function Agent:draw()
 					 self.action == "tuck") and 2 or 1
 
 	lg.push("all")
-		Stache.debugNormal(self.pos, dbgVel, "white", 0.8)
-		Stache.debugNormal(self.pos, dbgAxis, "white", 0.8)
+		stache.debugNormal(self.pos, dbgVel, "white", 0.8)
+		stache.debugNormal(self.pos, dbgAxis, "white", 0.8)
 		lg.translate(self.pos:split())
-		Stache.debugLine(dbgVel, dbgSpd, "white", 0.4)
+		stache.debugLine(dbgVel, dbgSpd, "white", 0.4)
 
 		lg.rotate(self.angle)
-		Stache.setColor("white", 0.4)
+		stache.setColor("white", 0.4)
 		lg.line(0, 0, 0, -self.collider.radius)
-		Stache.debugPrintf{40, math.floor(self.vel.length + 0.5), xalign = "center"}
+		stache.debugPrintf{40, math.floor(self.vel.length + 0.5), xalign = "center"}
 	lg.pop()
 
 	self.collider:draw(self:isGrounded() and "red" or "cyan", (1 + self.posz / 100) / crouchScale)
 
 	lg.push("all")
-	Stache.setColor("white", 0.5)
+	stache.setColor("white", 0.5)
 	lg.circle("line", self.collider.pos.x, self.collider.pos.y, self.collider.radius)
 	lg.pop()
 end
@@ -344,7 +344,7 @@ function Agent:changeState(next)
 end
 
 function Agent:changeAction(action, jumpTo, play)
-	local subDir = Stache.actors[self.actor]
+	local subDir = stache.actors[self.actor]
 
 	self.collider = subDir.collider
 	subDir = subDir.states[self.state]
@@ -368,10 +368,10 @@ function Agent:allowJump()
 end
 
 function Agent:setPhysMode(mode)
-	Stache.checkArg("mode", mode, "string", "Agent:setPhysMode")
+	stache.checkArg("mode", mode, "string", "Agent:setPhysMode")
 
 	if mode ~= "VQ3" and mode ~= "CPM" then
-		Stache.formatError("Agent:setPhysMode() called with a 'mode' argument that does not correspond to a valid physics mode: %q", mode)
+		stache.formatError("Agent:setPhysMode() called with a 'mode' argument that does not correspond to a valid physics mode: %q", mode)
 	end
 
 	self.physmode = mode
@@ -396,7 +396,7 @@ end
 
 function Agent:updateCollider()
 	self.collider.pos = self.pos
-	self.collider.vel = self.vel * Stache.ticklength
+	self.collider.vel = self.vel * stache.ticklength
 end
 
 function Agent:isGrounded()
@@ -405,7 +405,7 @@ end
 
 function Agent:setGround(brush)
 	if not self.grndRef then
-		Stache.play("gunz_step_concrete1", 100, 100, 0, 5) end
+		stache.play("gunz_step_concrete1", 100, 100, 10, 10) end
 
 	self.grndRef = brush
 	self.grndMoveTicks = 0

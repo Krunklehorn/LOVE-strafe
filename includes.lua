@@ -14,7 +14,7 @@ require "humpstates.play"
 require "humpstates.pause"
 require "humpstates.debug"
 
-Stache = require "stache"
+stache = require "stache"
 
 class = require "modules.30log"
 require "logclasses.base"

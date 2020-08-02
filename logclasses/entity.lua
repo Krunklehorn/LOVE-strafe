@@ -22,12 +22,12 @@ function Entity:assign(key, value)
 end
 
 function Entity:init(data)
-	Stache.checkArg("pos", data.pos, "vector", "Entity:init", true)
-	Stache.checkArg("vel", data.vel, "vector", "Entity:init", true)
-	Stache.checkArg("angle", data.angle, "number", "Entity:init", true)
-	Stache.checkArg("angVel", data.angVel, "number", "Entity:init", true)
-	Stache.checkArg("scale", data.scale, "vector", "Entity:init", true)
-	Stache.checkArg("visible", data.visible, "boolean", "Entity:init", true)
+	stache.checkArg("pos", data.pos, "vector", "Entity:init", true)
+	stache.checkArg("vel", data.vel, "vector", "Entity:init", true)
+	stache.checkArg("angle", data.angle, "number", "Entity:init", true)
+	stache.checkArg("angVel", data.angVel, "number", "Entity:init", true)
+	stache.checkArg("scale", data.scale, "vector", "Entity:init", true)
+	stache.checkArg("visible", data.visible, "boolean", "Entity:init", true)
 
 	data.pos = data.pos or vec2()
 	data.vel = data.vel or vec2()

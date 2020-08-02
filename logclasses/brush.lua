@@ -20,9 +20,9 @@ function Brush:assign(key, value)
 end
 
 function Brush:init(data)
-	Stache.checkArg("collider", data.collider, Collider, "Brush:init")
-	Stache.checkArg("height", data.height, "number", "Brush:init", true)
-	Stache.checkArg("color", data.color, "asset", "Brush:init", true)
+	stache.checkArg("collider", data.collider, Collider, "Brush:init")
+	stache.checkArg("height", data.height, "number", "Brush:init", true)
+	stache.checkArg("color", data.color, "asset", "Brush:init", true)
 
 	data.height = data.height or 0
 

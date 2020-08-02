@@ -22,9 +22,9 @@ function Trigger:assign(key, value)
 end
 
 function Trigger:init(data)
-	Stache.checkArg("collider", data.collider, Collider, "Trigger:init")
-	Stache.checkArg("height", data.height, "number", "Trigger:init")
-	Stache.checkArg("onOverlap", data.onOverlap, "function", "Trigger:init", true)
+	stache.checkArg("collider", data.collider, Collider, "Trigger:init")
+	stache.checkArg("height", data.height, "number", "Trigger:init")
+	stache.checkArg("onOverlap", data.onOverlap, "function", "Trigger:init", true)
 
 	Base.init(self, data)
 end
@@ -48,7 +48,7 @@ function Trigger:update(tl)
 end
 
 function Trigger:draw(debug)
-	Stache.checkArg("debug", debug, "boolean", "Trigger:draw", true)
+	stache.checkArg("debug", debug, "boolean", "Trigger:draw", true)
 
 	debug = DEBUG_DRAW == true and true or debug or false
 

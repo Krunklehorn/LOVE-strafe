@@ -29,11 +29,11 @@ PointHandle = Handle:extend("PointHandle", {
 })
 
 function PointHandle:init(target, pkey)
-	Stache.checkArg("target", target, "indexable", "PointHandle:init")
-	Stache.checkArg("pkey", pkey, "string", "PointHandle:init")
+	stache.checkArg("target", target, "indexable", "PointHandle:init")
+	stache.checkArg("pkey", pkey, "string", "PointHandle:init")
 
 	if not vec2.isVector(target[pkey]) then
-		Stache.formatError("PointHandle:init() called with a 'pkey' argument that target '%s' doesn't have: %q", target, pkey)
+		stache.formatError("PointHandle:init() called with a 'pkey' argument that target '%s' doesn't have: %q", target, pkey)
 	end
 
 	self.target = target
@@ -60,11 +60,11 @@ function PointHandle:draw(scale)
 
 	lg.push("all")
 		lg.setLineWidth(LINE_WIDTH / scale)
-		Stache.setColor("white", self.state == "idle" and 0.5 or 1)
+		stache.setColor("white", self.state == "idle" and 0.5 or 1)
 		lg.circle("fill", self.pos.x, self.pos.y, LINE_WIDTH * 2 / scale)
-		Stache.setColor(color, self.state == "idle" and 0.5 or 1)
+		stache.setColor(color, self.state == "idle" and 0.5 or 1)
 		lg.rectangle("line", x, y, d, d)
-		Stache.setColor(color, self.state == "idle" and 0.25 or 0.5)
+		stache.setColor(color, self.state == "idle" and 0.25 or 0.5)
 		lg.rectangle("fill", x, y, d, d)
 	lg.pop()
 end
@@ -112,14 +112,14 @@ VectorHandle = Handle:extend("VectorHandle", {
 })
 
 function VectorHandle:init(target, pkey, dkey)
-	Stache.checkArg("target", target, "indexable", "VectorHandle:init")
-	Stache.checkArg("pkey", pkey, "string", "VectorHandle:init")
-	Stache.checkArg("dkey", dkey, "string", "VectorHandle:init")
+	stache.checkArg("target", target, "indexable", "VectorHandle:init")
+	stache.checkArg("pkey", pkey, "string", "VectorHandle:init")
+	stache.checkArg("dkey", dkey, "string", "VectorHandle:init")
 
 	if not vec2.isVector(target[pkey]) then
-		Stache.formatError("VectorHandle:init() called with a 'pkey' argument that target '%s' doesn't have: %q", target, pkey)
+		stache.formatError("VectorHandle:init() called with a 'pkey' argument that target '%s' doesn't have: %q", target, pkey)
 	elseif not vec2.isVector(target[dkey]) then
-		Stache.formatError("VectorHandle:init() called with a 'dkey' argument that target '%s' doesn't have: %q", target, dkey)
+		stache.formatError("VectorHandle:init() called with a 'dkey' argument that target '%s' doesn't have: %q", target, dkey)
 	end
 
 	self.target = target
@@ -144,12 +144,12 @@ function VectorHandle:draw(scale)
 
 	lg.push("all")
 		lg.setLineWidth(LINE_WIDTH / scale)
-		Stache.setColor("white", self.state == "idle" and 0.5 or 1)
+		stache.setColor("white", self.state == "idle" and 0.5 or 1)
 		lg.circle("fill", tip.x, tip.y, LINE_WIDTH * 2 / scale)
-		Stache.setColor(color, self.state == "idle" and 0.5 or 1)
+		stache.setColor(color, self.state == "idle" and 0.5 or 1)
 		lg.circle("line", tip.x, tip.y, radius)
 		lg.line(pos.x, pos.y, tip:split())
-		Stache.setColor(color, self.state == "idle" and 0.25 or 0.5)
+		stache.setColor(color, self.state == "idle" and 0.25 or 0.5)
 		lg.circle("fill", tip.x, tip.y, radius)
 	lg.pop()
 end

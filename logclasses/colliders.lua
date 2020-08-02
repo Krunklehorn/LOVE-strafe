@@ -4,8 +4,8 @@ Collider = Base:extend("Collider", {
 }):abstract("draw", "getCastBounds")
 
 function Collider:init(data)
-	Stache.checkArg("vel", data.vel, "vector", "Collider:init", true)
-	Stache.checkArg("radius", data.radius, "number", "Collider:init", true)
+	stache.checkArg("vel", data.vel, "vector", "Collider:init", true)
+	stache.checkArg("radius", data.radius, "number", "Collider:init", true)
 
 	data.vel = data.vel or vec2()
 	data.radius = data.radius or 0
@@ -24,7 +24,7 @@ function Collider:checkCastBounds(other)
 end
 
 function Collider:pick(point)
-	Stache.checkArg("point", point, "vector", "Collider:pick")
+	stache.checkArg("point", point, "vector", "Collider:pick")
 
 	if self:instanceOf(CircleCollider) then
 		-- https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
@@ -64,7 +64,7 @@ function Collider:pick(point)
 end
 
 function Collider:overlap(other)
-	Stache.checkArg("other", other, Collider, "Collider:overlap")
+	stache.checkArg("other", other, Collider, "Collider:overlap")
 
 	if self:instanceOf(CircleCollider) then
 		if other:instanceOf(CircleCollider) then return Collider.circ_circ(self, other)
@@ -80,7 +80,7 @@ function Collider:overlap(other)
 		elseif other:instanceOf(LineCollider) then return Collider.line_line(self, other) end
 	end
 
-	Stache.formatError("Collider:overlap() called with an unsupported subclass combination: %q, %q", self, other)
+	stache.formatError("Collider:overlap() called with an unsupported subclass combination: %q, %q", self, other)
 end
 
 function Collider:circ_circ(other)
@@ -130,11 +130,11 @@ function Collider:circ_line(other)
 end
 
 function Collider:box_box(other)
-	Stache.formatError("Collider:box_box has not been implemented yet!")
+	stache.formatError("Collider:box_box has not been implemented yet!")
 end
 
 function Collider:box_line(other)
-	Stache.formatError("Collider:box_line has not been implemented yet!")
+	stache.formatError("Collider:box_line has not been implemented yet!")
 end
 
 function Collider:line_line(other)
@@ -176,7 +176,7 @@ function CircleCollider:assign(key, value)
 end
 
 function CircleCollider:init(data)
-	Stache.checkArg("pos", data.pos, "vector", "CircleCollider:init", true)
+	stache.checkArg("pos", data.pos, "vector", "CircleCollider:init", true)
 
 	data.pos = data.pos or vec2()
 
@@ -184,41 +184,41 @@ function CircleCollider:init(data)
 end
 
 function CircleCollider:draw(color, scale, debug)
-	local shader = Stache.shaders.colliders
+	local shader = stache.shaders.colliders
 	local camera = humpstate.current().camera
 
-	Stache.checkArg("color", color, "asset", "CircleCollider:draw", true)
-	Stache.checkArg("scale", scale, "number", "CircleCollider:draw", true)
-	Stache.checkArg("debug", debug, "boolean", "CircleCollider:draw", true)
+	stache.checkArg("color", color, "asset", "CircleCollider:draw", true)
+	stache.checkArg("scale", scale, "number", "CircleCollider:draw", true)
+	stache.checkArg("debug", debug, "boolean", "CircleCollider:draw", true)
 
 	color = color or "white"
 	scale = scale or 1
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
-		Stache.setColor("white", 0.5)
+		stache.setColor("white", 0.5)
 		lg.circle("fill", self.pos.x, self.pos.y, 1)
 	lg.pop()
 
 	lg.push("all")
 		lg.setShader(shader)
-			Stache.setColor(color)
-			Stache.send(shader, "scale", camera.scale)
+			stache.setColor(color)
+			stache.send(shader, "scale", camera.scale)
 
-			Stache.send(shader, "type", SHADERTYPE_CIRCLE)
-			Stache.send(shader, "pos", camera:toScreen(self.pos):table())
-			Stache.send(shader, "radius", self.radius * scale * camera.scale)
+			stache.send(shader, "type", SHADERTYPE_CIRCLE)
+			stache.send(shader, "pos", camera:toScreen(self.pos):table())
+			stache.send(shader, "radius", self.radius * scale * camera.scale)
 
 			lg.draw(SDF_UNITPLANE)
 
 			if debug == true and self.vel ~= vec2() then
-				Stache.setColor(color, 0.5)
-				Stache.send(shader, "pos", camera:toScreen(self.ppos):table())
+				stache.setColor(color, 0.5)
+				stache.send(shader, "pos", camera:toScreen(self.ppos):table())
 
 				lg.draw(SDF_UNITPLANE)
 				lg.setShader()
 
-				Stache.debugLine(self.pos, self.ppos, color, 0.5)
+				stache.debugLine(self.pos, self.ppos, color, 0.5)
 			end
 		lg.setShader()
 	lg.pop()
@@ -251,7 +251,7 @@ function CircleCollider:cast(other)
 end
 
 function CircleCollider:circ_contact(other)
-	Stache.checkArg("other", other, CircleCollider, "CircleCollider:circ_contact")
+	stache.checkArg("other", other, CircleCollider, "CircleCollider:circ_contact")
 
 	-- https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 	-- make SELF a ray and OTHER a stationary circle
@@ -281,8 +281,8 @@ function CircleCollider:circ_contact(other)
 end
 
 function CircleCollider:box_contact(other)
-	Stache.formatError("Collider:box_box has not been implemented yet!") -- TODO: overlap works but casting is bugged!
-	Stache.checkArg("other", other, BoxCollider, "CircleCollider:box_contact")
+	stache.formatError("Collider:box_box has not been implemented yet!") -- TODO: overlap works but casting is bugged!
+	stache.checkArg("other", other, BoxCollider, "CircleCollider:box_contact")
 
 	-- https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 	-- make SELF a ray and OTHER a stationary rounded rectangle
@@ -393,7 +393,7 @@ function CircleCollider:box_contact(other)
 end
 
 function CircleCollider:line_contact(other)
-	Stache.checkArg("other", other, LineCollider, "CircleCollider:line_contact")
+	stache.checkArg("other", other, LineCollider, "CircleCollider:line_contact")
 
 	-- https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 	-- make SELF a ray and OTHER a stationary capsule
@@ -560,14 +560,14 @@ function BoxCollider:assign(key, value)
 end
 
 function BoxCollider:init(data)
-	Stache.checkArg("pos", data.pos, "vector", "BoxCollider:init", true)
-	Stache.checkArg("forward", data.forward, "vector", "BoxCollider:init", true)
-	Stache.checkArg("right", data.right, "vector", "BoxCollider:init", true)
-	Stache.checkArg("hwidth", data.hwidth, "number", "BoxCollider:init")
-	Stache.checkArg("hheight", data.hheight, "number", "BoxCollider:init", true)
+	stache.checkArg("pos", data.pos, "vector", "BoxCollider:init", true)
+	stache.checkArg("forward", data.forward, "vector", "BoxCollider:init", true)
+	stache.checkArg("right", data.right, "vector", "BoxCollider:init", true)
+	stache.checkArg("hwidth", data.hwidth, "number", "BoxCollider:init")
+	stache.checkArg("hheight", data.hheight, "number", "BoxCollider:init", true)
 
 	if data.forward and data.right then
-		Stache.formatError("BoxCollider:init() cannot be called with both a 'forward' and 'right' argument: %q, %q", data.forward, data.right) end
+		stache.formatError("BoxCollider:init() cannot be called with both a 'forward' and 'right' argument: %q, %q", data.forward, data.right) end
 
 	data.pos = data.pos or vec2()
 	data.forward = data.forward or (not data.right and vec2.dir("up") or nil)
@@ -581,48 +581,48 @@ function BoxCollider:init(data)
 end
 
 function BoxCollider:draw(color, scale, debug)
-	local shader = Stache.shaders.colliders
+	local shader = stache.shaders.colliders
 	local camera = humpstate.current().camera
 
-	Stache.checkArg("color", color, "asset", "BoxCollider:draw", true)
-	Stache.checkArg("scale", scale, "number", "BoxCollider:draw", true)
-	Stache.checkArg("debug", debug, "boolean", "BoxCollider:draw", true)
+	stache.checkArg("color", color, "asset", "BoxCollider:draw", true)
+	stache.checkArg("scale", scale, "number", "BoxCollider:draw", true)
+	stache.checkArg("debug", debug, "boolean", "BoxCollider:draw", true)
 
 	color = color or "white"
 	scale = scale or 1
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
-		Stache.setColor("white", 0.5)
+		stache.setColor("white", 0.5)
 		lg.circle("fill", self.pos.x, self.pos.y, 1)
 
 		lg.translate(self.pos:split())
 		lg.rotate(self.angle)
-		Stache.setColor(color, 0.5)
+		stache.setColor(color, 0.5)
 		lg.rectangle("line", -self.hwidth, -self.hheight, self.hwidth * 2, self.hheight * 2)
 	lg.pop()
 
 	lg.push("all")
 		lg.setShader(shader)
-			Stache.setColor(color)
-			Stache.send(shader, "scale", camera.scale)
+			stache.setColor(color)
+			stache.send(shader, "scale", camera.scale)
 
-			Stache.send(shader, "type", SHADERTYPE_BOX)
-			Stache.send(shader, "pos", camera:toScreen(self.pos):table())
-			Stache.send(shader, "rotation", Stache.glslRotator(self.angle - camera.angle))
-			Stache.send(shader, "hdims", self.hdims:scaled(camera.scale):table())
-			Stache.send(shader, "radius", self.radius * scale * camera.scale)
+			stache.send(shader, "type", SHADERTYPE_BOX)
+			stache.send(shader, "pos", camera:toScreen(self.pos):table())
+			stache.send(shader, "rotation", stache.glslRotator(self.angle - camera.angle))
+			stache.send(shader, "hdims", self.hdims:scaled(camera.scale):table())
+			stache.send(shader, "radius", self.radius * scale * camera.scale)
 
 			lg.draw(SDF_UNITPLANE)
 
 			if debug == true and self.vel ~= vec2() then
-				Stache.setColor(color, 0.5)
-				Stache.send(shader, "pos", camera:toScreen(self.ppos):table())
+				stache.setColor(color, 0.5)
+				stache.send(shader, "pos", camera:toScreen(self.ppos):table())
 
 				lg.draw(SDF_UNITPLANE)
 				lg.setShader()
 
-				Stache.debugLine(self.pos, self.ppos, color, 0.5)
+				stache.debugLine(self.pos, self.ppos, color, 0.5)
 			end
 		lg.setShader()
 	lg.pop()
@@ -657,7 +657,7 @@ function LineCollider:construct(key)
 		local dpp = self.pp2 - self.pp1
 
 		if dpp ~= dp then
-			Stache.formatError("Attempted to get 'delta' key of class LineCollider but could not agree on a value: %q, %q", dpp, dp) end
+			stache.formatError("Attempted to get 'delta' key of class LineCollider but could not agree on a value: %q, %q", dpp, dp) end
 
 		return dp
 	elseif key == "direction" then return self.delta.normalized
@@ -691,54 +691,54 @@ function LineCollider:assign(key, value)
 end
 
 function LineCollider:init(data)
-	Stache.checkArg("p1", data.p1, "vector", "LineCollider:init")
-	Stache.checkArg("p2", data.p2, "vector", "LineCollider:init")
+	stache.checkArg("p1", data.p1, "vector", "LineCollider:init")
+	stache.checkArg("p2", data.p2, "vector", "LineCollider:init")
 
 	Collider.init(self, data)
 end
 
 function LineCollider:draw(color, scale, debug)
-	local shader = Stache.shaders.colliders
+	local shader = stache.shaders.colliders
 	local camera = humpstate.current().camera
 
-	Stache.checkArg("color", color, "asset", "LineCollider:draw", true)
-	Stache.checkArg("scale", scale, "number", "LineCollider:draw", true)
-	Stache.checkArg("debug", debug, "boolean", "LineCollider:draw", true)
+	stache.checkArg("color", color, "asset", "LineCollider:draw", true)
+	stache.checkArg("scale", scale, "number", "LineCollider:draw", true)
+	stache.checkArg("debug", debug, "boolean", "LineCollider:draw", true)
 
 	color = color or "white"
 	scale = scale or 1
 	debug = DEBUG_DRAW == true and true or debug or false
 
 	lg.push("all")
-		Stache.setColor("white", 0.5)
+		stache.setColor("white", 0.5)
 		lg.circle("fill", self.p1.x, self.p1.y, 1)
 		lg.circle("fill", self.p2.x, self.p2.y, 1)
 
-		Stache.debugLine(self.p1, self.p2, color, 0.5)
+		stache.debugLine(self.p1, self.p2, color, 0.5)
 	lg.pop()
 
 	lg.push("all")
 
 		lg.setShader(shader)
-			Stache.setColor(color)
-			Stache.send(shader, "scale", camera.scale)
+			stache.setColor(color)
+			stache.send(shader, "scale", camera.scale)
 
-			Stache.send(shader, "type", SHADERTYPE_LINE)
-			Stache.send(shader, "pos", camera:toScreen(self.p1):table())
-			Stache.send(shader, "delta", self.delta:scaled(camera.scale):rotated(-camera.angle):table())
-			Stache.send(shader, "radius", self.radius * scale * camera.scale)
+			stache.send(shader, "type", SHADERTYPE_LINE)
+			stache.send(shader, "pos", camera:toScreen(self.p1):table())
+			stache.send(shader, "delta", self.delta:scaled(camera.scale):rotated(-camera.angle):table())
+			stache.send(shader, "radius", self.radius * scale * camera.scale)
 
 			lg.draw(SDF_UNITPLANE)
 
 			if debug == true and self.vel ~= vec2() then
-				Stache.setColor(color, 0.5)
-				Stache.send(shader, "pos", camera:toScreen(self.pp1):table())
+				stache.setColor(color, 0.5)
+				stache.send(shader, "pos", camera:toScreen(self.pp1):table())
 
 				lg.draw(SDF_UNITPLANE)
 				lg.setShader()
 
-				Stache.debugLine(self.pp1, self.p1, color, 0.5)
-				Stache.debugLine(self.pp2, self.p2, color, 0.5)
+				stache.debugLine(self.pp1, self.p1, color, 0.5)
+				stache.debugLine(self.pp2, self.p2, color, 0.5)
 			end
 		lg.setShader()
 	lg.pop()
@@ -754,7 +754,7 @@ function LineCollider:getCastBounds()
 end
 
 function LineCollider:point_determinant(point)
-	Stache.checkArg("point", point, "vector", "LineCollider:point_determinant")
+	stache.checkArg("point", point, "vector", "LineCollider:point_determinant")
 
 	local offset1 = point - self.p1
 	local offset2 = point - self.p2
@@ -786,10 +786,10 @@ end
 
 function LineCollider:line_contact(arg1, arg2)
 	if not arg2 then
-		Stache.checkArg("arg1", arg1, LineCollider, "LineCollider:line_contact")
+		stache.checkArg("arg1", arg1, LineCollider, "LineCollider:line_contact")
 	else
-		Stache.checkArg("arg1", arg1, "vector", "LineCollider:line_contact")
-		Stache.checkArg("arg2", arg2, "vector", "LineCollider:line_contact")
+		stache.checkArg("arg1", arg1, "vector", "LineCollider:line_contact")
+		stache.checkArg("arg2", arg2, "vector", "LineCollider:line_contact")
 	end
 
 	local offset = self.p1 - (arg2 and arg1 or arg1.p1)

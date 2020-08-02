@@ -55,65 +55,65 @@ function playState:init()
 		agent:changeState("air")
 	end
 
-	self:addTrigger{collider = BoxCollider{ pos = vec2(0, -UNIT_MAJOR * 12), hwidth = UNIT_MAJOR * 14 }, height = -100, onOverlap = respawnAgent}
+	self:addTrigger{collider = BoxCollider{ pos = vec2(0, -UNIT_MAJOR * 12), hwidth = UNIT_MAJOR * 56 }, height = -100, onOverlap = respawnAgent}
 
-	Stache.players.active.agent = self:spawnAgent("strafer", { posz = 20 })
+	stache.players.active.agent = self:spawnAgent("strafer", { posz = 20 })
 
-	self.camera:setPTarget(Stache.players.active.agent, "pos")
-	self.camera:setATarget(Stache.players.active.agent, "angle")
+	self.camera:setPTarget(stache.players.active.agent, "pos")
+	self.camera:setATarget(stache.players.active.agent, "angle")
 end
 
 function playState:enter()
 	lm.setRelativeMode(true)
-	Stache.players.active.agent = playState.agents[1]
+	stache.players.active.agent = playState.agents[1]
 end
 
 function playState:pause()
 	lm.setRelativeMode(true)
-	Stache.players.active.agent = playState.agents[1]
+	stache.players.active.agent = playState.agents[1]
 end
 
 function playState:resume()
 	lm.setRelativeMode(true)
-	Stache.players.active.agent = playState.agents[1]
+	stache.players.active.agent = playState.agents[1]
 end
 
 function playState:leave()
 	lm.setRelativeMode(false)
-	Stache.players.active.agent = nil
+	stache.players.active.agent = nil
 end
 
 function playState:update(tl)
-	local active_agent = Stache.players.active.agent
+	local active_agent = stache.players.active.agent
 
-	Stache.updateList(self.agents, tl)
-	Stache.updateList(self.props, tl)
-	Stache.updateList(self.particles, tl)
-	Stache.updateList(self.triggers, tl)
+	stache.updateList(self.agents, tl)
+	stache.updateList(self.props, tl)
+	stache.updateList(self.particles, tl)
+	stache.updateList(self.triggers, tl)
 
 	self.camera:update(tl)
 
-	Stache.updateList(self.backgrounds, tl, self.camera)
+	stache.updateList(self.backgrounds, tl, self.camera)
 end
 
 function playState:draw()
-	Stache.drawList(self.backgrounds, self.camera)
+	stache.drawList(self.backgrounds, self.camera)
 
 	self.camera:attach()
 
-	Stache.batchSDF(playState.brushes, self.camera)
-	Stache.drawList(self.agents)
-	Stache.drawList(self.props)
-	Stache.drawList(self.particles)
+	stache.batchSDF(playState.brushes, self.camera)
+	stache.drawList(self.agents)
+	stache.drawList(self.props)
+	stache.drawList(self.particles)
 
 	debug_vq3_gamma:draw()
 	debug_cpm_gamma:draw()
 
 	if DEBUG_DRAW then
-		if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
-		if DEBUG_LINE then Stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
-		if DEBUG_NORM then Stache.debugNormal(DEBUG_NORM.pos, DEBUG_NORM.normal, "yellow", 1) end
-		if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
+		if DEBUG_POINT then stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
+		if DEBUG_LINE then stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
+		if DEBUG_NORM then stache.debugNormal(DEBUG_NORM.pos, DEBUG_NORM.normal, "yellow", 1) end
+		if DEBUG_CIRC then stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
 	end
 
 	self.camera:detach()
@@ -123,82 +123,83 @@ function playState:draw()
 		lg.translate(-8 * 3, -8 * 3)
 		lg.scale(3)
 
-		local active_player = Stache.players.active
+		local active_player = stache.players.active
 
 		lg.translate(120 / 3, (lg.getHeight() - 160) / 3)
 		if active_player.boipy:down("up") then
-			Stache.setColor("white", 0.8)
-			lg.draw(Stache.sprites.arrowbtn_up_prs)
+			stache.setColor("white", 0.8)
+			lg.draw(stache.sprites.arrowbtn_up_prs)
 		else
-			Stache.setColor("white", 0.4)
-			lg.draw(Stache.sprites.arrowbtn_up_rls)
+			stache.setColor("white", 0.4)
+			lg.draw(stache.sprites.arrowbtn_up_rls)
 		end
 
 		lg.translate(0, 60 / 3)
 		if active_player.boipy:down("down") then
-			Stache.setColor("white", 0.8)
-			lg.draw(Stache.sprites.arrowbtn_down_prs)
+			stache.setColor("white", 0.8)
+			lg.draw(stache.sprites.arrowbtn_down_prs)
 		else
-			Stache.setColor("white", 0.4)
-			lg.draw(Stache.sprites.arrowbtn_down_rls)
+			stache.setColor("white", 0.4)
+			lg.draw(stache.sprites.arrowbtn_down_rls)
 		end
 
 		lg.translate(-60 / 3, 0)
 		if active_player.boipy:down("left") then
-			Stache.setColor("white", 0.8)
-			lg.draw(Stache.sprites.arrowbtn_left_prs)
+			stache.setColor("white", 0.8)
+			lg.draw(stache.sprites.arrowbtn_left_prs)
 		else
-			Stache.setColor("white", 0.4)
-			lg.draw(Stache.sprites.arrowbtn_left_rls)
+			stache.setColor("white", 0.4)
+			lg.draw(stache.sprites.arrowbtn_left_rls)
 		end
 
 		lg.translate(120 / 3, 0)
 		if active_player.boipy:down("right") then
-			Stache.setColor("white", 0.8)
-			lg.draw(Stache.sprites.arrowbtn_right_prs)
+			stache.setColor("white", 0.8)
+			lg.draw(stache.sprites.arrowbtn_right_prs)
 		else
-			Stache.setColor("white", 0.4)
-			lg.draw(Stache.sprites.arrowbtn_right_rls)
+			stache.setColor("white", 0.4)
+			lg.draw(stache.sprites.arrowbtn_right_rls)
 		end
 
 		lg.translate(-140 / 3, 60 / 3)
 		if active_player.boipy:down("jump") then
-			Stache.setColor("white", 0.8)
-			lg.draw(Stache.sprites.spacebtn_prs)
+			stache.setColor("white", 0.8)
+			lg.draw(stache.sprites.spacebtn_prs)
 		else
-			Stache.setColor("white", 0.4)
-			lg.draw(Stache.sprites.spacebtn_rls)
+			stache.setColor("white", 0.4)
+			lg.draw(stache.sprites.spacebtn_rls)
 		end
 
 		lg.translate(140 / 3, 0)
 		if active_player.boipy:down("crouch") then
-			Stache.setColor("white", 0.8)
-			lg.draw(Stache.sprites.crouchbtn_prs)
+			stache.setColor("white", 0.8)
+			lg.draw(stache.sprites.crouchbtn_prs)
 		else
-			Stache.setColor("white", 0.4)
-			lg.draw(Stache.sprites.crouchbtn_rls)
+			stache.setColor("white", 0.4)
+			lg.draw(stache.sprites.crouchbtn_rls)
 		end
 	lg.pop()
 
 	lg.push("all")
-		Stache.setColor("white", 0.8)
-		Stache.debugPrintf{40, active_player.agent.physmode, 5}
+		stache.setColor("white", 0.8)
+		stache.debugPrintf{40, active_player.agent.physmode, 5}
 	lg.pop()
 	end
 end
 
 function playState:mousemoved(x, y, dx, dy, istouch)
-	Stache.players.active:mousemoved(x, y, dx, dy, istouch)
+	stache.players.active:mousemoved(x, y, dx, dy, istouch)
 end
 
 function playState:keypressed(key)
 	if key == "backspace" then
 		humpstate.pop()
-		--humpstate.push(pauseState)
+	elseif key == "p" then
+		humpstate.push(pauseState)
 	elseif key == "kp+" then
-		Stache.timescale = Stache.timescale * 2
+		stache.timescale = stache.timescale * 2
 	elseif key == "kp-" then
-		Stache.timescale = Stache.timescale / 2
+		stache.timescale = stache.timescale / 2
 	elseif key == "v" then
 		self.agents[1]:togglePhysMode()
 	end
@@ -226,9 +227,9 @@ function playState:addTrigger(data)
 end
 
 function playState:spawnParticle(name, anchor, params)
-	Stache.checkArg("name", name, "string", "playState:spawnParticle")
+	stache.checkArg("name", name, "string", "playState:spawnParticle")
 
-	local data = Stache.getAsset("name", name, Stache.particles, "playState:spawnParticle")
+	local data = stache.getAsset("name", name, stache.particles, "playState:spawnParticle")
 
 	data.anchor = anchor
 	if params then
@@ -243,10 +244,10 @@ function playState:spawnParticle(name, anchor, params)
 end
 
 function playState:spawnProp(name, params)
-	Stache.checkArg("name", name, "string", "playState:spawnProp")
-	Stache.checkArg("params", params, "indexable", "playState:spawnProp", true)
+	stache.checkArg("name", name, "string", "playState:spawnProp")
+	stache.checkArg("params", params, "indexable", "playState:spawnProp", true)
 
-	local data = Stache.getAsset("name", name, Stache.props, "playState:spawnProp")
+	local data = stache.getAsset("name", name, stache.props, "playState:spawnProp")
 
 	if params then
 		for k, v in pairs(params) do
@@ -260,10 +261,10 @@ function playState:spawnProp(name, params)
 end
 
 function playState:spawnAgent(name, params)
-	Stache.checkArg("name", name, "string", "playState:spawnAgent")
-	Stache.checkArg("params", params, "indexable", "playState:spawnAgent", true)
+	stache.checkArg("name", name, "string", "playState:spawnAgent")
+	stache.checkArg("params", params, "indexable", "playState:spawnAgent", true)
 
-	local data = Stache.getAsset("name", name, Stache.actors, "playState:spawnAgent")
+	local data = stache.getAsset("name", name, stache.actors, "playState:spawnAgent")
 
 	data.actor = name
 	if params then
@@ -278,46 +279,46 @@ function playState:spawnAgent(name, params)
 end
 
 function playState:removeBrush(brush)
-	Stache.checkArg("brush", brush, "index/reference", "playState:removeBrush")
+	stache.checkArg("brush", brush, "index/reference", "playState:removeBrush")
 
 	if type(brush) == "number" then
 		return table.remove(self.brushes, brush)
 	else
 		if not brush:instanceOf(Brush) then
-			Stache.formatError("playState:removeBrush() called with a 'brush' argument that isn't of type 'Brush': %q", brush) end
+			stache.formatError("playState:removeBrush() called with a 'brush' argument that isn't of type 'Brush': %q", brush) end
 
 		for b = 1, #self.brushes do
 			if self.brushes[b] == brush then
 				return table.remove(self.brushes, b) end end
 
-		Stache.formatError("playState:removeBrush() called with a reference that should not exist: %q", brush)
+		stache.formatError("playState:removeBrush() called with a reference that should not exist: %q", brush)
 	end
 end
 
 function playState:removeTrigger(trigger)
-	Stache.checkArg("trigger", trigger, "index/reference", "playState:removeTrigger")
+	stache.checkArg("trigger", trigger, "index/reference", "playState:removeTrigger")
 
 	if type(trigger) == "number" then
 		return table.remove(self.triggers, trigger)
 	else
 		if not trigger:instanceOf(Trigger) then
-			Stache.formatError("playState:removeTrigger() called with a 'trigger' argument that isn't of type 'Trigger': %q", trigger) end
+			stache.formatError("playState:removeTrigger() called with a 'trigger' argument that isn't of type 'Trigger': %q", trigger) end
 
 		for t = 1, #self.triggers do
 			if self.triggers[t] == trigger then
 				return table.remove(self.triggers, t) end end
 
-		Stache.formatError("playState:removeTrigger() called with a reference that should not exist: %q", trigger)
+		stache.formatError("playState:removeTrigger() called with a reference that should not exist: %q", trigger)
 	end
 end
 
 function playState:removeEntity(entity, class)
-	Stache.checkArg("entity", entity, "index/reference", "playState:removeEntity")
+	stache.checkArg("entity", entity, "index/reference", "playState:removeEntity")
 
 	local list
 
 	if type(entity) == "number" then
-		Stache.checkArg("class", class, "class", "playState:removeEntity")
+		stache.checkArg("class", class, "class", "playState:removeEntity")
 
 		if class == Particle then list = self.particles
 		elseif class == Prop then list = self.props
@@ -325,7 +326,7 @@ function playState:removeEntity(entity, class)
 
 		return table.remove(list, entity)
 	else
-		Stache.checkArg("entity", entity, Entity, "playState:removeEntity")
+		stache.checkArg("entity", entity, Entity, "playState:removeEntity")
 
 		if entity:instanceOf(Particle) then list = self.particles
 		elseif entity:instanceOf(Prop) then list = self.props
@@ -335,6 +336,6 @@ function playState:removeEntity(entity, class)
 			if list[e] == entity then
 				return table.remove(list, e) end end
 
-		Stache.formatError("playState:removeEntity() called with a reference that should not exist: %q", entity)
+		stache.formatError("playState:removeEntity() called with a reference that should not exist: %q", entity)
 	end
 end

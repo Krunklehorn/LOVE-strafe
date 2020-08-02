@@ -26,7 +26,7 @@ function editState:init()
 end
 
 function editState:enter()
-	flux.to(Stache, 0.25, { fade = 0 }):ease("quadout")
+	flux.to(stache, 0.25, { fade = 0 }):ease("quadout")
 
 	self:refreshHandles()
 end
@@ -43,7 +43,7 @@ function editState:resume()
 end
 
 function editState:update(tl)
-	Stache.updateList(self.handles, tl)
+	stache.updateList(self.handles, tl)
 
 	self.camera:update(tl)
 end
@@ -53,29 +53,29 @@ function editState:draw()
 
 	self.grid:push("all")
 
-	Stache.batchSDF(playState.brushes, self.camera)
-	Stache.drawList(playState.agents)
-	Stache.drawList(playState.props)
-	Stache.drawList(playState.particles)
-	Stache.drawList(playState.triggers)
+	stache.batchSDF(playState.brushes, self.camera)
+	stache.drawList(playState.agents)
+	stache.drawList(playState.props)
+	stache.drawList(playState.particles)
+	--stache.drawList(playState.triggers)
 
 	debug_vq3_gamma:draw()
 	debug_cpm_gamma:draw()
 
 	playState.camera:draw()
-	Stache.drawList(self.handles, self.camera.scale)
+	stache.drawList(self.handles, self.camera.scale)
 
 	if DEBUG_DRAW then
-		if DEBUG_POINT then Stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
-		if DEBUG_LINE then Stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
-		if DEBUG_NORM then Stache.debugNormal(DEBUG_NORM.pos, DEBUG_NORM.normal, "yellow", 1) end
-		if DEBUG_CIRC then Stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
+		if DEBUG_POINT then stache.debugCircle(DEBUG_POINT, 4, "yellow", 1) end
+		if DEBUG_LINE then stache.debugLine(DEBUG_LINE.p1, DEBUG_LINE.p2, "yellow", 1) end
+		if DEBUG_NORM then stache.debugNormal(DEBUG_NORM.pos, DEBUG_NORM.normal, "yellow", 1) end
+		if DEBUG_CIRC then stache.debugCircle(DEBUG_CIRC.pos, DEBUG_CIRC.radius, "yellow", 1) end
 	end
 
 	self.grid:pop()
 
-	Stache.setColor("white", 0.8)
-	Stache.debugPrintf{40, self.activeTool, 5}
+	stache.setColor("white", 0.8)
+	stache.debugPrintf{40, self.activeTool, 5}
 end
 
 function editState:keypressed(key)
@@ -85,7 +85,7 @@ function editState:keypressed(key)
 	elseif key == "j" then self:save()
 	elseif key == "k" then self:load()
 	elseif key == "backspace" then
-		flux.to(Stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
+		flux.to(stache, 0.25, { fade = 1 }):ease("quadout"):oncomplete(function()
 			humpstate.switch(titleState)
 		end)
 	elseif key == "return" then

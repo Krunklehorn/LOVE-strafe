@@ -1,3 +1,12 @@
+lfs = love.filesystem
+lg = love.graphics
+lk = love.keyboard
+lm = love.mouse
+lmth = love.math
+la = love.audio
+lw = love.window
+lt = love.timer
+
 FLOAT_EPSILON = 0.00001
 MATH_2PI = 2 * math.pi
 MATH_PIO2 = math.pi / 2

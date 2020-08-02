@@ -1,25 +1,16 @@
-lfs = love.filesystem
-lg = love.graphics
-lk = love.keyboard
-lm = love.mouse
-lmth = love.math
-la = love.audio
-lw = love.window
-lt = love.timer
-
 require "constants"
 require "includes"
 
 function love.load()
-	Stache.load()
+	stache.load()
 
 	love.resize(lg.getDimensions())
 
 	humpstate.registerEvents()
-	--humpstate.switch(introState)
+	humpstate.switch(introState)
 	--humpstate.switch(debugState)
-	humpstate.switch(editState)
-	humpstate.push(playState)
+	--humpstate.switch(editState)
+	--humpstate.push(playState)
 end
 
 function love.run()
@@ -45,20 +36,20 @@ function love.run()
 			delta_time = lt.step() end
 
 		accumulator = accumulator + delta_time
-		while accumulator >= Stache.ticklength do
+		while accumulator >= stache.ticklength do
 			if love.update then
-				for p = 1, #Stache.players do
-					Stache.players[p]:input(Stache.ticks) end
+				for p = 1, #stache.players do
+					stache.players[p]:input(stache.ticks) end
 
-				love.update(Stache.ticklength * Stache.timescale)
+				love.update(stache.ticklength * stache.timescale)
 
-				for p = 1, #Stache.players do
-					Stache.players[p].boipy:post() end
+				for p = 1, #stache.players do
+					stache.players[p].boipy:post() end
 			end
 
-			accumulator = accumulator - Stache.ticklength
-			Stache.tick_time = Stache.tick_time + Stache.ticklength
-			Stache.total_ticks = Stache.total_ticks + 1
+			accumulator = accumulator - stache.ticklength
+			stache.tick_time = stache.tick_time + stache.ticklength
+			stache.total_ticks = stache.total_ticks + 1
 		end
 
 		if lg and lg.isActive() then
@@ -66,7 +57,7 @@ function love.run()
 			lg.origin()
 			if love.draw then
 				love.draw()
-				Stache.draw()
+				stache.draw()
 			end
 			lg.present()
 		end
@@ -76,11 +67,11 @@ function love.run()
 end
 
 function love.update(tl)
-	flux.update(Stache.ticklength)
+	flux.update(stache.ticklength)
 end
 
 function love.keypressed(key)
-	if key == "m" then
+	if key == "m" and humpstate.current() ~= introState then
 		lw.setFullscreen(not lw.getFullscreen())
 		love.resize(lg.getDimensions()) -- Force the resize callback
 	elseif key == "n" then
@@ -95,7 +86,8 @@ end
 function love.resize(w, h)
 	SDF_CANVAS = lg.newCanvas()
 
-	if not lw.getFullscreen() then
+	--[[if not lw.getFullscreen() then
 		local dw, dh = lw.getDesktopDimensions()
-		lw.setPosition(dw - w - 40, 40) end
+		lw.setPosition(dw - w - 40, 40)
+	end]]
 end

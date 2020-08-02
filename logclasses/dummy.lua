@@ -51,7 +51,7 @@ function Dummy:draw()
 	lg.push("all")
 		lg.translate(self.ppos:split())
 		
-		Stache.setColor("white", 0.8)
+		stache.setColor("white", 0.8)
 		lg.line(0, 0, self.vel:split())
 
 		lg.push()
@@ -65,27 +65,27 @@ function Dummy:draw()
 		lg.pop()
 	lg.pop()
 
-	Stache.debugCircle(self.ppos, self.collider.radius, "red", 1)
-	Stache.debugCircle(self.pos, self.collider.radius, "green", 1)
+	stache.debugCircle(self.ppos, self.collider.radius, "red", 1)
+	stache.debugCircle(self.pos, self.collider.radius, "green", 1)
 
 	if collision then
-		Stache.debugCircle(self.tppos, self.collider.radius, "red", 0.5)
-		Stache.debugCircle(self.tpos, self.collider.radius, "green", 0.5)
-		Stache.debugTangent(self.tppos, collision.tangent * 100, "white", 0.5)
+		stache.debugCircle(self.tppos, self.collider.radius, "red", 0.5)
+		stache.debugCircle(self.tpos, self.collider.radius, "green", 0.5)
+		stache.debugTangent(self.tppos, collision.tangent * 100, "white", 0.5)
 	end
 
 	if bounds_check then
 		local alpha = bounds_check and 0.4 or 0.2
-		Stache.debugBounds(bounds_self, "white", alpha)
-		Stache.debugBounds(bounds_other, "white", alpha)
+		stache.debugBounds(bounds_self, "white", alpha)
+		stache.debugBounds(bounds_other, "white", alpha)
 	end
 end
 
 function Dummy:setControlMode(mode)
-	Stache.checkArg("mode", mode, "string", "Dummy:setControlMode")
+	stache.checkArg("mode", mode, "string", "Dummy:setControlMode")
 
 	if mode ~= "Current" and mode ~= "Previous" then
-		Stache.formatError("Dummy:setControlMode() called with a 'mode' argument that does not correspond to a valid control mode: %q", mode)
+		stache.formatError("Dummy:setControlMode() called with a 'mode' argument that does not correspond to a valid control mode: %q", mode)
 	end
 
 	self.controlmode = mode
